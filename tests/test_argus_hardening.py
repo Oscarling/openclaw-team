@@ -11,7 +11,8 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any
 
-sys.path.insert(0, "/app/workspace")
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
 
 from argus_contracts import validate_output  # noqa: E402
 from dispatcher import worker_runtime  # noqa: E402
