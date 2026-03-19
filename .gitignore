@@ -5,6 +5,8 @@ artifacts/
 tasks/
 workspaces/
 inbox/*.json
+processing/*.json
+processing/*.result.json
 processed/*.json
 processed/*.result.json
 rejected/*.json
