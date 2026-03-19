@@ -17,7 +17,10 @@ services:
       - ARGUS_WORKER_IMAGE=argus-worker:latest
       - ARGUS_WORKER_BUILD_CONTEXT=/app
       - ARGUS_WORKER_DOCKERFILE=containers/worker/Dockerfile
+      - ARGUS_MANAGER_CONTAINER_NAME=manager
       - ARGUS_MANAGER_CONTAINER=manager
+      - ARGUS_APP_HOST_PATH=
+      - ARGUS_SECRETS_HOST_PATH=
       - HTTP_PROXY=
       - HTTPS_PROXY=
       - http_proxy=
@@ -35,6 +38,7 @@ services:
       - ./contracts:/app/contracts
       - ./containers:/app/containers
       - ./dispatcher:/app/dispatcher
+      - ./scripts:/app/scripts
       - ./skills:/app/skills
       - ./agents:/app/agents
       - /var/run/docker.sock:/var/run/docker.sock

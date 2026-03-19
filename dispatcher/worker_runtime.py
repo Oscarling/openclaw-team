@@ -82,6 +82,9 @@ ARTIFACT_TYPE_BY_PREFIX = {
     "artifacts/reviews/": "review",
 }
 DEFAULT_ARTIFACT_TYPE = "doc"
+TEST_MODE_ENV = "ARGUS_TEST_MODE"
+TEST_SCENARIO_ENV = "ARGUS_TEST_SCENARIO"
+TEST_RESPONSE_FILE_ENV = "ARGUS_TEST_LLM_RESPONSE_FILE"
 
 
 def normalize_chat_endpoint(api_base):
@@ -125,6 +128,110 @@ def load_soul(worker):
 def load_output_schema():
     with open(OUTPUT_SCHEMA_PATH) as f:
         return json.load(f)
+
+
+def test_artifact_content(path, artifact_type, task, worker):
+    task_id = task.get("task_id", "UNKNOWN")
+    if artifact_type == "script":
+        return (
+            "#!/usr/bin/env python3\n"
+            "import argparse\n\n"
+            "def main() -> int:\n"
+            "    parser = argparse.ArgumentParser()\n"
+            "    parser.add_argument('--source', required=False)\n"
+            "    parser.add_argument('--target', required=False)\n"
+            "    parser.add_argument('--dry-run', action='store_true')\n"
+            "    args = parser.parse_args()\n"
+            "    print(f'Test script for {task_id}: dry_run={args.dry_run}')\n"
+            "    return 0\n\n"
+            "if __name__ == '__main__':\n"
+            "    raise SystemExit(main())\n"
+        )
+    if artifact_type == "review":
+        return (
+            f"# Review ({task_id})\n\n"
+            f"- Worker: {worker}\n"
+            f"- Reviewed artifact target: {task.get('inputs', {})}\n"
+            "- Verdict: pass (test mode)\n"
+        )
+    if artifact_type == "config":
+        return "version: '3.9'\nservices:\n  app:\n    image: example\n"
+    return f"# Test Artifact\n\nGenerated in test mode for `{task_id}` by `{worker}`.\nPath: `{path}`\n"
+
+
+def build_test_mode_payload(task, worker, scenario):
+    expected_outputs = task_expected_outputs(task)
+    scenario_name = str(scenario or "success").strip().lower()
+
+    if scenario_name == "failed":
+        return {
+            "status": "failed",
+            "summary": f"Forced failed output for {task.get('task_id')} in test mode.",
+            "errors": ["forced failure in test mode"],
+            "metadata": {"test_mode": True, "scenario": scenario_name},
+        }
+
+    if scenario_name == "transient_failed":
+        return {
+            "status": "failed",
+            "summary": f"Forced transient failed output for {task.get('task_id')} in test mode.",
+            "errors": ["transient: simulated retryable failure"],
+            "metadata": {"test_mode": True, "scenario": scenario_name},
+        }
+
+    if scenario_name == "partial":
+        chosen = expected_outputs[:1]
+        payload_status = "partial"
+    else:
+        chosen = expected_outputs
+        payload_status = "success"
+
+    file_contents = {}
+    for artifact in chosen:
+        file_contents[artifact["path"]] = test_artifact_content(
+            artifact["path"],
+            artifact["type"],
+            task,
+            worker,
+        )
+
+    return {
+        "status": payload_status,
+        "summary": f"Forced {payload_status} output for {task.get('task_id')} in test mode.",
+        "file_contents": file_contents,
+        "notes": [f"test mode scenario={scenario_name}"],
+        "metadata": {"test_mode": True, "scenario": scenario_name},
+    }
+
+
+def load_test_mode_payload(task, worker):
+    scenario = os.environ.get(TEST_SCENARIO_ENV)
+    response_file = os.environ.get(TEST_RESPONSE_FILE_ENV)
+    enabled = os.environ.get(TEST_MODE_ENV)
+
+    if not enabled and not scenario and not response_file:
+        return None
+
+    mode_parts = []
+    if enabled:
+        mode_parts.append(f"{TEST_MODE_ENV}={enabled}")
+    if scenario:
+        mode_parts.append(f"{TEST_SCENARIO_ENV}={scenario}")
+    if response_file:
+        mode_parts.append(f"{TEST_RESPONSE_FILE_ENV}={response_file}")
+    log(worker, "INFO", f"Test mode enabled ({', '.join(mode_parts)})")
+
+    if response_file:
+        response_path = Path(response_file)
+        if not response_path.exists():
+            raise RuntimeError(f"Test response file not found: {response_path}")
+        with open(response_path) as f:
+            payload = json.load(f)
+        if not isinstance(payload, dict):
+            raise RuntimeError("Test response file must contain a JSON object")
+        return payload
+
+    return build_test_mode_payload(task, worker, scenario or "success")
 
 
 # ==========================================
@@ -544,14 +651,18 @@ def run_worker():
         expected_type_map = {item["path"]: item["type"] for item in expected_outputs}
 
         log(worker, "INFO", f"Worker started using endpoint {CHAT_COMPLETIONS_URL}")
-        soul = load_soul(worker)
-        user_prompt = build_user_prompt(task)
-        llm_output = call_llm(soul, user_prompt, worker)
-        parsed = extract_json(llm_output)
+        parsed = load_test_mode_payload(task, worker)
         if parsed is None:
-            raise RuntimeError("LLM output not valid JSON")
-        if not isinstance(parsed, dict):
-            raise RuntimeError("LLM output must be a JSON object")
+            soul = load_soul(worker)
+            user_prompt = build_user_prompt(task)
+            llm_output = call_llm(soul, user_prompt, worker)
+            parsed = extract_json(llm_output)
+            if parsed is None:
+                raise RuntimeError("LLM output not valid JSON")
+            if not isinstance(parsed, dict):
+                raise RuntimeError("LLM output must be a JSON object")
+        elif not isinstance(parsed, dict):
+            raise RuntimeError("Test mode payload must be a JSON object")
 
         written_artifacts = []
         if "file_contents" in parsed:

@@ -12,12 +12,23 @@ BASE_DIR = Path("/app")
 TASK_DIR = BASE_DIR / "tasks"
 WORKSPACE_DIR = BASE_DIR / "workspaces"
 SECRETS_DIR = Path("/run/secrets")
+
 ALLOWED_TASK_STATES = {"pending", "running", "success", "failed", "partial"}
-WORKER_IMAGE = os.environ.get("ARGUS_WORKER_IMAGE", "argus-worker:latest")
-WORKER_BUILD_CONTEXT = os.environ.get("ARGUS_WORKER_BUILD_CONTEXT", "/app")
-WORKER_DOCKERFILE = os.environ.get("ARGUS_WORKER_DOCKERFILE", "containers/worker/Dockerfile")
-MANAGER_CONTAINER_NAME = os.environ.get("ARGUS_MANAGER_CONTAINER", "manager")
+MAX_RETRY_ATTEMPTS = 2
+DEFAULT_WORKER_IMAGE = os.environ.get("ARGUS_WORKER_IMAGE", "argus-worker:latest")
+DEFAULT_WORKER_BUILD_CONTEXT = os.environ.get("ARGUS_WORKER_BUILD_CONTEXT", "/app")
+DEFAULT_WORKER_DOCKERFILE = os.environ.get(
+    "ARGUS_WORKER_DOCKERFILE",
+    "containers/worker/Dockerfile",
+)
+DEFAULT_MANAGER_CONTAINER_NAME = os.environ.get(
+    "ARGUS_MANAGER_CONTAINER_NAME",
+    os.environ.get("ARGUS_MANAGER_CONTAINER", "manager"),
+)
+ARGUS_APP_HOST_PATH = os.environ.get("ARGUS_APP_HOST_PATH")
+ARGUS_SECRETS_HOST_PATH = os.environ.get("ARGUS_SECRETS_HOST_PATH")
 STOP_TIMEOUT_SECONDS = 5
+
 REQUIRED_MANAGER_MOUNTS = (
     "/app/workspaces",
     "/app/artifacts",
@@ -27,7 +38,7 @@ REQUIRED_MANAGER_MOUNTS = (
     "/app/agents",
 )
 
-client = docker.from_env()
+DOCKER_CLIENT = docker.from_env()
 
 
 def utc_now():
@@ -53,6 +64,10 @@ def task_workspace_dir(worker, task_id):
 
 def runtime_log_path(worker, task_id):
     return task_workspace_dir(worker, task_id) / "runtime.log"
+
+
+def runtime_attempt_log_path(worker, task_id, attempt):
+    return task_workspace_dir(worker, task_id) / f"runtime.attempt-{attempt}.log"
 
 
 def task_file_path(task_id):
@@ -83,7 +98,7 @@ def read_worker_output_once(worker, task_id):
         return None, f"Failed parsing output.json: {e}"
 
 
-def create_task_record(task_id, worker, payload):
+def create_task_record(task_id, worker, payload, max_retries):
     record = {
         "task_id": task_id,
         "worker": worker,
@@ -91,7 +106,8 @@ def create_task_record(task_id, worker, payload):
         "created_at": utc_now(),
         "updated_at": utc_now(),
         "retries": 0,
-        "max_retries": 3,
+        "max_retries": max_retries,
+        "attempts": [],
         "task_dir": str(task_workspace_dir(worker, task_id)),
         "payload": payload,
     }
@@ -114,6 +130,20 @@ def update_task_status(task_id, status, result=None, error_message=None):
         data["result"] = result
     if error_message:
         data["error"] = error_message
+
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def append_task_attempt(task_id, attempt_info):
+    path = task_file_path(task_id)
+    with open(path) as f:
+        data = json.load(f)
+
+    attempts = data.setdefault("attempts", [])
+    attempts.append(attempt_info)
+    data["retries"] = max(0, len(attempts) - 1)
+    data["updated_at"] = utc_now()
 
     with open(path, "w") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
@@ -178,24 +208,59 @@ def build_worker_env(worker):
     return {key: value for key, value in env.items() if value is not None}
 
 
-def ensure_worker_image():
+def normalize_retry_attempts(retry_attempts):
+    retries = int(retry_attempts)
+    if retries < 0:
+        raise RuntimeError("retry_attempts must be >= 0")
+    if retries > MAX_RETRY_ATTEMPTS:
+        raise RuntimeError(f"retry_attempts must be <= {MAX_RETRY_ATTEMPTS}")
+    return retries
+
+
+def resolve_test_mode_for_attempt(test_mode, attempt):
+    if not test_mode:
+        return {}
+
+    scenario = None
+    response_file = None
+    if isinstance(test_mode, str):
+        scenario = test_mode
+    elif isinstance(test_mode, dict):
+        response_file = test_mode.get("response_file")
+        attempt_scenarios = test_mode.get("attempt_scenarios")
+        if isinstance(attempt_scenarios, list) and attempt <= len(attempt_scenarios):
+            scenario = attempt_scenarios[attempt - 1]
+        else:
+            scenario = test_mode.get("scenario")
+    else:
+        raise RuntimeError("test_mode must be None, string, or dict")
+
+    env = {"ARGUS_TEST_MODE": "1", "ARGUS_TEST_ATTEMPT": str(attempt)}
+    if scenario:
+        env["ARGUS_TEST_SCENARIO"] = str(scenario)
+    if response_file:
+        env["ARGUS_TEST_LLM_RESPONSE_FILE"] = str(response_file)
+    return env
+
+
+def ensure_worker_image(docker_client, worker_image):
     try:
-        client.images.get(WORKER_IMAGE)
+        docker_client.images.get(worker_image)
         return
     except ImageNotFound:
         pass
 
-    client.images.build(
-        path=WORKER_BUILD_CONTEXT,
-        dockerfile=WORKER_DOCKERFILE,
-        tag=WORKER_IMAGE,
+    docker_client.images.build(
+        path=DEFAULT_WORKER_BUILD_CONTEXT,
+        dockerfile=DEFAULT_WORKER_DOCKERFILE,
+        tag=worker_image,
         rm=True,
     )
 
 
-def remove_container_if_exists(container_name):
+def remove_container_if_exists(docker_client, container_name):
     try:
-        stale = client.containers.get(container_name)
+        stale = docker_client.containers.get(container_name)
     except NotFound:
         return
     try:
@@ -206,8 +271,31 @@ def remove_container_if_exists(container_name):
     stale.remove(force=True)
 
 
-def manager_bind_mounts():
-    manager = client.containers.get(MANAGER_CONTAINER_NAME)
+def parse_mount_spec(spec):
+    parts = spec.split(":")
+    if len(parts) < 2:
+        raise RuntimeError(f"Invalid mount override: {spec}")
+    source = parts[0]
+    bind = parts[1]
+    mode = parts[2] if len(parts) >= 3 else "rw"
+    return source, {"bind": bind, "mode": mode}
+
+
+def manager_bind_mounts(docker_client, manager_container_name, mounts_override=None):
+    if mounts_override:
+        parsed = {}
+        for spec in mounts_override:
+            source, data = parse_mount_spec(spec)
+            parsed[source] = data
+        return parsed
+
+    if ARGUS_APP_HOST_PATH:
+        binds = {ARGUS_APP_HOST_PATH: {"bind": "/app", "mode": "rw"}}
+        if ARGUS_SECRETS_HOST_PATH:
+            binds[ARGUS_SECRETS_HOST_PATH] = {"bind": "/run/secrets", "mode": "ro"}
+        return binds
+
+    manager = docker_client.containers.get(manager_container_name)
     manager.reload()
     required = set(REQUIRED_MANAGER_MOUNTS)
     bind_mounts = {}
@@ -228,15 +316,26 @@ def manager_bind_mounts():
     if missing:
         missing_text = ", ".join(missing)
         raise RuntimeError(
-            f"Manager container {MANAGER_CONTAINER_NAME} is missing required mounts: {missing_text}"
+            f"Manager container {manager_container_name} is missing required mounts: {missing_text}"
         )
     return bind_mounts
 
 
-def start_worker_oneshot(worker, task_dir, task_id):
-    ensure_worker_image()
+def start_worker_oneshot(
+    docker_client,
+    worker,
+    task_dir,
+    task_id,
+    attempt,
+    *,
+    test_mode=None,
+    mounts_override=None,
+    worker_image=None,
+):
+    image_name = worker_image or DEFAULT_WORKER_IMAGE
+    ensure_worker_image(docker_client, image_name)
     container_name = one_shot_container_name(worker, task_id)
-    remove_container_if_exists(container_name)
+    remove_container_if_exists(docker_client, container_name)
 
     command = [
         "python",
@@ -247,19 +346,27 @@ def start_worker_oneshot(worker, task_dir, task_id):
         worker,
     ]
 
-    container = client.containers.run(
-        image=WORKER_IMAGE,
+    env = build_worker_env(worker)
+    env.update(resolve_test_mode_for_attempt(test_mode, attempt))
+
+    container = docker_client.containers.run(
+        image=image_name,
         name=container_name,
         command=command,
         working_dir="/app",
         detach=True,
         remove=False,
-        volumes=manager_bind_mounts(),
-        environment=build_worker_env(worker),
+        volumes=manager_bind_mounts(
+            docker_client,
+            DEFAULT_MANAGER_CONTAINER_NAME,
+            mounts_override=mounts_override,
+        ),
+        environment=env,
         labels={
             "argus.oneshot": "true",
             "argus.worker": worker,
             "argus.task_id": task_id,
+            "argus.attempt": str(attempt),
         },
     )
     return container
@@ -291,13 +398,23 @@ def container_text_logs(container, stdout, stderr):
         return f"<unable to read {'stdout' if stdout else 'stderr'} logs: {e}>"
 
 
-def write_runtime_log(worker, task_id, container_name, started_at, wait_info, stdout_text, stderr_text):
-    path = runtime_log_path(worker, task_id)
+def write_runtime_logs(
+    worker,
+    task_id,
+    attempt,
+    container_name,
+    worker_image,
+    started_at,
+    wait_info,
+    stdout_text,
+    stderr_text,
+):
     lines = [
         f"task_id: {task_id}",
         f"worker: {worker}",
+        f"attempt: {attempt}",
         f"container_name: {container_name}",
-        f"worker_image: {WORKER_IMAGE}",
+        f"worker_image: {worker_image}",
         f"started_at: {started_at}",
         f"finished_at: {wait_info.get('finished_at')}",
         f"exit_code: {wait_info.get('exit_code')}",
@@ -311,8 +428,12 @@ def write_runtime_log(worker, task_id, container_name, started_at, wait_info, st
         stderr_text.rstrip(),
         "",
     ]
-    path.write_text("\n".join(lines))
-    return path
+    content = "\n".join(lines)
+    attempt_path = runtime_attempt_log_path(worker, task_id, attempt)
+    latest_path = runtime_log_path(worker, task_id)
+    attempt_path.write_text(content)
+    latest_path.write_text(content)
+    return attempt_path, latest_path
 
 
 def wait_container_exit(container, timeout):
@@ -367,70 +488,208 @@ def result_to_task_state(result):
     return "failed"
 
 
-def delegate_task(worker: str, payload: dict, timeout: int = 600):
+def first_result_error(result):
+    errors = result.get("errors")
+    if isinstance(errors, list) and errors:
+        return str(errors[0])
+    return None
+
+
+def is_retryable_output_failure(result):
+    if str(result.get("status", "")).strip().lower() != "failed":
+        return False
+    errors = result.get("errors")
+    if not isinstance(errors, list):
+        return False
+    for error in errors:
+        if str(error).strip().lower().startswith("transient:"):
+            return True
+    return False
+
+
+def build_delegate_failure_output(task_id, worker, attempt, error_message):
+    return {
+        "task_id": task_id,
+        "worker": worker,
+        "status": "failed",
+        "summary": "Worker execution failed before a valid output.json was available.",
+        "artifacts": [],
+        "errors": [str(error_message)],
+        "metadata": {
+            "delegate_failure": True,
+            "attempt": attempt,
+        },
+        "timestamp": utc_now(),
+    }
+
+
+def write_fallback_output(worker, task_id, payload):
+    output_path = task_workspace_dir(worker, task_id) / "output.json"
+    with open(output_path, "w") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+    return output_path
+
+
+def delegate_task(
+    worker: str,
+    payload: dict,
+    timeout: int = 600,
+    retry_attempts: int = 0,
+    test_mode=None,
+    docker_client=None,
+    mounts_override=None,
+    worker_image=None,
+):
     ensure_dirs()
     task_id = validate_payload(worker, payload)
+    retries = normalize_retry_attempts(retry_attempts)
+    max_attempts = 1 + retries
     payload = {**payload, "worker": worker}
     task_dir = task_workspace_dir(worker, task_id)
-    worker_container = None
     container_name = one_shot_container_name(worker, task_id)
-    started_at = utc_now()
+    image_name = worker_image or DEFAULT_WORKER_IMAGE
+    client = docker_client or DOCKER_CLIENT
 
-    create_task_record(task_id, worker, payload)
-    write_worker_task(worker, task_id, payload)
-    clear_old_output(worker, task_id)
+    create_task_record(task_id, worker, payload, max_retries=retries)
     update_task_status(task_id, "running")
 
-    try:
-        worker_container = start_worker_oneshot(worker, task_dir, task_id)
-    except Exception as e:
+    for attempt in range(1, max_attempts + 1):
+        write_worker_task(worker, task_id, payload)
+        clear_old_output(worker, task_id)
+        started_at = utc_now()
         wait_info = {
             "exit_code": None,
             "timed_out": False,
-            "wait_error": f"Failed to start one-shot worker container: {e}",
-            "finished_at": utc_now(),
+            "wait_error": None,
+            "finished_at": None,
         }
-        write_runtime_log(worker, task_id, container_name, started_at, wait_info, "", "")
-        update_task_status(task_id, "failed", error_message=wait_info["wait_error"])
-        raise RuntimeError(wait_info["wait_error"]) from e
+        stdout_text = ""
+        stderr_text = ""
+        worker_container = None
+        runtime_attempt_log = runtime_attempt_log_path(worker, task_id, attempt)
 
-    try:
-        wait_info = wait_container_exit(worker_container, timeout=timeout)
-        stdout_text = container_text_logs(worker_container, stdout=True, stderr=False)
-        stderr_text = container_text_logs(worker_container, stdout=False, stderr=True)
-        log_file = write_runtime_log(
-            worker,
-            task_id,
-            container_name,
-            started_at,
-            wait_info,
-            stdout_text,
-            stderr_text,
-        )
+        try:
+            worker_container = start_worker_oneshot(
+                client,
+                worker,
+                task_dir,
+                task_id,
+                attempt,
+                test_mode=test_mode,
+                mounts_override=mounts_override,
+                worker_image=image_name,
+            )
+            wait_info = wait_container_exit(worker_container, timeout=timeout)
+            stdout_text = container_text_logs(worker_container, stdout=True, stderr=False)
+            stderr_text = container_text_logs(worker_container, stdout=False, stderr=True)
+        except Exception as e:
+            wait_info["wait_error"] = wait_info["wait_error"] or f"Container start failure: {e}"
+        finally:
+            runtime_attempt_log, _ = write_runtime_logs(
+                worker,
+                task_id,
+                attempt,
+                container_name,
+                image_name,
+                started_at,
+                wait_info,
+                stdout_text,
+                stderr_text,
+            )
+            cleanup_worker_container(worker_container)
 
         result, output_error = read_worker_output_once(worker, task_id)
+
         if result is None:
-            details = [output_error]
+            message_parts = [output_error or "output.json unavailable"]
             if wait_info.get("timed_out"):
-                details.append("Worker timeout")
+                message_parts.append("Worker timeout")
             if wait_info.get("wait_error"):
-                details.append(wait_info["wait_error"])
-            details.append(f"exit_code={wait_info.get('exit_code')}")
-            details.append(f"runtime_log={log_file}")
-            message = "; ".join(details)
-            update_task_status(task_id, "failed", error_message=message)
-            raise RuntimeError(message)
+                message_parts.append(wait_info["wait_error"])
+            message_parts.append(f"runtime_log={runtime_attempt_log}")
+            message = "; ".join(message_parts)
+            fallback = build_delegate_failure_output(task_id, worker, attempt, message)
+            write_fallback_output(worker, task_id, fallback)
+            retryable = True
+            append_task_attempt(
+                task_id,
+                {
+                    "attempt": attempt,
+                    "status": "failed",
+                    "retryable": retryable,
+                    "error": message,
+                    "runtime_log": str(runtime_attempt_log),
+                    "exit_code": wait_info.get("exit_code"),
+                    "timed_out": wait_info.get("timed_out"),
+                    "wait_error": wait_info.get("wait_error"),
+                    "output_path": str(task_dir / "output.json"),
+                    "started_at": started_at,
+                    "finished_at": wait_info.get("finished_at"),
+                },
+            )
+            if retryable and attempt < max_attempts:
+                continue
+            update_task_status(task_id, "failed", result=fallback, error_message=message)
+            return fallback
 
         if result.get("task_id") != task_id:
             message = (
                 f"Mismatched output task_id={result.get('task_id')} expected={task_id}; "
-                f"runtime_log={log_file}"
+                f"runtime_log={runtime_attempt_log}"
             )
-            update_task_status(task_id, "failed", error_message=message)
-            raise RuntimeError(message)
+            fallback = build_delegate_failure_output(task_id, worker, attempt, message)
+            write_fallback_output(worker, task_id, fallback)
+            append_task_attempt(
+                task_id,
+                {
+                    "attempt": attempt,
+                    "status": "failed",
+                    "retryable": False,
+                    "error": message,
+                    "runtime_log": str(runtime_attempt_log),
+                    "exit_code": wait_info.get("exit_code"),
+                    "timed_out": wait_info.get("timed_out"),
+                    "wait_error": wait_info.get("wait_error"),
+                    "output_path": str(task_dir / "output.json"),
+                    "started_at": started_at,
+                    "finished_at": wait_info.get("finished_at"),
+                },
+            )
+            update_task_status(task_id, "failed", result=fallback, error_message=message)
+            return fallback
 
         task_state = result_to_task_state(result)
-        update_task_status(task_id, task_state, result=result)
+        retryable = is_retryable_output_failure(result)
+        append_task_attempt(
+            task_id,
+            {
+                "attempt": attempt,
+                "status": task_state,
+                "retryable": retryable,
+                "error": first_result_error(result),
+                "runtime_log": str(runtime_attempt_log),
+                "exit_code": wait_info.get("exit_code"),
+                "timed_out": wait_info.get("timed_out"),
+                "wait_error": wait_info.get("wait_error"),
+                "output_path": str(task_dir / "output.json"),
+                "started_at": started_at,
+                "finished_at": wait_info.get("finished_at"),
+            },
+        )
+
+        if task_state == "failed" and retryable and attempt < max_attempts:
+            continue
+
+        update_task_status(
+            task_id,
+            task_state,
+            result=result,
+            error_message=first_result_error(result) if task_state == "failed" else None,
+        )
         return result
-    finally:
-        cleanup_worker_container(worker_container)
+
+    final_message = "Worker attempts exhausted without a terminal output."
+    fallback = build_delegate_failure_output(task_id, worker, max_attempts, final_message)
+    write_fallback_output(worker, task_id, fallback)
+    update_task_status(task_id, "failed", result=fallback, error_message=final_message)
+    return fallback
