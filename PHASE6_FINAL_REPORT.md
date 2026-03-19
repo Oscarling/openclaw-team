@@ -134,3 +134,7 @@ Validation outcomes:
 - report generation path from manager container root (`/app/PHASE6_STABILITY_REPORT.md`) is not directly host-mounted in current compose layout; report copy-back step is still needed for host root visibility.
 - `tests/test_argus_hardening.py` from Midas reference is not yet synced into active workspace test tree.
 - production-path latency/quality under non-test-mode LLM variability is still an operational concern; Phase 6 run validated runtime stability, not model quality stability.
+
+## Commit
+
+- `d62cd16` - Phase 6 stabilization: real deployment acceptance, harness, retry, and chaining
