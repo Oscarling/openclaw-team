@@ -4,3 +4,5 @@ secrets/
 artifacts/
 tasks/
 workspaces/
+__pycache__/
+*.pyc
