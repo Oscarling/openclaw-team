@@ -19,64 +19,59 @@ Based on `PHASE7_INPUT_MANIFEST.md`, this pilot used 5 representative PDFs:
 - `artifacts/scripts/pdf_to_excel_ocr.py`
 - `artifacts/reviews/pdf_to_excel_ocr_review.md`
 - `PHASE7_BUSINESS_PILOT_REPORT.md`
+- `artifacts/docs/pdf_to_excel_ocr_usage.md`
+
+## Successful Output Archive (Not Committed)
+- Real generated workbook archived in repo (ignored by default):
+  - `artifacts/outputs/phase7/phase7_1_after_brew_real.xlsx`
+- This path is under `artifacts/`, which is already listed in `.gitignore`.
+- No real PDF or Excel business data is committed to git.
 
 ## Validation Commands and Results
 1. Dry-run validation (real sample directory)
 ```bash
 python3 artifacts/scripts/pdf_to_excel_ocr.py \
   --input-dir ~/Desktop/pdf样本 \
-  --output-xlsx /tmp/phase7_pdf_to_excel.xlsx \
+  --output-xlsx /tmp/phase7_1_after_brew_dryrun.xlsx \
   --ocr auto \
   --dry-run
 ```
 Result summary:
-- `status`: `partial`
+- `status`: `success`
 - `total_files`: `5`
-- `status_counter`: `{"failed": 5}`
-- `ocr_runtime_status`: `blocked`
-- Missing OCR deps:
-  - `python module pytesseract`
-  - `python module pdf2image`
-  - `binary tesseract`
-  - `binary pdftoppm (poppler)`
+- `status_counter`: `{"success": 5}`
+- `ocr_runtime_status`: `available`
+- `ocr_missing_dependencies`: `[]`
 
 2. Real write attempt (no dry-run)
 ```bash
 python3 artifacts/scripts/pdf_to_excel_ocr.py \
   --input-dir ~/Desktop/pdf样本 \
-  --output-xlsx /tmp/phase7_pdf_to_excel.xlsx \
-  --ocr off
+  --output-xlsx /tmp/phase7_1_after_brew_real.xlsx \
+  --ocr auto
 ```
 Result summary:
-- `status`: `failed`
-- blocker: `pandas is required to write Excel output`
+- `status`: `success`
+- `total_files`: `5`
+- `status_counter`: `{"success": 5}`
+- `ocr_runtime_status`: `available`
+- `ocr_missing_dependencies`: `[]`
+- Excel generated successfully:
+  - `/tmp/phase7_1_after_brew_real.xlsx`
 
 ## OCR Current Status
-- **blocked**
-- Reason: OCR runtime stack is absent in current host environment.
+- **available**
+- Verified with:
+  - `tesseract --version`
+  - `pdftoppm -v`
+  - `tesseract --list-langs` (includes `chi_sim`, `eng`)
 
-## Risk Assessment
-- Immediate functional risk:
-  - Cannot deliver real Excel output without `pandas`.
-- OCR quality and coverage risk:
-  - OCR path cannot execute until both Python modules and binaries are installed.
-- Pilot interpretability risk:
-  - Without `pypdf`, even text-based PDFs cannot be extracted in current runtime.
-
-## Recommended Next Steps
-1. Install minimal extraction/write dependencies:
-   - `pypdf`
-   - `pandas`
-   - `openpyxl`
-2. Install OCR stack:
-   - `pytesseract`
-   - `pdf2image`
-   - `tesseract` binary
-   - `poppler` (`pdftoppm`)
-3. Re-run:
-   - one dry-run with `--ocr auto`
-   - one real run outputting to `artifacts/` with spot-check of produced workbook
-4. Add one acceptance test fixture for:
-   - text PDF path
-   - OCR fallback path
-   - single-file failure isolation
+## Pilot Conclusion
+- Current pipeline has passed minimal business closed loop:
+  - Input manifest ready
+  - Automation script runnable
+  - OCR runtime available
+  - Dry-run `5/5` success
+  - Real run `5/5` success
+  - Excel output generated
+- Critic latest conclusion: **PASS**
