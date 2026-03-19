@@ -1,0 +1,42 @@
+{
+  "agents": {
+    "manager": {
+      "workspace": "/app/workspaces/manager",
+      "description": "Central orchestrator and only externally reachable agent",
+      "skills": [
+        "delegate_task"
+      ]
+    },
+    "architect": {
+      "workspace": "/app/workspaces/architect",
+      "description": "System architecture specialist"
+    },
+    "devops": {
+      "workspace": "/app/workspaces/devops",
+      "description": "Infrastructure and deployment specialist"
+    },
+    "automation": {
+      "workspace": "/app/workspaces/automation",
+      "description": "Automation scripting specialist"
+    },
+    "critic": {
+      "workspace": "/app/workspaces/critic",
+      "description": "Quality assurance and review specialist"
+    }
+  },
+  "bindings": {
+    "cli": [
+      "manager"
+    ],
+    "telegram": {
+      "agent": "manager",
+      "bot_token_env": "TELEGRAM_BOT_TOKEN"
+    }
+  },
+  "skills": {
+    "delegate_task": {
+      "path": "/app/skills/delegate_task.py",
+      "description": "Delegate a structured task to an isolated worker container"
+    }
+  }
+}

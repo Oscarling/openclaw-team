@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://argus.local/contracts/output.schema.json",
+  "title": "Argus output.json",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "type"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^artifacts/"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["architecture", "script", "config", "review", "doc"]
+        }
+      }
+    }
+  },
+  "required": [
+    "task_id",
+    "worker",
+    "status",
+    "summary",
+    "artifacts",
+    "timestamp"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^(ARCH|DEVOPS|AUTO|CRITIC)-[0-9]{8}-[0-9]{3}$"
+    },
+    "worker": {
+      "type": "string",
+      "enum": ["architect", "devops", "automation", "critic"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["success", "failed", "partial"]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "duration_ms": {
+      "type": "number",
+      "minimum": 0
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "worker": { "const": "architect" }
+        }
+      },
+      "then": {
+        "properties": {
+          "task_id": {
+            "pattern": "^ARCH-[0-9]{8}-[0-9]{3}$"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "worker": { "const": "devops" }
+        }
+      },
+      "then": {
+        "properties": {
+          "task_id": {
+            "pattern": "^DEVOPS-[0-9]{8}-[0-9]{3}$"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "worker": { "const": "automation" }
+        }
+      },
+      "then": {
+        "properties": {
+          "task_id": {
+            "pattern": "^AUTO-[0-9]{8}-[0-9]{3}$"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "worker": { "const": "critic" }
+        }
+      },
+      "then": {
+        "properties": {
+          "task_id": {
+            "pattern": "^CRITIC-[0-9]{8}-[0-9]{3}$"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": ["success", "partial"]
+          }
+        },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "artifacts": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

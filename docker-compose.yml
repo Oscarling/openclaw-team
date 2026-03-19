@@ -1,0 +1,154 @@
+secrets:
+  openai_api_key:
+    file: ./secrets/openai_api_key.txt
+  openai_api_base:
+    file: ./secrets/openai_api_base.txt
+  openai_model_name:
+    file: ./secrets/openai_model_name.txt
+
+services:
+  manager:
+    build:
+      context: .
+      dockerfile: ./containers/manager/Dockerfile
+    container_name: manager
+    environment:
+      - WORKER_NAME=manager
+      - ARGUS_WORKER_IMAGE=argus-worker:latest
+      - ARGUS_WORKER_BUILD_CONTEXT=/app
+      - ARGUS_WORKER_DOCKERFILE=containers/worker/Dockerfile
+      - ARGUS_MANAGER_CONTAINER=manager
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - http_proxy=
+      - https_proxy=
+      - NO_PROXY=localhost,127.0.0.1
+      - no_proxy=localhost,127.0.0.1
+    secrets:
+      - openai_api_key
+      - openai_api_base
+      - openai_model_name
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./tasks:/app/tasks
+      - ./workspaces:/app/workspaces
+      - ./contracts:/app/contracts
+      - ./containers:/app/containers
+      - ./dispatcher:/app/dispatcher
+      - ./skills:/app/skills
+      - ./agents:/app/agents
+      - /var/run/docker.sock:/var/run/docker.sock
+    stdin_open: true
+    tty: true
+
+  worker-image:
+    image: argus-worker:latest
+    build:
+      context: .
+      dockerfile: ./containers/worker/Dockerfile
+    profiles: ["worker-image"]
+    command: ["sleep", "infinity"]
+
+  architect:
+    build:
+      context: .
+      dockerfile: ./containers/worker/Dockerfile
+    container_name: architect
+    profiles: ["manual-workers"]
+    environment:
+      - WORKER_NAME=architect
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - http_proxy=
+      - https_proxy=
+      - NO_PROXY=localhost,127.0.0.1
+      - no_proxy=localhost,127.0.0.1
+    secrets:
+      - openai_api_key
+      - openai_api_base
+      - openai_model_name
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./tasks:/app/tasks
+      - ./workspaces:/app/workspaces
+      - ./contracts:/app/contracts
+      - ./dispatcher:/app/dispatcher
+      - ./agents:/app/agents
+
+  devops:
+    build:
+      context: .
+      dockerfile: ./containers/worker/Dockerfile
+    container_name: devops
+    profiles: ["manual-workers"]
+    environment:
+      - WORKER_NAME=devops
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - http_proxy=
+      - https_proxy=
+      - NO_PROXY=localhost,127.0.0.1
+      - no_proxy=localhost,127.0.0.1
+    secrets:
+      - openai_api_key
+      - openai_api_base
+      - openai_model_name
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./tasks:/app/tasks
+      - ./workspaces:/app/workspaces
+      - ./contracts:/app/contracts
+      - ./dispatcher:/app/dispatcher
+      - ./agents:/app/agents
+
+  automation:
+    build:
+      context: .
+      dockerfile: ./containers/worker/Dockerfile
+    container_name: automation
+    profiles: ["manual-workers"]
+    environment:
+      - WORKER_NAME=automation
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - http_proxy=
+      - https_proxy=
+      - NO_PROXY=localhost,127.0.0.1
+      - no_proxy=localhost,127.0.0.1
+    secrets:
+      - openai_api_key
+      - openai_api_base
+      - openai_model_name
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./tasks:/app/tasks
+      - ./workspaces:/app/workspaces
+      - ./contracts:/app/contracts
+      - ./dispatcher:/app/dispatcher
+      - ./agents:/app/agents
+
+  critic:
+    build:
+      context: .
+      dockerfile: ./containers/worker/Dockerfile
+    container_name: critic
+    profiles: ["manual-workers"]
+    environment:
+      - WORKER_NAME=critic
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - http_proxy=
+      - https_proxy=
+      - NO_PROXY=localhost,127.0.0.1
+      - no_proxy=localhost,127.0.0.1
+    secrets:
+      - openai_api_key
+      - openai_api_base
+      - openai_model_name
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./tasks:/app/tasks
+      - ./workspaces:/app/workspaces
+      - ./contracts:/app/contracts
+      - ./dispatcher:/app/dispatcher
+      - ./agents:/app/agents

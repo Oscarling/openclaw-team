@@ -1,0 +1,26 @@
+{
+  "card_id": "trello-demo-001",
+  "list": "Ready",
+  "title": "Build a file sync script",
+  "description": "Generate a Python automation script for syncing local files to backup storage.",
+  "labels": [
+    "automation",
+    "script"
+  ],
+  "acceptance_criteria": [
+    "script runs from CLI",
+    "supports --dry-run",
+    "supports --source and --destination flags",
+    "prints a clear summary of copied and skipped files",
+    "returns non-zero exit code on failure"
+  ],
+  "constraints": [
+    "do not access Trello directly from workers",
+    "write the final script artifact under artifacts/scripts/",
+    "keep the implementation suitable for a first runnable prototype"
+  ],
+  "expected_worker_sequence": [
+    "automation",
+    "critic"
+  ]
+}
