@@ -14,16 +14,15 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from adapters.local_inbox_adapter import normalize_local_inbox_payload
+from adapters.local_inbox_adapter import StandardizedInboxTask, normalize_local_inbox_payload
 from argus_contracts import validate_task
-from skills.delegate_task import delegate_task
 
 
 INBOX_DIR = REPO_ROOT / "inbox"
 PROCESSING_DIR = REPO_ROOT / "processing"
 PROCESSED_DIR = REPO_ROOT / "processed"
 REJECTED_DIR = REPO_ROOT / "rejected"
-VERDICT_VALUES = {"pass", "fail", "needs_revision"}
+PREVIEW_DIR = REPO_ROOT / "preview"
 
 
 def utc_now() -> str:
@@ -35,6 +34,7 @@ def ensure_dirs() -> None:
     PROCESSING_DIR.mkdir(parents=True, exist_ok=True)
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     REJECTED_DIR.mkdir(parents=True, exist_ok=True)
+    PREVIEW_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def move_with_suffix(src: Path, target_dir: Path) -> Path:
@@ -57,6 +57,17 @@ def write_result_sidecar(target_file: Path, payload: dict[str, Any]) -> Path:
 
 def load_seen_dedupe_keys() -> set[str]:
     seen: set[str] = set()
+    for preview_file in PREVIEW_DIR.glob("*.json"):
+        try:
+            data = json.loads(preview_file.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        keys = data.get("dedupe_keys")
+        if isinstance(keys, list):
+            for key in keys:
+                if isinstance(key, str) and key.strip():
+                    seen.add(key.strip())
+
     for folder in (PROCESSED_DIR, REJECTED_DIR):
         for sidecar in folder.glob("*.result.json"):
             try:
@@ -71,68 +82,96 @@ def load_seen_dedupe_keys() -> set[str]:
     return seen
 
 
-def extract_critic_verdict(critic_result: dict[str, Any], review_artifact_path: str | None) -> str:
-    metadata = critic_result.get("metadata")
-    if isinstance(metadata, dict):
-        verdict = metadata.get("verdict")
-        if isinstance(verdict, str):
-            norm = verdict.strip().lower()
-            if norm in VERDICT_VALUES:
-                return norm
-
-    summary = critic_result.get("summary")
-    if isinstance(summary, str):
-        match = re.search(r"\b(pass|fail|needs_revision)\b", summary.lower())
-        if match:
-            return match.group(1)
-
-    if review_artifact_path:
-        review_path = (REPO_ROOT / review_artifact_path).resolve()
-        if review_path.exists():
-            text = review_path.read_text(encoding="utf-8", errors="ignore")
-            explicit = re.search(r"verdict\s*[:=]\s*(pass|fail|needs_revision)", text, re.I)
-            if explicit:
-                return explicit.group(1).lower()
-            fallback = re.search(r"\b(pass|fail|needs_revision)\b", text.lower())
-            if fallback:
-                return fallback.group(1)
-
-    status = str(critic_result.get("status", "")).strip().lower()
-    if status == "failed":
-        return "fail"
-    return "needs_revision"
+def preview_id_for(standardized: StandardizedInboxTask) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", standardized.origin_id.lower()).strip("-")
+    if not slug:
+        slug = "inbox"
+    slug = slug[:48]
+    return f"preview-{slug}-{standardized.payload_hash[:12]}"
 
 
-def build_critic_from_automation(critic_task: dict[str, Any], auto_result: dict[str, Any]) -> dict[str, Any]:
-    updated = json.loads(json.dumps(critic_task))
-    artifacts = auto_result.get("artifacts")
-    if isinstance(artifacts, list) and artifacts:
-        updated.setdefault("inputs", {})
-        updated["inputs"]["artifacts"] = artifacts
-    return updated
+def build_preview_payload(
+    *,
+    standardized: StandardizedInboxTask,
+    raw_payload: dict[str, Any],
+    inbox_filename: str,
+    preview_id: str,
+) -> dict[str, Any]:
+    request_type = str(raw_payload.get("request_type", "pdf_to_excel_ocr")).strip().lower()
+    inputs = raw_payload.get("input", {})
+    if not isinstance(inputs, dict):
+        inputs = {}
+
+    expected_artifacts: list[str] = []
+    for task in (standardized.automation_task, standardized.critic_task):
+        for artifact in task.get("expected_outputs", []):
+            if isinstance(artifact, dict):
+                path = artifact.get("path")
+                if isinstance(path, str) and path.startswith("artifacts/"):
+                    expected_artifacts.append(path)
+
+    warnings: list[str] = []
+    if str(inputs.get("ocr", "auto")).strip().lower() == "on":
+        warnings.append("OCR forced on; ensure tesseract/pdftoppm dependencies are available.")
+    output_xlsx = str(inputs.get("output_xlsx", "")).strip()
+    if output_xlsx and not output_xlsx.startswith("artifacts/"):
+        warnings.append("Requested output_xlsx is outside artifacts/; downstream worker may reject it.")
+    if bool(inputs.get("dry_run", False)):
+        warnings.append("This request asks for dry-run mode.")
+
+    return {
+        "preview_id": preview_id,
+        "created_at": utc_now(),
+        "approved": False,
+        "source": {
+            "kind": standardized.source.get("kind"),
+            "origin_id": standardized.origin_id,
+            "received_at": standardized.source.get("received_at") or utc_now(),
+            "inbox_file": inbox_filename,
+        },
+        "external_input": {
+            "title": standardized.title,
+            "description": standardized.description,
+            "labels": standardized.labels,
+            "metadata": standardized.metadata,
+            "request_type": request_type,
+            "input": inputs,
+        },
+        "task_summary": {
+            "automation": {
+                "task_id": standardized.automation_task.get("task_id"),
+                "worker": "automation",
+                "task_type": standardized.automation_task.get("task_type"),
+                "objective": standardized.automation_task.get("objective"),
+                "expected_outputs": standardized.automation_task.get("expected_outputs"),
+            },
+            "critic": {
+                "task_id": standardized.critic_task.get("task_id"),
+                "worker": "critic",
+                "task_type": standardized.critic_task.get("task_type"),
+                "objective": standardized.critic_task.get("objective"),
+                "expected_outputs": standardized.critic_task.get("expected_outputs"),
+            },
+        },
+        "internal_tasks": {
+            "automation": standardized.automation_task,
+            "critic": standardized.critic_task,
+        },
+        "expected_artifacts": sorted(set(expected_artifacts)),
+        "dedupe_keys": standardized.dedupe_keys,
+        "risk_warnings": warnings,
+        "execution": {
+            "status": "pending_approval",
+            "executed": False,
+            "attempts": 0,
+        },
+    }
 
 
-def decision_for_results(auto_result: dict[str, Any], critic_result: dict[str, Any], verdict: str) -> tuple[str, str]:
-    auto_status = str(auto_result.get("status", "")).strip().lower()
-    critic_status = str(critic_result.get("status", "")).strip().lower()
-    if auto_status not in {"success", "partial"}:
-        return "rejected", f"automation_status={auto_status}"
-    if critic_status not in {"success", "partial"}:
-        return "rejected", f"critic_status={critic_status}"
-    if verdict == "pass":
-        return "processed", "critic_verdict=pass"
-    return "rejected", f"critic_verdict={verdict}"
-
-
-def process_one(processing_file: Path, test_mode: str, seen_dedupe_keys: set[str]) -> dict[str, Any]:
-    auto_task: dict[str, Any]
-    critic_task: dict[str, Any]
-    auto_result: dict[str, Any] | None = None
-    critic_result: dict[str, Any] | None = None
+def process_one(processing_file: Path, seen_dedupe_keys: set[str]) -> dict[str, Any]:
     standardized = None
-    raw_payload: dict[str, Any] | None = None
-    verdict = "needs_revision"
-    decision_reason = "unknown"
+    preview_payload = None
+    preview_path: Path | None = None
 
     try:
         with open(processing_file, encoding="utf-8") as f:
@@ -151,11 +190,8 @@ def process_one(processing_file: Path, test_mode: str, seen_dedupe_keys: set[str
                 + ",".join(duplicate_keys)
             )
 
-        auto_task = standardized.automation_task
-        critic_task = standardized.critic_task
-
-        auto_errors = validate_task(auto_task)
-        critic_errors = validate_task(critic_task)
+        auto_errors = validate_task(standardized.automation_task)
+        critic_errors = validate_task(standardized.critic_task)
         if auto_errors or critic_errors:
             raise RuntimeError(
                 "task_validate_failed "
@@ -165,39 +201,23 @@ def process_one(processing_file: Path, test_mode: str, seen_dedupe_keys: set[str
                 )
             )
 
-        dt_kwargs = {
-            "timeout": 600,
-            "retry_attempts": 0,
-        }
-        if test_mode != "off":
-            dt_kwargs["test_mode"] = test_mode
+        preview_id = preview_id_for(standardized)
+        preview_path = PREVIEW_DIR / f"{preview_id}.json"
+        if preview_path.exists():
+            raise RuntimeError(f"duplicate preview_id detected: {preview_id}")
 
-        auto_result = delegate_task("automation", auto_task, **dt_kwargs)
-        if auto_result.get("status") not in {"success", "partial"}:
-            raise RuntimeError(f"Automation task failed: {json.dumps(auto_result, ensure_ascii=False)}")
+        preview_payload = build_preview_payload(
+            standardized=standardized,
+            raw_payload=raw_payload,
+            inbox_filename=processing_file.name,
+            preview_id=preview_id,
+        )
+        preview_path.write_text(
+            json.dumps(preview_payload, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
 
-        critic_task = build_critic_from_automation(critic_task, auto_result)
-        critic_errors = validate_task(critic_task)
-        if critic_errors:
-            raise RuntimeError(f"Critic task invalid after mapping: {critic_errors}")
-
-        critic_result = delegate_task("critic", critic_task, **dt_kwargs)
-        if critic_result.get("status") not in {"success", "partial"}:
-            raise RuntimeError(f"Critic task failed: {json.dumps(critic_result, ensure_ascii=False)}")
-
-        review_artifact_path = None
-        artifacts = critic_result.get("artifacts")
-        if isinstance(artifacts, list) and artifacts:
-            first = artifacts[0]
-            if isinstance(first, dict):
-                review_artifact_path = first.get("path")
-            elif isinstance(first, str):
-                review_artifact_path = first
-
-        verdict = extract_critic_verdict(critic_result, review_artifact_path)
-        decision, decision_reason = decision_for_results(auto_result, critic_result, verdict)
-        target_dir = PROCESSED_DIR if decision == "processed" else REJECTED_DIR
-        moved = move_with_suffix(processing_file, target_dir)
+        moved = move_with_suffix(processing_file, PROCESSED_DIR)
 
         if standardized:
             for key in standardized.dedupe_keys:
@@ -207,27 +227,26 @@ def process_one(processing_file: Path, test_mode: str, seen_dedupe_keys: set[str
             moved,
             {
                 "ingested_at": utc_now(),
-                "status": decision,
-                "decision": decision,
-                "decision_reason": decision_reason,
+                "status": "processed",
+                "decision": "preview_created_pending_approval",
+                "decision_reason": "preview_created; waiting_for_explicit_approval",
                 "origin_id": None if standardized is None else standardized.origin_id,
                 "payload_hash": None if standardized is None else standardized.payload_hash,
                 "dedupe_keys": [] if standardized is None else standardized.dedupe_keys,
                 "title": None if standardized is None else standardized.title,
                 "labels": [] if standardized is None else standardized.labels,
-                "automation_task_id": auto_task["task_id"],
-                "automation_result": auto_result,
-                "critic_task_id": critic_task["task_id"],
-                "critic_result": critic_result,
-                "critic_verdict": verdict,
+                "preview_id": preview_payload["preview_id"],
+                "preview_file": str(preview_path),
             },
         )
         return {
-            "status": decision,
-            "decision_reason": decision_reason,
+            "status": "processed",
+            "decision": "preview_created_pending_approval",
+            "decision_reason": "preview_created; waiting_for_explicit_approval",
             "file": str(moved),
             "result_sidecar": str(sidecar),
-            "critic_verdict": verdict,
+            "preview_id": preview_payload["preview_id"],
+            "preview_file": str(preview_path),
         }
     except Exception as exc:
         moved = move_with_suffix(processing_file, REJECTED_DIR)
@@ -247,9 +266,7 @@ def process_one(processing_file: Path, test_mode: str, seen_dedupe_keys: set[str
                 "payload_hash": None if standardized is None else standardized.payload_hash,
                 "dedupe_keys": [] if standardized is None else standardized.dedupe_keys,
                 "title": None if standardized is None else standardized.title,
-                "automation_result": auto_result,
-                "critic_result": critic_result,
-                "critic_verdict": verdict,
+                "preview_file": None if preview_path is None else str(preview_path),
             },
         )
         if standardized:
@@ -270,13 +287,15 @@ def claim_inbox_file(inbox_file: Path) -> Path:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Ingest local inbox JSON and dispatch via Manager pipeline.")
+    parser = argparse.ArgumentParser(
+        description="Ingest local inbox JSON and generate execution previews (approval required before dispatch)."
+    )
     parser.add_argument("--once", action="store_true", help="Process current inbox files once and exit.")
     parser.add_argument(
         "--test-mode",
         choices=("off", "success", "partial", "failed", "transient_failed"),
         default="success",
-        help="Worker test mode routed through delegate_task; use off for real LLM execution.",
+        help="Reserved for compatibility. In preview mode ingest does not dispatch workers.",
     )
     return parser.parse_args()
 
@@ -300,7 +319,7 @@ def main() -> int:
 
     results = []
     for processing_file in processing_files:
-        result = process_one(processing_file, args.test_mode, seen_dedupe_keys)
+        result = process_one(processing_file, seen_dedupe_keys)
         results.append(result)
 
     payload = {
@@ -308,6 +327,7 @@ def main() -> int:
         "processed": len([r for r in results if r["status"] == "processed"]),
         "rejected": len([r for r in results if r["status"] == "rejected"]),
         "duplicate_skipped": len([r for r in results if r.get("decision") == "duplicate_skipped"]),
+        "preview_created": len([r for r in results if r.get("decision") == "preview_created_pending_approval"]),
         "inbox_claimed": len(claimed_files),
         "processing_recovered": len(recovered_processing_files),
         "test_mode": args.test_mode,

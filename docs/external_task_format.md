@@ -1,6 +1,6 @@
 # External Task Format (Local Inbox Simulation)
 
-This document defines the external JSON format accepted by `inbox/*.json` in Phase 8B.
+This document defines the external JSON format accepted by `inbox/*.json` in Phase 8E.
 
 ## Required Fields
 - `title` (string, required)
@@ -57,4 +57,6 @@ This document defines the external JSON format accepted by `inbox/*.json` in Pha
 ## Processing Contract
 - External input must go through `adapters/local_inbox_adapter.py`.
 - Adapter only normalizes and validates, it does not dispatch workers.
-- Manager ingest (`skills/ingest_tasks.py`) remains the only dispatch entry.
+- Manager ingest (`skills/ingest_tasks.py`) creates `preview/*.json` by default.
+- External input does not dispatch workers until explicit approval is written to `approvals/<preview_id>.json`.
+- Manager execution (`skills/execute_approved_previews.py`) is the only entry that can dispatch approved previews.

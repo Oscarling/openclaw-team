@@ -11,5 +11,10 @@ processed/*.json
 processed/*.result.json
 rejected/*.json
 rejected/*.result.json
+preview/*.json
+preview/*.result.json
+approvals/*.json
+approvals/*.result.json
 __pycache__/
 *.pyc
+.codex_phase8e_cases.json
