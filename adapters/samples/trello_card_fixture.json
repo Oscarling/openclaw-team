@@ -1,0 +1,14 @@
+{
+  "id": "67f0a1b2c3d4e5f60718293a",
+  "idShort": 128,
+  "name": "Prepare PDF to Excel OCR pilot run",
+  "desc": "Use local sample directory to run PDF->Excel conversion and produce review evidence.",
+  "idBoard": "67f0board000000000000001",
+  "idList": "67f0list0000000000000002",
+  "dateLastActivity": "2026-03-19T10:00:00.000Z",
+  "labels": [
+    {"name": "PDF", "color": "blue"},
+    {"name": "OCR", "color": "green"},
+    {"name": "pilot", "color": "orange"}
+  ]
+}
