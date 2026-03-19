@@ -88,7 +88,7 @@
       "properties": {
         "kind": {
           "type": "string",
-          "enum": ["simulated_trello", "trello", "manual", "internal"]
+          "enum": ["simulated_trello", "trello", "manual", "internal", "local_inbox"]
         },
         "card_id": {
           "type": "string"

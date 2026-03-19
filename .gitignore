@@ -4,5 +4,10 @@ secrets/
 artifacts/
 tasks/
 workspaces/
+inbox/*.json
+processed/*.json
+processed/*.result.json
+rejected/*.json
+rejected/*.result.json
 __pycache__/
 *.pyc

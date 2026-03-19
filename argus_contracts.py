@@ -41,7 +41,7 @@ OUTPUT_TOP_LEVEL_KEYS = {
     "duration_ms",
     "timestamp",
 }
-SOURCE_KINDS = {"simulated_trello", "trello", "manual", "internal"}
+SOURCE_KINDS = {"simulated_trello", "trello", "manual", "internal", "local_inbox"}
 TASK_ID_PATTERNS = {
     "architect": re.compile(r"^ARCH-[0-9]{8}-[0-9]{3}$"),
     "devops": re.compile(r"^DEVOPS-[0-9]{8}-[0-9]{3}$"),
