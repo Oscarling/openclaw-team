@@ -10,12 +10,28 @@ from pathlib import Path
 # ==========================================
 # Path configuration
 # ==========================================
-BASE_DIR = Path("/app")
+DEFAULT_BASE_DIR = Path("/app")
+BASE_DIR = DEFAULT_BASE_DIR
 ARTIFACT_DIR = BASE_DIR / "artifacts"
 AGENT_DIR = BASE_DIR / "agents"
 CONTRACT_DIR = BASE_DIR / "contracts"
 SECRETS_DIR = Path("/run/secrets")
 OUTPUT_SCHEMA_PATH = CONTRACT_DIR / "output.schema.json"
+
+
+def resolve_base_dir(base_dir=None):
+    if base_dir is None:
+        base_dir = os.environ.get("ARGUS_BASE_DIR", str(DEFAULT_BASE_DIR))
+    return Path(base_dir).resolve()
+
+
+def configure_paths(base_dir=None):
+    global BASE_DIR, ARTIFACT_DIR, AGENT_DIR, CONTRACT_DIR, OUTPUT_SCHEMA_PATH
+    BASE_DIR = resolve_base_dir(base_dir)
+    ARTIFACT_DIR = BASE_DIR / "artifacts"
+    AGENT_DIR = BASE_DIR / "agents"
+    CONTRACT_DIR = BASE_DIR / "contracts"
+    OUTPUT_SCHEMA_PATH = CONTRACT_DIR / "output.schema.json"
 
 
 def read_secret(*names):
@@ -48,25 +64,6 @@ def require_setting(label, secret_names, env_names):
 
 
 # ==========================================
-# LLM configuration
-# ==========================================
-API_KEY = require_setting(
-    "API key",
-    ("openai_api_key", "api_key"),
-    ("OPENAI_API_KEY", "API_KEY"),
-)
-API_BASE = require_setting(
-    "API base URL",
-    ("openai_api_base", "api_base"),
-    ("OPENAI_API_BASE", "API_BASE"),
-)
-MODEL_NAME = require_setting(
-    "model name",
-    ("openai_model_name", "model_name"),
-    ("OPENAI_MODEL_NAME", "MODEL_NAME", "LLM_MODEL_NAME", "LLM_MODEL", "MODEL"),
-)
-
-# ==========================================
 # Runtime guards
 # ==========================================
 LLM_TIMEOUT = 60
@@ -94,7 +91,28 @@ def normalize_chat_endpoint(api_base):
     return f"{base}/chat/completions"
 
 
-CHAT_COMPLETIONS_URL = normalize_chat_endpoint(API_BASE)
+def get_llm_settings():
+    api_key = require_setting(
+        "API key",
+        ("openai_api_key", "api_key"),
+        ("OPENAI_API_KEY", "API_KEY"),
+    )
+    api_base = require_setting(
+        "API base URL",
+        ("openai_api_base", "api_base"),
+        ("OPENAI_API_BASE", "API_BASE"),
+    )
+    model_name = require_setting(
+        "model name",
+        ("openai_model_name", "model_name"),
+        ("OPENAI_MODEL_NAME", "MODEL_NAME", "LLM_MODEL_NAME", "LLM_MODEL", "MODEL"),
+    )
+    return {
+        "api_key": api_key,
+        "api_base": api_base,
+        "chat_url": normalize_chat_endpoint(api_base),
+        "model_name": model_name,
+    }
 
 
 # ==========================================
@@ -126,6 +144,34 @@ def load_soul(worker):
 
 
 def load_output_schema():
+    if not OUTPUT_SCHEMA_PATH.exists():
+        return {
+            "required": ["task_id", "worker", "status", "summary", "artifacts", "timestamp"],
+            "properties": {
+                "task_id": {"type": "string", "pattern": "^[A-Z]+-[0-9]{8}-[0-9]{3}$"},
+                "worker": {"type": "string", "enum": ["architect", "devops", "automation", "critic"]},
+                "status": {"type": "string", "enum": ["success", "failed", "partial"]},
+                "summary": {"type": "string"},
+                "artifacts": {"type": "array"},
+                "timestamp": {"type": "string"},
+                "errors": {"type": "array"},
+                "notes": {"type": "array"},
+                "metadata": {"type": "object"},
+                "duration_ms": {"type": "number"},
+            },
+            "$defs": {
+                "artifact": {
+                    "required": ["path", "type"],
+                    "properties": {
+                        "path": {"type": "string", "pattern": "^artifacts/"},
+                        "type": {
+                            "type": "string",
+                            "enum": ["architecture", "script", "config", "review", "doc"],
+                        },
+                    },
+                }
+            },
+        }
     with open(OUTPUT_SCHEMA_PATH) as f:
         return json.load(f)
 
@@ -237,9 +283,9 @@ def load_test_mode_payload(task, worker):
 # ==========================================
 # LLM Call with retry
 # ==========================================
-def call_llm(system_prompt, user_prompt, worker):
+def call_llm(system_prompt, user_prompt, worker, llm_settings):
     payload = {
-        "model": MODEL_NAME,
+        "model": llm_settings["model_name"],
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
@@ -248,13 +294,13 @@ def call_llm(system_prompt, user_prompt, worker):
     }
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {API_KEY}",
+        "Authorization": f"Bearer {llm_settings['api_key']}",
         "User-Agent": HTTP_USER_AGENT,
     }
     for attempt in range(LLM_MAX_RETRIES):
         try:
             req = urllib.request.Request(
-                CHAT_COMPLETIONS_URL,
+                llm_settings["chat_url"],
                 data=json.dumps(payload).encode("utf-8"),
                 headers=headers,
                 method="POST",
@@ -633,13 +679,19 @@ def parse_args():
     return parser.parse_args()
 
 
-def run_worker():
-    args = parse_args()
+def run_worker(task_dir=None, worker_override=None, base_dir=None, llm_override=None):
+    if task_dir is None:
+        args = parse_args()
+        task_dir = args.task_dir
+        if worker_override is None:
+            worker_override = args.worker
+
+    configure_paths(base_dir=base_dir)
     started_at = time.monotonic()
-    task_dir = Path(args.task_dir)
+    task_dir = Path(task_dir)
     task_dir.mkdir(parents=True, exist_ok=True)
     task_id = task_dir.name
-    worker = args.worker or os.environ.get("WORKER_NAME", "unknown")
+    worker = worker_override or os.environ.get("WORKER_NAME", "unknown")
     output_path = task_dir / "output.json"
 
     try:
@@ -650,17 +702,22 @@ def run_worker():
         expected_outputs = task_expected_outputs(task)
         expected_type_map = {item["path"]: item["type"] for item in expected_outputs}
 
-        log(worker, "INFO", f"Worker started using endpoint {CHAT_COMPLETIONS_URL}")
+        llm_settings = None
         parsed = load_test_mode_payload(task, worker)
         if parsed is None:
-            soul = load_soul(worker)
-            user_prompt = build_user_prompt(task)
-            llm_output = call_llm(soul, user_prompt, worker)
-            parsed = extract_json(llm_output)
-            if parsed is None:
-                raise RuntimeError("LLM output not valid JSON")
-            if not isinstance(parsed, dict):
-                raise RuntimeError("LLM output must be a JSON object")
+            if llm_override is not None:
+                parsed = llm_override(task=task, worker=worker)
+            else:
+                llm_settings = get_llm_settings()
+                log(worker, "INFO", f"Worker started using endpoint {llm_settings['chat_url']}")
+                soul = load_soul(worker)
+                user_prompt = build_user_prompt(task)
+                llm_output = call_llm(soul, user_prompt, worker, llm_settings)
+                parsed = extract_json(llm_output)
+                if parsed is None:
+                    raise RuntimeError("LLM output not valid JSON")
+                if not isinstance(parsed, dict):
+                    raise RuntimeError("LLM output must be a JSON object")
         elif not isinstance(parsed, dict):
             raise RuntimeError("Test mode payload must be a JSON object")
 

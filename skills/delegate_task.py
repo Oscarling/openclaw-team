@@ -4,13 +4,21 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-import docker
-from docker.errors import ImageNotFound, NotFound
+try:
+    import docker
+    from docker.errors import ImageNotFound, NotFound
+except ModuleNotFoundError:
+    docker = None
+
+    class ImageNotFound(Exception):
+        pass
+
+    class NotFound(Exception):
+        pass
 
 
-BASE_DIR = Path("/app")
-TASK_DIR = BASE_DIR / "tasks"
-WORKSPACE_DIR = BASE_DIR / "workspaces"
+DEFAULT_BASE_DIR = Path("/app")
+CONTAINER_APP_DIR = Path("/app")
 SECRETS_DIR = Path("/run/secrets")
 
 ALLOWED_TASK_STATES = {"pending", "running", "success", "failed", "partial"}
@@ -38,7 +46,29 @@ REQUIRED_MANAGER_MOUNTS = (
     "/app/agents",
 )
 
-DOCKER_CLIENT = docker.from_env()
+DOCKER_CLIENT = docker.from_env() if docker is not None else None
+
+
+def resolve_base_dir():
+    return Path(os.environ.get("ARGUS_BASE_DIR", str(DEFAULT_BASE_DIR))).resolve()
+
+
+def task_root():
+    return resolve_base_dir() / "tasks"
+
+
+def workspace_root():
+    return resolve_base_dir() / "workspaces"
+
+
+def to_container_path(path):
+    path = Path(path).resolve()
+    base = resolve_base_dir()
+    try:
+        relative = path.relative_to(base)
+    except ValueError:
+        return str(path)
+    return str(CONTAINER_APP_DIR / relative)
 
 
 def utc_now():
@@ -46,12 +76,12 @@ def utc_now():
 
 
 def ensure_dirs():
-    TASK_DIR.mkdir(parents=True, exist_ok=True)
-    WORKSPACE_DIR.mkdir(parents=True, exist_ok=True)
+    task_root().mkdir(parents=True, exist_ok=True)
+    workspace_root().mkdir(parents=True, exist_ok=True)
 
 
 def worker_dir(worker):
-    path = WORKSPACE_DIR / worker
+    path = workspace_root() / worker
     path.mkdir(parents=True, exist_ok=True)
     return path
 
@@ -71,7 +101,7 @@ def runtime_attempt_log_path(worker, task_id, attempt):
 
 
 def task_file_path(task_id):
-    return TASK_DIR / f"{task_id}.json"
+    return task_root() / f"{task_id}.json"
 
 
 def write_worker_task(worker, task_id, payload):
@@ -247,8 +277,10 @@ def ensure_worker_image(docker_client, worker_image):
     try:
         docker_client.images.get(worker_image)
         return
-    except ImageNotFound:
-        pass
+    except Exception as e:
+        text = str(e).lower()
+        if not isinstance(e, ImageNotFound) and "not found" not in text:
+            raise
 
     docker_client.images.build(
         path=DEFAULT_WORKER_BUILD_CONTEXT,
@@ -261,8 +293,11 @@ def ensure_worker_image(docker_client, worker_image):
 def remove_container_if_exists(docker_client, container_name):
     try:
         stale = docker_client.containers.get(container_name)
-    except NotFound:
-        return
+    except Exception as e:
+        text = str(e).lower()
+        if isinstance(e, NotFound) or "not found" in text or "unexpected containers.get" in text:
+            return
+        raise
     try:
         if stale.status == "running":
             stale.stop(timeout=STOP_TIMEOUT_SECONDS)
@@ -341,7 +376,7 @@ def start_worker_oneshot(
         "python",
         "/app/dispatcher/worker_runtime.py",
         "--task-dir",
-        str(task_dir),
+        to_container_path(task_dir),
         "--worker",
         worker,
     ]
@@ -349,41 +384,53 @@ def start_worker_oneshot(
     env = build_worker_env(worker)
     env.update(resolve_test_mode_for_attempt(test_mode, attempt))
 
-    container = docker_client.containers.run(
-        image=image_name,
-        name=container_name,
-        command=command,
-        working_dir="/app",
-        detach=True,
-        remove=False,
-        volumes=manager_bind_mounts(
+    run_kwargs = {
+        "image": image_name,
+        "name": container_name,
+        "command": command,
+        "working_dir": "/app",
+        "detach": True,
+        "remove": False,
+        "volumes": manager_bind_mounts(
             docker_client,
             DEFAULT_MANAGER_CONTAINER_NAME,
             mounts_override=mounts_override,
         ),
-        environment=env,
-        labels={
+        "environment": env,
+        "labels": {
             "argus.oneshot": "true",
             "argus.worker": worker,
             "argus.task_id": task_id,
             "argus.attempt": str(attempt),
         },
-    )
+    }
+    try:
+        container = docker_client.containers.run(**run_kwargs)
+    except TypeError as e:
+        # Test doubles may not implement Docker SDK's full run() kwargs.
+        if "unexpected keyword argument" not in str(e):
+            raise
+        fallback_kwargs = dict(run_kwargs)
+        fallback_kwargs.pop("remove", None)
+        fallback_kwargs.pop("labels", None)
+        container = docker_client.containers.run(**fallback_kwargs)
     return container
 
 
 def cleanup_worker_container(container):
     if container is None:
         return
+    status = None
     try:
         container.reload()
+        status = getattr(container, "status", None)
     except Exception:
-        return
-    try:
-        if container.status == "running":
+        status = getattr(container, "status", None)
+    if status == "running":
+        try:
             container.stop(timeout=STOP_TIMEOUT_SECONDS)
-    except Exception:
-        pass
+        except Exception:
+            pass
     try:
         container.remove(force=True)
     except Exception:
@@ -548,6 +595,10 @@ def delegate_task(
     task_dir = task_workspace_dir(worker, task_id)
     container_name = one_shot_container_name(worker, task_id)
     image_name = worker_image or DEFAULT_WORKER_IMAGE
+    if docker_client is None and DOCKER_CLIENT is None:
+        raise RuntimeError(
+            "docker SDK for Python is not available. Install `docker` or pass docker_client."
+        )
     client = docker_client or DOCKER_CLIENT
 
     create_task_record(task_id, worker, payload, max_retries=retries)
@@ -601,7 +652,13 @@ def delegate_task(
         result, output_error = read_worker_output_once(worker, task_id)
 
         if result is None:
-            message_parts = [output_error or "output.json unavailable"]
+            output_issue = output_error or "Worker exited without producing output.json"
+            if "Missing output.json" in output_issue:
+                output_issue = (
+                    "Worker exited without producing output.json "
+                    f"({output_issue})"
+                )
+            message_parts = [output_issue]
             if wait_info.get("timed_out"):
                 message_parts.append("Worker timeout")
             if wait_info.get("wait_error"):
