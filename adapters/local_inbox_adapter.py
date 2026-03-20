@@ -227,7 +227,8 @@ def normalize_local_inbox_payload(
         "task_type": "review_artifact",
         "objective": (
             "Review automation artifact from local inbox pipeline and provide a "
-            "structured verdict using one of: pass, fail, needs_revision."
+            "structured verdict using one of: pass, fail, needs_revision. "
+            "Always output a review markdown artifact and include verdict in metadata."
         ),
         "inputs": {
             "artifacts": [{"path": automation_artifact, "type": "script"}],
@@ -245,6 +246,8 @@ def normalize_local_inbox_payload(
             "Review must be grounded in produced automation artifact",
             "Do not invent missing artifact content",
             "Return a clear verdict: pass, fail, or needs_revision",
+            "Include metadata.verdict in output",
+            "Generate review artifact markdown for expected_outputs[0].path",
         ],
         "priority": priority,
         "source": source,

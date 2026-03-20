@@ -20,6 +20,7 @@ from skills.delegate_task import delegate_task
 PREVIEW_DIR = REPO_ROOT / "preview"
 APPROVALS_DIR = REPO_ROOT / "approvals"
 VERDICT_VALUES = {"pass", "fail", "needs_revision"}
+MAX_SNAPSHOT_CHARS = 12000
 
 
 def utc_now() -> str:
@@ -67,11 +68,12 @@ def parse_args() -> argparse.Namespace:
 def extract_critic_verdict(critic_result: dict[str, Any], review_artifact_path: str | None) -> str:
     metadata = critic_result.get("metadata")
     if isinstance(metadata, dict):
-        verdict = metadata.get("verdict")
-        if isinstance(verdict, str):
-            norm = verdict.strip().lower()
-            if norm in VERDICT_VALUES:
-                return norm
+        for key in ("verdict", "review_verdict"):
+            verdict = metadata.get(key)
+            if isinstance(verdict, str):
+                norm = verdict.strip().lower()
+                if norm in VERDICT_VALUES:
+                    return norm
 
     summary = critic_result.get("summary")
     if isinstance(summary, str):
@@ -96,12 +98,126 @@ def extract_critic_verdict(critic_result: dict[str, Any], review_artifact_path: 
     return "needs_revision"
 
 
+def _read_artifact_text(relative_path: str) -> dict[str, Any]:
+    if not isinstance(relative_path, str) or not relative_path.startswith("artifacts/"):
+        return {
+            "path": relative_path,
+            "available": False,
+            "error": "invalid_artifact_path",
+        }
+    target = (REPO_ROOT / relative_path).resolve()
+    artifacts_root = (REPO_ROOT / "artifacts").resolve()
+    if not str(target).startswith(str(artifacts_root)):
+        return {
+            "path": relative_path,
+            "available": False,
+            "error": "artifact_path_outside_artifacts",
+        }
+    if not target.exists():
+        return {
+            "path": relative_path,
+            "available": False,
+            "error": "artifact_not_found",
+        }
+    try:
+        text = target.read_text(encoding="utf-8", errors="replace")
+    except Exception as exc:
+        return {
+            "path": relative_path,
+            "available": False,
+            "error": f"artifact_read_failed:{exc}",
+        }
+    was_truncated = len(text) > MAX_SNAPSHOT_CHARS
+    if was_truncated:
+        text = text[:MAX_SNAPSHOT_CHARS]
+    return {
+        "path": relative_path,
+        "available": True,
+        "content": text,
+        "truncated": was_truncated,
+    }
+
+
+def _critic_review_contract(expected_review_path: str) -> dict[str, Any]:
+    return {
+        "required_status": ["success", "partial", "failed"],
+        "required_verdict_values": sorted(VERDICT_VALUES),
+        "required_metadata_key": "verdict",
+        "must_write_review_artifact_to": expected_review_path,
+        "artifact_policy": (
+            "Always include either `file_contents` for the review artifact path or "
+            "`artifacts` referencing that exact path."
+        ),
+        "fallback_policy": (
+            "If evidence is insufficient, return `status=partial`, include explicit `errors`, "
+            "still generate review artifact content, and set verdict=needs_revision."
+        ),
+    }
+
+
 def build_critic_from_automation(critic_task: dict[str, Any], auto_result: dict[str, Any]) -> dict[str, Any]:
     updated = json.loads(json.dumps(critic_task))
     artifacts = auto_result.get("artifacts")
-    if isinstance(artifacts, list) and artifacts:
-        updated.setdefault("inputs", {})
-        updated["inputs"]["artifacts"] = artifacts
+    updated.setdefault("inputs", {})
+    updated.setdefault("constraints", [])
+
+    normalized_artifacts: list[dict[str, Any]] = []
+    snapshots: list[dict[str, Any]] = []
+    if isinstance(artifacts, list):
+        for item in artifacts:
+            if isinstance(item, dict):
+                path = item.get("path")
+                atype = item.get("type")
+                if isinstance(path, str):
+                    normalized_artifacts.append(
+                        {
+                            "path": path,
+                            "type": atype if isinstance(atype, str) else "doc",
+                        }
+                    )
+                    snapshots.append(_read_artifact_text(path))
+            elif isinstance(item, str):
+                normalized_artifacts.append({"path": item, "type": "doc"})
+                snapshots.append(_read_artifact_text(item))
+    if normalized_artifacts:
+        updated["inputs"]["artifacts"] = normalized_artifacts
+
+    params = updated["inputs"].get("params")
+    if not isinstance(params, dict):
+        params = {}
+    params["artifact_snapshots"] = snapshots
+
+    expected_outputs = updated.get("expected_outputs")
+    expected_review_path = "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md"
+    if isinstance(expected_outputs, list):
+        for item in expected_outputs:
+            if isinstance(item, dict):
+                path = item.get("path")
+                if isinstance(path, str) and path.startswith("artifacts/"):
+                    expected_review_path = path
+                    break
+
+    params["review_contract"] = _critic_review_contract(expected_review_path)
+    params["review_template"] = {
+        "title": "Review: <artifact name>",
+        "sections": ["Scope", "Findings", "Verdict", "Rationale"],
+        "verdict_required": True,
+    }
+    updated["inputs"]["params"] = params
+
+    # Tighten critic behavior with explicit deterministic contract reminders.
+    constraints = updated["constraints"]
+    if not isinstance(constraints, list):
+        constraints = []
+    constraints.extend(
+        [
+            "Use artifact_snapshots when provided; avoid claiming access problems if snapshot content exists.",
+            "Return metadata.verdict with one of: pass, fail, needs_revision.",
+            "Always generate review artifact content for expected_outputs[0].path.",
+            "If evidence is insufficient, use partial + errors + verdict=needs_revision, but still output review artifact.",
+        ]
+    )
+    updated["constraints"] = constraints
     return updated
 
 
