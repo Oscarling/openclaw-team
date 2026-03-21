@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -51,20 +52,95 @@ def write_mapped_payload(output_path: Path, payload: dict[str, Any]) -> None:
     output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def _presence_map(names: list[str]) -> dict[str, str]:
+    return {name: ("set" if os.environ.get(name) else "missing") for name in names}
+
+
+def _pick_env(primary: str, alias: str) -> tuple[str | None, str]:
+    primary_val = os.environ.get(primary)
+    if primary_val:
+        return primary_val, primary
+    alias_val = os.environ.get(alias)
+    if alias_val:
+        return alias_val, alias
+    return None, "missing"
+
+
+def _classify_http_error(status_code: int, body_preview: str, scope_kind: str) -> tuple[str, str]:
+    text = (body_preview or "").lower()
+    if status_code == 401:
+        if "invalid key" in text:
+            return "invalid_key", "Read-only Trello auth failed: API key appears invalid (HTTP 401)."
+        if "invalid token" in text or ("token" in text and "invalid" in text):
+            return "invalid_token", "Read-only Trello auth failed: token appears invalid (HTTP 401)."
+        if "unauthorized permission requested" in text or "scope" in text:
+            return "token_scope_insufficient", "Read-only Trello auth failed: token scope appears insufficient (HTTP 401)."
+        return "unauthorized_unknown", "Read-only Trello request unauthorized (HTTP 401)."
+
+    if status_code == 403:
+        if scope_kind == "board":
+            return "token_no_board_access", "Read-only Trello request forbidden: token has no access to this board (HTTP 403)."
+        if scope_kind == "list":
+            return "token_no_list_access", "Read-only Trello request forbidden: token has no access to this list (HTTP 403)."
+        return "forbidden", "Read-only Trello request forbidden (HTTP 403)."
+
+    if status_code == 404:
+        if scope_kind == "board":
+            return "board_not_found_or_no_access", "Read-only Trello request failed: board not found (or not visible) (HTTP 404)."
+        if scope_kind == "list":
+            return "list_not_found_or_no_access", "Read-only Trello request failed: list not found (or not visible) (HTTP 404)."
+        return "not_found", "Read-only Trello request failed: resource not found (HTTP 404)."
+
+    return "http_error", f"Read-only Trello request failed: HTTP {status_code}."
+
+
+def _redact_sensitive(text: str, api_key: str | None, api_token: str | None) -> str:
+    out = text or ""
+    if api_key:
+        out = out.replace(api_key, "***redacted_key***")
+    if api_token:
+        out = out.replace(api_token, "***redacted_token***")
+    out = re.sub(r"([?&]key=)[^&\\s]+", r"\1***redacted_key***", out)
+    out = re.sub(r"([?&]token=)[^&\\s]+", r"\1***redacted_token***", out)
+    return out
+
+
 def smoke_read_trello(list_id: str | None, board_id: str | None, limit: int) -> dict[str, Any]:
-    api_key = os.environ.get("TRELLO_API_KEY")
-    api_token = os.environ.get("TRELLO_API_TOKEN")
+    api_key, key_source = _pick_env("TRELLO_API_KEY", "TRELLO_KEY")
+    api_token, token_source = _pick_env("TRELLO_API_TOKEN", "TRELLO_TOKEN")
+    env_presence = _presence_map(
+        [
+            "TRELLO_API_KEY",
+            "TRELLO_KEY",
+            "TRELLO_API_TOKEN",
+            "TRELLO_TOKEN",
+            "TRELLO_BOARD_ID",
+            "TRELLO_LIST_ID",
+        ]
+    )
+    auth_env = {
+        "selected_names": {"key": key_source, "token": token_source},
+        "priority": "TRELLO_API_* first, fallback to TRELLO_*",
+        "presence": env_presence,
+    }
     if not api_key or not api_token:
         return {
             "status": "blocked",
-            "reason": "Missing TRELLO_API_KEY or TRELLO_API_TOKEN",
-            "missing": [k for k in ["TRELLO_API_KEY", "TRELLO_API_TOKEN"] if not os.environ.get(k)],
+            "reason": "Missing Trello credentials: provide TRELLO_API_KEY/TRELLO_API_TOKEN or TRELLO_KEY/TRELLO_TOKEN",
+            "missing": [
+                name
+                for name in ["TRELLO_API_KEY|TRELLO_KEY", "TRELLO_API_TOKEN|TRELLO_TOKEN"]
+                if (name.startswith("TRELLO_API_KEY") and not api_key)
+                or (name.startswith("TRELLO_API_TOKEN") and not api_token)
+            ],
+            "auth_env": auth_env,
         }
 
     if not list_id and not board_id:
         return {
             "status": "blocked",
             "reason": "Missing read scope id: provide --list-id/--board-id or env TRELLO_LIST_ID/TRELLO_BOARD_ID",
+            "auth_env": auth_env,
         }
 
     params = {
@@ -73,17 +149,33 @@ def smoke_read_trello(list_id: str | None, board_id: str | None, limit: int) -> 
         "fields": "id,idShort,name,desc,idList,idBoard,dateLastActivity,labels",
         "limit": max(1, int(limit)),
     }
+    scope_kind = "list" if list_id else "board"
     if list_id:
         url = f"https://api.trello.com/1/lists/{list_id}/cards"
     else:
         url = f"https://api.trello.com/1/boards/{board_id}/cards"
 
-    resp = requests.get(url, params=params, timeout=20)
-    if resp.status_code != 200:
+    try:
+        resp = requests.get(url, params=params, timeout=20)
+    except requests.RequestException as exc:
         return {
             "status": "blocked",
-            "reason": f"Read-only Trello request failed: HTTP {resp.status_code}",
-            "response_preview": resp.text[:300],
+            "reason": f"Read-only Trello request failed before HTTP response: {exc.__class__.__name__}",
+            "error_type": "request_exception",
+            "response_preview": _redact_sensitive(str(exc), api_key, api_token)[:300],
+            "auth_env": auth_env,
+        }
+
+    if resp.status_code != 200:
+        response_preview = _redact_sensitive(resp.text, api_key, api_token)[:300]
+        error_code, detailed_reason = _classify_http_error(resp.status_code, response_preview, scope_kind)
+        return {
+            "status": "blocked",
+            "reason": detailed_reason,
+            "error_code": error_code,
+            "http_status": resp.status_code,
+            "response_preview": response_preview,
+            "auth_env": auth_env,
         }
 
     data = resp.json()
@@ -91,6 +183,8 @@ def smoke_read_trello(list_id: str | None, board_id: str | None, limit: int) -> 
         return {
             "status": "blocked",
             "reason": "Unexpected Trello response shape (expected list)",
+            "http_status": resp.status_code,
+            "auth_env": auth_env,
         }
 
     mapped_preview = None
@@ -105,7 +199,9 @@ def smoke_read_trello(list_id: str | None, board_id: str | None, limit: int) -> 
         "status": "pass",
         "read_count": len(data),
         "scope": {"board_id": board_id, "list_id": list_id},
+        "scope_kind": scope_kind,
         "mapped_preview": mapped_preview,
+        "auth_env": auth_env,
         "note": "Read-only GET only. No write operations performed.",
     }
 

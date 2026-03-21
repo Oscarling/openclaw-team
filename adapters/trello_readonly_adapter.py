@@ -44,7 +44,10 @@ def _normalize_labels(raw_labels: Any) -> list[str]:
 def required_readonly_env() -> dict[str, list[str]]:
     return {
         "credentials": ["TRELLO_API_KEY", "TRELLO_API_TOKEN"],
+        "credentials_aliases": ["TRELLO_KEY", "TRELLO_TOKEN"],
+        "credentials_priority": ["TRELLO_API_KEY/TRELLO_API_TOKEN", "TRELLO_KEY/TRELLO_TOKEN"],
         "scope": ["TRELLO_BOARD_ID", "TRELLO_LIST_ID"],
+        "scope_rule": ["TRELLO_BOARD_ID or TRELLO_LIST_ID (either one)"],
     }
 
 
