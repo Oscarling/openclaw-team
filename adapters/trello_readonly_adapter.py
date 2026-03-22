@@ -4,6 +4,14 @@ import re
 from datetime import datetime, timezone
 from typing import Any
 
+CONTRACT_TITLE_SUFFIX = "(best-effort reviewable attempt)"
+CONTRACT_NOTE = (
+    "Execution contract: treat this as a best-effort, evidence-backed PDF extraction/conversion attempt. "
+    "Do not claim OCR success without evidence. If full OCR/Excel conversion is not honestly achievable, "
+    "return reviewable intermediate artifacts, explicit limitations, and next-step guidance. "
+    "Keep behavior deterministic and limited to declared local artifacts."
+)
+
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -41,6 +49,23 @@ def _normalize_labels(raw_labels: Any) -> list[str]:
     return deduped
 
 
+def _augment_title(raw_title: str) -> str:
+    title = raw_title.strip()
+    lowered = title.lower()
+    if any(token in lowered for token in ("best-effort", "best effort", "reviewable", "evidence-backed")):
+        return title
+    return f"{title} {CONTRACT_TITLE_SUFFIX}"
+
+
+def _augment_description(raw_description: str, card_id: str) -> str:
+    description = raw_description.strip()
+    if not description:
+        description = f"[trello] card {card_id} has no description; using title as fallback context."
+    if CONTRACT_NOTE.lower() in description.lower():
+        return description
+    return f"{description}\n\n{CONTRACT_NOTE}"
+
+
 def required_readonly_env() -> dict[str, list[str]]:
     return {
         "credentials": ["TRELLO_API_KEY", "TRELLO_API_TOKEN"],
@@ -67,13 +92,12 @@ def map_trello_card_to_external_input(
     title = str(card.get("name") or "").strip()
     if not title:
         raise RuntimeError("Trello card name is required")
+    title = _augment_title(title)
 
-    description = str(card.get("desc") or "").strip()
-    if not description:
-        description = f"[trello] card {card_id} has no description; using title as fallback context."
+    description = _augment_description(str(card.get("desc") or ""), card_id)
 
     mapped_labels = _normalize_labels(card.get("labels"))
-    mapped_labels.extend(["trello", "readonly"])
+    mapped_labels.extend(["trello", "readonly", "best_effort", "evidence_backed", "reviewable"])
     mapped_labels = sorted(set(mapped_labels))
 
     normalized = {
@@ -89,6 +113,9 @@ def map_trello_card_to_external_input(
             "list_id": list_id or card.get("idList"),
             "date_last_activity": card.get("dateLastActivity"),
             "readonly_mapped_at": _utc_now(),
+            "contract_profile": "best_effort_evidence_backed",
+            "ocr_claim_policy": "do_not_claim_success_without_evidence",
+            "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable",
         },
         "source": {
             "provider": "trello",
