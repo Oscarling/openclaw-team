@@ -34,3 +34,26 @@
 - 无 approval 不执行
 - execute 必须独立
 - 未来 Git 阶段中，`git push` 必须是 Trello writeback / Done 之前的硬门
+
+## E. Trello Read-only -> Preview 去重冻结（当前 Phase）
+
+当前冻结规则（方案 A）：
+- 同一 `origin_id` 只允许一次 preview；后续同卡内容变更，不自动重新生成 preview。
+
+适用范围：
+- 仅适用于当前 phase 的 `manager-side Trello read-only -> preview` 链路。
+
+当前不支持：
+- 同一张 Trello 卡片在内容更新后自动重进 preview。
+
+冻结原因：
+- 保持最小改动。
+- 与现有 `origin`-based dedupe 机制一致（即命中 `origin:<origin_id>` 即去重）。
+
+未来可选升级（本阶段不做）：
+- 按内容 `hash/version` 允许同卡变更后再入链。
+- 引入显式标记（rerun/replay token）后再入链。
+
+明确不在本次冻结范围：
+- execute / Git / Trello writeback。
+- retry / 429 优化。
