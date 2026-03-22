@@ -10,10 +10,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import requests
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from adapters.trello_readonly_adapter import map_trello_card_to_external_input
 from adapters.local_inbox_adapter import StandardizedInboxTask, normalize_local_inbox_payload
 from argus_contracts import validate_task
 
@@ -35,6 +38,133 @@ def ensure_dirs() -> None:
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     REJECTED_DIR.mkdir(parents=True, exist_ok=True)
     PREVIEW_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _presence_map(names: list[str]) -> dict[str, str]:
+    return {name: ("set" if os.environ.get(name) else "missing") for name in names}
+
+
+def _pick_env(primary: str, alias: str) -> tuple[str | None, str]:
+    primary_val = os.environ.get(primary)
+    if primary_val:
+        return primary_val, primary
+    alias_val = os.environ.get(alias)
+    if alias_val:
+        return alias_val, alias
+    return None, "missing"
+
+
+def _trello_auth_env() -> dict[str, Any]:
+    api_key, key_source = _pick_env("TRELLO_API_KEY", "TRELLO_KEY")
+    api_token, token_source = _pick_env("TRELLO_API_TOKEN", "TRELLO_TOKEN")
+    return {
+        "api_key": api_key,
+        "api_token": api_token,
+        "selected_names": {"key": key_source, "token": token_source},
+        "priority": "TRELLO_API_* first, fallback to TRELLO_*",
+        "presence": _presence_map(
+            [
+                "TRELLO_API_KEY",
+                "TRELLO_KEY",
+                "TRELLO_API_TOKEN",
+                "TRELLO_TOKEN",
+                "TRELLO_BOARD_ID",
+                "TRELLO_LIST_ID",
+            ]
+        ),
+    }
+
+
+def _write_trello_payload_to_inbox(payload: dict[str, Any], card_id: str) -> Path:
+    safe_card = re.sub(r"[^a-zA-Z0-9_.-]", "-", card_id).strip("-").lower() or "unknown-card"
+    candidate = INBOX_DIR / f"trello-readonly-{safe_card}.json"
+    if candidate.exists():
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        candidate = INBOX_DIR / f"trello-readonly-{safe_card}-{stamp}.json"
+    candidate.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    return candidate
+
+
+def ingest_trello_readonly_once(
+    *,
+    board_id_override: str | None,
+    list_id_override: str | None,
+    limit: int,
+) -> dict[str, Any]:
+    auth = _trello_auth_env()
+    api_key = auth["api_key"]
+    api_token = auth["api_token"]
+
+    if not api_key or not api_token:
+        raise RuntimeError(
+            "Missing Trello credentials: provide TRELLO_API_KEY/TRELLO_API_TOKEN or TRELLO_KEY/TRELLO_TOKEN"
+        )
+
+    board_id = (board_id_override or os.environ.get("TRELLO_BOARD_ID") or "").strip()
+    list_id = (list_id_override or os.environ.get("TRELLO_LIST_ID") or "").strip()
+    if not board_id and not list_id:
+        raise RuntimeError(
+            "Missing Trello scope id: set --trello-board-id/--trello-list-id or env TRELLO_BOARD_ID/TRELLO_LIST_ID"
+        )
+
+    scope_kind = "list" if list_id else "board"
+    if list_id:
+        url = f"https://api.trello.com/1/lists/{list_id}/cards"
+    else:
+        url = f"https://api.trello.com/1/boards/{board_id}/cards"
+    params = {
+        "key": api_key,
+        "token": api_token,
+        "fields": "id,idShort,name,desc,idList,idBoard,dateLastActivity,labels",
+        "limit": max(1, int(limit)),
+    }
+
+    try:
+        response = requests.get(url, params=params, timeout=20)
+    except requests.RequestException as exc:
+        raise RuntimeError(
+            f"Trello read-only request failed before HTTP response: {exc.__class__.__name__}"
+        ) from exc
+
+    if response.status_code != 200:
+        body_preview = (response.text or "")[:300]
+        raise RuntimeError(
+            f"Trello read-only request failed: HTTP {response.status_code}; response_preview={body_preview}"
+        )
+
+    cards = response.json()
+    if not isinstance(cards, list):
+        raise RuntimeError("Unexpected Trello response shape (expected list)")
+
+    written_files: list[str] = []
+    for card in cards:
+        if not isinstance(card, dict):
+            continue
+        mapped = map_trello_card_to_external_input(
+            card,
+            board_id=board_id or None,
+            list_id=list_id or None,
+        )
+        card_id = str(card.get("id") or mapped.get("origin_id") or "unknown-card")
+        path = _write_trello_payload_to_inbox(mapped, card_id)
+        written_files.append(str(path))
+
+    return {
+        "status": "done",
+        "scope_kind": scope_kind,
+        "read_count": len(cards),
+        "inbox_written": len(written_files),
+        "inbox_files": written_files,
+        "scope_presence": {
+            "TRELLO_BOARD_ID": "set" if bool(board_id) else "missing",
+            "TRELLO_LIST_ID": "set" if bool(list_id) else "missing",
+        },
+        "auth_env": {
+            "selected_names": auth["selected_names"],
+            "priority": auth["priority"],
+            "presence": auth["presence"],
+        },
+    }
 
 
 def move_with_suffix(src: Path, target_dir: Path) -> Path:
@@ -297,6 +427,30 @@ def parse_args() -> argparse.Namespace:
         default="success",
         help="Reserved for compatibility. In preview mode ingest does not dispatch workers.",
     )
+    parser.add_argument(
+        "--trello-readonly-once",
+        action="store_true",
+        help=(
+            "Fetch Trello cards in read-only mode, normalize via existing adapter, "
+            "write to inbox, then continue standard preview-only ingest."
+        ),
+    )
+    parser.add_argument(
+        "--trello-board-id",
+        default=None,
+        help="Trello board id override for read-only ingestion.",
+    )
+    parser.add_argument(
+        "--trello-list-id",
+        default=None,
+        help="Trello list id override for read-only ingestion.",
+    )
+    parser.add_argument(
+        "--trello-limit",
+        type=int,
+        default=3,
+        help="Max Trello cards to fetch for --trello-readonly-once.",
+    )
     return parser.parse_args()
 
 
@@ -304,10 +458,37 @@ def main() -> int:
     args = parse_args()
     ensure_dirs()
 
+    trello_readonly = None
+    if args.trello_readonly_once:
+        try:
+            trello_readonly = ingest_trello_readonly_once(
+                board_id_override=args.trello_board_id,
+                list_id_override=args.trello_list_id,
+                limit=args.trello_limit,
+            )
+        except Exception as exc:
+            print(
+                json.dumps(
+                    {
+                        "status": "blocked",
+                        "mode": "trello_readonly_once",
+                        "reason": str(exc),
+                        "auth_env": _trello_auth_env().get("presence"),
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
+            return 1
+
     recovered_processing_files = sorted(PROCESSING_DIR.glob("*.json"))
     inbox_files = sorted(INBOX_DIR.glob("*.json"))
     if not recovered_processing_files and not inbox_files:
-        print(json.dumps({"status": "idle", "message": "No inbox files"}, ensure_ascii=False))
+        payload: dict[str, Any] = {"status": "idle", "message": "No inbox files"}
+        if trello_readonly is not None:
+            payload["mode"] = "trello_readonly_once"
+            payload["trello_readonly"] = trello_readonly
+        print(json.dumps(payload, ensure_ascii=False))
         return 0
 
     claimed_files: list[Path] = []
@@ -333,6 +514,9 @@ def main() -> int:
         "test_mode": args.test_mode,
         "results": results,
     }
+    if trello_readonly is not None:
+        payload["mode"] = "trello_readonly_once"
+        payload["trello_readonly"] = trello_readonly
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
 
