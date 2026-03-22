@@ -34,6 +34,22 @@ def _normalize_priority(value: Any) -> str:
     return "medium"
 
 
+def _condense_automation_description(description: str, max_chars: int = 180) -> str:
+    text = str(description or "").strip()
+    if not text:
+        return "Best-effort local extraction/conversion request."
+
+    primary = text.split("\n\nExecution contract:", 1)[0]
+    primary = re.split(r"\n\s*\n", primary, maxsplit=1)[0]
+    primary = re.sub(r"\s+", " ", primary).strip()
+
+    if not primary:
+        primary = re.sub(r"\s+", " ", text).strip()
+    if len(primary) <= max_chars:
+        return primary
+    return primary[: max_chars - 3].rstrip() + "..."
+
+
 def _payload_hash(raw_payload: dict[str, Any]) -> str:
     text = json.dumps(raw_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -154,6 +170,7 @@ def normalize_local_inbox_payload(
     labels = validated["labels"]
     metadata = validated["metadata"]
     source_input = validated["source_input"]
+    automation_description = _condense_automation_description(description)
 
     input_dir = str(inputs.get("input_dir", "~/Desktop/pdf样本")).strip()
     output_xlsx = str(
@@ -182,8 +199,8 @@ def normalize_local_inbox_payload(
         "task_type": "generate_script",
         "objective": (
             f"{title}. "
-            "Generate a runnable helper script for PDF to Excel OCR batch workflow "
-            "based on local inbox request parameters."
+            "Generate exactly one runnable local helper script artifact for a best-effort "
+            "PDF extraction/conversion attempt using the provided parameters."
         ),
         "inputs": {
             "params": {
@@ -193,7 +210,7 @@ def normalize_local_inbox_payload(
                 "dry_run": dry_run,
                 "origin_id": origin_id,
                 "title": title,
-                "description": description,
+                "description": automation_description,
                 "labels": labels,
             }
         },
@@ -204,12 +221,14 @@ def normalize_local_inbox_payload(
             "Follow the local inbox normalized request",
             "Do not claim unsupported runtime dependencies",
             "Keep output deterministic and executable",
+            "Produce only the expected script artifact",
+            "Prefer honest, reviewable intermediate behavior over unsupported OCR claims",
         ],
         "priority": priority,
         "source": source,
         "acceptance_criteria": [
-            "Produce at least one script artifact",
-            "Script purpose aligns with PDF to Excel OCR scenario",
+            "Produce the expected script artifact at expected_outputs[0].path",
+            "Script behavior remains runnable, deterministic, and reviewable",
         ],
         "metadata": {
             "integration_phase": "8B",
@@ -218,6 +237,7 @@ def normalize_local_inbox_payload(
             "payload_hash": payload_hash,
             "labels": labels,
             "external_metadata": metadata,
+            "automation_contract_profile": "narrow_script_artifact",
         },
     }
 
