@@ -1,0 +1,22 @@
+{
+  "ingested_at": "2026-03-23T11:24:28.464741Z",
+  "status": "processed",
+  "decision": "preview_created_pending_approval",
+  "decision_reason": "preview_created; waiting_for_explicit_approval",
+  "origin_id": "trello:69c1229edc9b8ec895640c5b",
+  "payload_hash": "d01d1c92df6b82b9cf6ea28869b7249cbf8ae1b486f54d0b78cbb1bb37fcc3f5",
+  "dedupe_keys": [
+    "origin:trello:69c1229edc9b8ec895640c5b",
+    "hash:d01d1c92df6b82b9cf6ea28869b7249cbf8ae1b486f54d0b78cbb1bb37fcc3f5"
+  ],
+  "title": "Generate one local PDF inventory manifest script (best-effort reviewable attempt)",
+  "labels": [
+    "best_effort",
+    "evidence_backed",
+    "readonly",
+    "reviewable",
+    "trello"
+  ],
+  "preview_id": "preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b",
+  "preview_file": "/Users/lingguozhong/openclaw-team/preview/preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.json"
+}

@@ -1,0 +1,38 @@
+{
+  "origin_id": "trello:69c1229edc9b8ec895640c5b",
+  "title": "Generate one local PDF inventory manifest script (best-effort reviewable attempt)",
+  "description": "Use ~/Desktop/pdf样本 as input.\nCreate one runnable local Python script that scans PDF files and writes one deterministic reviewable manifest under artifacts/.\nLocal-only. Do not claim OCR success.\n\nExecution contract: treat this as a best-effort, evidence-backed PDF extraction/conversion attempt. Do not claim OCR success without evidence. If full OCR/Excel conversion is not honestly achievable, return reviewable intermediate artifacts, explicit limitations, and next-step guidance. Keep behavior deterministic and limited to declared local artifacts.",
+  "labels": [
+    "best_effort",
+    "evidence_backed",
+    "readonly",
+    "reviewable",
+    "trello"
+  ],
+  "metadata": {
+    "source_system": "trello",
+    "card_id": "69c1229edc9b8ec895640c5b",
+    "card_short_id": 5,
+    "board_id": "69be462743bfa0038ca10f7a",
+    "list_id": "69be462743bfa0038ca10f8f",
+    "date_last_activity": "2026-03-23T11:23:21.615Z",
+    "readonly_mapped_at": "2026-03-23T11:24:28.437754Z",
+    "contract_profile": "best_effort_evidence_backed",
+    "ocr_claim_policy": "do_not_claim_success_without_evidence",
+    "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable"
+  },
+  "source": {
+    "provider": "trello",
+    "mode": "readonly",
+    "card_id": "69c1229edc9b8ec895640c5b",
+    "board_id": "69be462743bfa0038ca10f7a",
+    "list_id": "69be462743bfa0038ca10f8f"
+  },
+  "request_type": "pdf_to_excel_ocr",
+  "input": {
+    "input_dir": "~/Desktop/pdf样本",
+    "output_xlsx": "artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx",
+    "ocr": "auto",
+    "dry_run": false
+  }
+}

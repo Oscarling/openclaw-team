@@ -1,0 +1,170 @@
+{
+  "task_id": "CRITIC-20260323-934",
+  "worker": "critic",
+  "status": "success",
+  "created_at": "2026-03-23T11:25:55.644825Z",
+  "updated_at": "2026-03-23T11:26:08.733154Z",
+  "retries": 0,
+  "max_retries": 0,
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "success",
+      "retryable": false,
+      "error": null,
+      "runtime_log": "/Users/lingguozhong/openclaw-team/workspaces/critic/CRITIC-20260323-934/runtime.attempt-1.log",
+      "exit_code": 0,
+      "timed_out": false,
+      "wait_error": null,
+      "output_path": "/Users/lingguozhong/openclaw-team/workspaces/critic/CRITIC-20260323-934/output.json",
+      "started_at": "2026-03-23T11:25:55.646339Z",
+      "finished_at": "2026-03-23T11:26:08.705104Z"
+    }
+  ],
+  "task_dir": "/Users/lingguozhong/openclaw-team/workspaces/critic/CRITIC-20260323-934",
+  "payload": {
+    "task_id": "CRITIC-20260323-934",
+    "worker": "critic",
+    "task_type": "review_artifact",
+    "objective": "Review automation artifact from local inbox pipeline and provide a structured verdict using one of: pass, fail, needs_revision. Always output a review markdown artifact and include verdict in metadata.",
+    "inputs": {
+      "artifacts": [
+        {
+          "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+          "type": "script"
+        }
+      ],
+      "params": {
+        "origin_id": "trello:69c1229edc9b8ec895640c5b",
+        "title": "Generate one local PDF inventory manifest script (best-effort reviewable attempt)",
+        "description": "Use ~/Desktop/pdf样本 as input.\nCreate one runnable local Python script that scans PDF files and writes one deterministic reviewable manifest under artifacts/.\nLocal-only. Do not claim OCR success.\n\nExecution contract: treat this as a best-effort, evidence-backed PDF extraction/conversion attempt. Do not claim OCR success without evidence. If full OCR/Excel conversion is not honestly achievable, return reviewable intermediate artifacts, explicit limitations, and next-step guidance. Keep behavior deterministic and limited to declared local artifacts.",
+        "labels": [
+          "best_effort",
+          "evidence_backed",
+          "readonly",
+          "reviewable",
+          "trello"
+        ],
+        "artifact_snapshots": [
+          {
+            "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+            "available": true,
+            "content": "#!/usr/bin/env python3\n\"\"\"\nBest-effort local PDF inventory manifest generator.\n\nPurpose:\n- Scan a local input directory for PDF files.\n- Produce a deterministic, reviewable manifest at the requested output path.\n- Avoid unsupported OCR or extraction claims.\n- Remain runnable with standard library only; optionally writes true XLSX if\n  openpyxl is available locally.\n\nConfigured from task parameters:\n- input_dir: ~/Desktop/pdf样本\n- output_xlsx: artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx\n- ocr: auto (recorded as metadata only; no unsupported OCR is performed)\n- dry_run: false\n- origin_id: trello:69c1229edc9b8ec895640c5b\n\"\"\"\n\nfrom __future__ import annotations\n\nimport csv\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nfrom typing import Dict, Iterable, List, Tuple\n\nINPUT_DIR_RAW = \"~/Desktop/pdf样本\"\nOUTPUT_XLSX_RAW = \"artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx\"\nOCR_MODE = \"auto\"\nDRY_RUN = False\nORIGIN_ID = \"trello:69c1229edc9b8ec895640c5b\"\nTITLE = \"Generate one local PDF inventory manifest script (best-effort reviewable attempt)\"\nDESCRIPTION = (\n    \"Use ~/Desktop/pdf样本 as input. Create one runnable local Python script that scans \"\n    \"PDF files and writes one deterministic reviewable manifest under artifacts/. \"\n    \"Local-only. Do not overclaim OCR/extraction behavior.\"\n)\nLABELS = [\"best_effort\", \"evidence_backed\", \"readonly\", \"reviewable\", \"trello\"]\n\nMANIFEST_COLUMNS = [\n    \"source_origin_id\",\n    \"input_dir\",\n    \"relative_path\",\n    \"file_name\",\n    \"file_size_bytes\",\n    \"modified_time_utc\",\n    \"sha256_first_1mb\",\n    \"pdf_header\",\n    \"is_probably_pdf\",\n    \"ocr_mode_requested\",\n    \"text_extraction_performed\",\n    \"ocr_performed\",\n    \"review_status\",\n    \"notes\",\n]\n\n\ndef expand_path(raw: str) -> Path:\n    return Path(os.path.expanduser(raw)).resolve()\n\n\ndef ensure_parent_dir(path: Path) -> None:\n    path.parent.mkdir(parents=True, exist_ok=True)\n\n\ndef sha256_first_1mb(path: Path) -> str:\n    hasher = hashlib.sha256()\n    with path.open(\"rb\") as fh:\n        hasher.update(fh.read(1024 * 1024))\n    return hasher.hexdigest()\n\n\ndef read_pdf_header(path: Path) -> str:\n    try:\n        with path.open(\"rb\") as fh:\n            data = fh.read(8)\n        if not data:\n            return \"\"\n        return data.decode(\"latin-1\", errors=\"replace\")\n    except Exception as exc:\n        return f\"ERROR:{type(exc).__name__}\"\n\n\ndef is_probably_pdf_from_header(header: str) -> bool:\n    return header.startswith(\"%PDF-\")\n\n\ndef iso_mtime_utc(path: Path) -> str:\n    from datetime import datetime, timezone\n\n    ts = path.stat().st_mtime\n    return datetime.fromtimestamp(ts, tz=timezone.utc).replace(microsecond=0).isoformat().replace(\"+00:00\", \"Z\")\n\n\ndef iter_pdfs(root: Path) -> Iterable[Path]:\n    if not root.exists() or not root.is_dir():\n        return []\n    return sorted(\n        [p for p in root.rglob(\"*\") if p.is_file() and p.suffix.lower() == \".pdf\"],\n        key=lambda p: str(p.relative_to(root)).replace(\"\\\\\", \"/\"),\n    )\n\n\ndef build_rows(input_dir: Path) -> List[Dict[str, str]]:\n    rows: List[Dict[str, str]] = []\n    for pdf_path in iter_pdfs(input_dir):\n        rel = str(pdf_path.relative_to(input_dir)).replace(\"\\\\\", \"/\")\n        header = read_pdf_header(pdf_path)\n        row = {\n            \"source_origin_id\": ORIGIN_ID,\n            \"input_dir\": str(input_dir),\n            \"relative_path\": rel,\n            \"file_name\": pdf_path.name,\n            \"file_size_bytes\": str(pdf_path.stat().st_size),\n            \"modified_time_utc\": iso_mtime_utc(pdf_path),\n            \"sha256_first_1mb\": sha256_first_1mb(pdf_path),\n            \"pdf_header\": header,\n            \"is_probably_pdf\": \"true\" if is_probably_pdf_from_header(header) else \"false\",\n            \"ocr_mode_requested\": OCR_MODE,\n            \"text_extraction_performed\": \"false\",\n            \"ocr_performed\": \"false\",\n            \"review_status\": \"inventory_only\",\n            \"notes\": \"Deterministic manifest only; no OCR or text extraction attempted.\",\n        }\n        rows.append(row)\n    return rows\n\n\ndef write_xlsx_with_openpyxl(output_path: Path, rows: List[Dict[str, str]]) -> Tuple[bool, str]:\n    try:\n        from openpyxl import Workbook  # type: ignore\n    except Exception as exc:\n        return False, f\"openpyxl unavailable: {type(exc).__name__}: {exc}\"\n\n    wb = Workbook()\n    ws = wb.active\n    ws.title = \"pdf_manifest\"\n    ws.append(MANIFEST_COLUMNS)\n    for row in rows:\n        ws.append([row.get(col, \"\") for col in MANIFEST_COLUMNS])\n\n    meta = wb.create_sheet(\"run_metadata\")\n    metadata_rows = [\n        (\"title\", TITLE),\n        (\"description\", DESCRIPTION),\n        (\"origin_id\", ORIGIN_ID),\n        (\"ocr_mode_requested\", OCR_MODE),\n        (\"dry_run\", str(DRY_RUN).lower()),\n        (\"input_dir\", str(expand_path(INPUT_DIR_RAW))),\n        (\"output_path\", str(output_path)),\n        (\"row_count\", str(len(rows))),\n        (\"writer\", \"openpyxl\"),\n        (\"limitations\", \"No OCR or text extraction performed by this script.\"),\n    ]\n    for item in metadata_rows:\n        meta.append(list(item))\n\n    wb.save(output_path)\n    return True, \"wrote xlsx via openpyxl\"\n\n\ndef write_csv_fallback(output_path: Path, rows: List[Dict[str, str]]) -> str:\n    with output_path.open(\"w\", encoding=\"utf-8\", newline=\"\") as fh:\n        fh.write(\"# REVIEWABLE FALLBACK: CSV content stored at requested .xlsx path because openpyxl is unavailable.\\n\")\n        fh.write(\"# This is not a true XLSX binary workbook. Rename to .csv if needed for import.\\n\")\n        fh.write(f\"# origin_id={ORIGIN_ID}\\n\")\n        fh.write(f\"# ocr_mode_requested={OCR_MODE}\\n\")\n        fh.write(\"# text_extraction_performed=false\\n\")\n        fh.write(\"# ocr_performed=false\\n\")\n        writer = csv.DictWriter(fh, fieldnames=MANIFEST_COLUMNS)\n        writer.writeheader()\n        for row in rows:\n            writer.writerow(row)\n    return \"wrote csv fallback at requested output path\"\n\n\ndef main() -> int:\n    input_dir = expand_path(INPUT_DIR_RAW)\n    output_path = expand_path(OUTPUT_XLSX_RAW)\n    ensure_parent_dir(output_path)\n\n    rows = build_rows(input_dir)\n\n    run_summary = {\n        \"title\": TITLE,\n        \"origin_id\": ORIGIN_ID,\n        \"input_dir\": str(input_dir),\n        \"output_path\": str(output_path),\n        \"ocr_mode_requested\": OCR_MODE,\n        \"dry_run\": DRY_RUN,\n        \"pdf_count\": len(rows),\n        \"limitations\": [\n            \"No OCR performed.\",\n            \"No text extraction performed.\",\n            \"Manifest reflects file inventory only.\",\n        ],\n    }\n\n    print(json.dumps(run_summary, ensure_ascii=False, indent=2))\n\n    if DRY_RUN:\n        return 0\n\n    wrote_xlsx, detail = write_xlsx_with_openpyxl(output_path, rows)\n    if not wrote_xlsx:\n        detail = write_csv_fallback(output_path, rows) + f\"; xlsx_unavailable_reason={detail}\"\n\n    print(detail)\n    return 0\n\n\nif __name__ == \"__main__\":\n    raise SystemExit(main())\n",
+            "truncated": false
+          }
+        ],
+        "review_contract": {
+          "required_status": [
+            "success",
+            "partial",
+            "failed"
+          ],
+          "required_verdict_values": [
+            "fail",
+            "needs_revision",
+            "pass"
+          ],
+          "required_metadata_key": "verdict",
+          "must_write_review_artifact_to": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+          "artifact_policy": "Always include either `file_contents` for the review artifact path or `artifacts` referencing that exact path.",
+          "fallback_policy": "If evidence is insufficient, return `status=partial`, include explicit `errors`, still generate review artifact content, and set verdict=needs_revision."
+        },
+        "review_template": {
+          "title": "Review: <artifact name>",
+          "sections": [
+            "Scope",
+            "Findings",
+            "Verdict",
+            "Rationale"
+          ],
+          "verdict_required": true
+        }
+      }
+    },
+    "expected_outputs": [
+      {
+        "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+        "type": "review"
+      }
+    ],
+    "constraints": [
+      "Review must be grounded in produced automation artifact",
+      "Do not invent missing artifact content",
+      "Return a clear verdict: pass, fail, or needs_revision",
+      "Include metadata.verdict in output",
+      "Generate review artifact markdown for expected_outputs[0].path",
+      "Use artifact_snapshots when provided; avoid claiming access problems if snapshot content exists.",
+      "Return metadata.verdict with one of: pass, fail, needs_revision.",
+      "Always generate review artifact content for expected_outputs[0].path.",
+      "If evidence is insufficient, use partial + errors + verdict=needs_revision, but still output review artifact."
+    ],
+    "priority": "medium",
+    "source": {
+      "kind": "local_inbox",
+      "origin_id": "trello:69c1229edc9b8ec895640c5b",
+      "inbox_file": "trello-readonly-69c1229edc9b8ec895640c5b.json",
+      "received_at": "2026-03-23T11:24:28.464229Z",
+      "title": "Generate one local PDF inventory manifest script (best-effort reviewable attempt)",
+      "labels": [
+        "best_effort",
+        "evidence_backed",
+        "readonly",
+        "reviewable",
+        "trello"
+      ],
+      "provider": "trello",
+      "mode": "readonly",
+      "card_id": "69c1229edc9b8ec895640c5b",
+      "board_id": "69be462743bfa0038ca10f7a",
+      "list_id": "69be462743bfa0038ca10f8f"
+    },
+    "acceptance_criteria": [
+      "Produce a review artifact with explicit verdict (pass/fail/needs_revision)"
+    ],
+    "metadata": {
+      "integration_phase": "8B",
+      "pipeline": "inbox->adapter->manager->automation->critic",
+      "request_type": "pdf_to_excel_ocr",
+      "payload_hash": "d01d1c92df6b82b9cf6ea28869b7249cbf8ae1b486f54d0b78cbb1bb37fcc3f5",
+      "labels": [
+        "best_effort",
+        "evidence_backed",
+        "readonly",
+        "reviewable",
+        "trello"
+      ],
+      "external_metadata": {
+        "source_system": "trello",
+        "card_id": "69c1229edc9b8ec895640c5b",
+        "card_short_id": 5,
+        "board_id": "69be462743bfa0038ca10f7a",
+        "list_id": "69be462743bfa0038ca10f8f",
+        "date_last_activity": "2026-03-23T11:23:21.615Z",
+        "readonly_mapped_at": "2026-03-23T11:24:28.437754Z",
+        "contract_profile": "best_effort_evidence_backed",
+        "ocr_claim_policy": "do_not_claim_success_without_evidence",
+        "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable"
+      }
+    }
+  },
+  "result": {
+    "task_id": "CRITIC-20260323-934",
+    "worker": "critic",
+    "status": "success",
+    "summary": "Reviewed the provided local PDF inventory manifest script snapshot and generated a structured review artifact with verdict.",
+    "artifacts": [
+      {
+        "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+        "type": "review"
+      }
+    ],
+    "timestamp": "2026-03-23T11:26:08.593838Z",
+    "duration_ms": 12745,
+    "metadata": {
+      "verdict": "pass",
+      "reviewed_artifact": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "origin_id": "trello:69c1229edc9b8ec895640c5b",
+      "task_id": "CRITIC-20260323-934"
+    }
+  }
+}

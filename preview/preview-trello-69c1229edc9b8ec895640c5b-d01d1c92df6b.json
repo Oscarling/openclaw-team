@@ -1,0 +1,336 @@
+{
+  "preview_id": "preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b",
+  "created_at": "2026-03-23T11:24:28.464356Z",
+  "approved": true,
+  "source": {
+    "kind": "local_inbox",
+    "origin_id": "trello:69c1229edc9b8ec895640c5b",
+    "received_at": "2026-03-23T11:24:28.464229Z",
+    "inbox_file": "trello-readonly-69c1229edc9b8ec895640c5b.json"
+  },
+  "external_input": {
+    "title": "Generate one local PDF inventory manifest script (best-effort reviewable attempt)",
+    "description": "Use ~/Desktop/pdf样本 as input.\nCreate one runnable local Python script that scans PDF files and writes one deterministic reviewable manifest under artifacts/.\nLocal-only. Do not claim OCR success.\n\nExecution contract: treat this as a best-effort, evidence-backed PDF extraction/conversion attempt. Do not claim OCR success without evidence. If full OCR/Excel conversion is not honestly achievable, return reviewable intermediate artifacts, explicit limitations, and next-step guidance. Keep behavior deterministic and limited to declared local artifacts.",
+    "labels": [
+      "best_effort",
+      "evidence_backed",
+      "readonly",
+      "reviewable",
+      "trello"
+    ],
+    "metadata": {
+      "source_system": "trello",
+      "card_id": "69c1229edc9b8ec895640c5b",
+      "card_short_id": 5,
+      "board_id": "69be462743bfa0038ca10f7a",
+      "list_id": "69be462743bfa0038ca10f8f",
+      "date_last_activity": "2026-03-23T11:23:21.615Z",
+      "readonly_mapped_at": "2026-03-23T11:24:28.437754Z",
+      "contract_profile": "best_effort_evidence_backed",
+      "ocr_claim_policy": "do_not_claim_success_without_evidence",
+      "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable"
+    },
+    "request_type": "pdf_to_excel_ocr",
+    "input": {
+      "input_dir": "~/Desktop/pdf样本",
+      "output_xlsx": "artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx",
+      "ocr": "auto",
+      "dry_run": false
+    }
+  },
+  "task_summary": {
+    "automation": {
+      "task_id": "AUTO-20260323-219",
+      "worker": "automation",
+      "task_type": "generate_script",
+      "objective": "Generate one local PDF inventory manifest script (best-effort reviewable attempt). Generate exactly one runnable local helper script artifact for a best-effort PDF extraction/conversion attempt using the provided parameters.",
+      "expected_outputs": [
+        {
+          "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+          "type": "script"
+        }
+      ]
+    },
+    "critic": {
+      "task_id": "CRITIC-20260323-934",
+      "worker": "critic",
+      "task_type": "review_artifact",
+      "objective": "Review automation artifact from local inbox pipeline and provide a structured verdict using one of: pass, fail, needs_revision. Always output a review markdown artifact and include verdict in metadata.",
+      "expected_outputs": [
+        {
+          "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+          "type": "review"
+        }
+      ]
+    }
+  },
+  "internal_tasks": {
+    "automation": {
+      "task_id": "AUTO-20260323-219",
+      "worker": "automation",
+      "task_type": "generate_script",
+      "objective": "Generate one local PDF inventory manifest script (best-effort reviewable attempt). Generate exactly one runnable local helper script artifact for a best-effort PDF extraction/conversion attempt using the provided parameters.",
+      "inputs": {
+        "params": {
+          "input_dir": "~/Desktop/pdf样本",
+          "output_xlsx": "artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx",
+          "ocr": "auto",
+          "dry_run": false,
+          "origin_id": "trello:69c1229edc9b8ec895640c5b",
+          "title": "Generate one local PDF inventory manifest script (best-effort reviewable attempt)",
+          "description": "Use ~/Desktop/pdf样本 as input. Create one runnable local Python script that scans PDF files and writes one deterministic reviewable manifest under artifacts/. Local-only. Do not...",
+          "labels": [
+            "best_effort",
+            "evidence_backed",
+            "readonly",
+            "reviewable",
+            "trello"
+          ]
+        }
+      },
+      "expected_outputs": [
+        {
+          "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+          "type": "script"
+        }
+      ],
+      "constraints": [
+        "Follow the local inbox normalized request",
+        "Do not claim unsupported runtime dependencies",
+        "Keep output deterministic and executable",
+        "Produce only the expected script artifact",
+        "Prefer honest, reviewable intermediate behavior over unsupported OCR claims"
+      ],
+      "priority": "medium",
+      "source": {
+        "kind": "local_inbox",
+        "origin_id": "trello:69c1229edc9b8ec895640c5b",
+        "inbox_file": "trello-readonly-69c1229edc9b8ec895640c5b.json",
+        "received_at": "2026-03-23T11:24:28.464229Z",
+        "title": "Generate one local PDF inventory manifest script (best-effort reviewable attempt)",
+        "labels": [
+          "best_effort",
+          "evidence_backed",
+          "readonly",
+          "reviewable",
+          "trello"
+        ],
+        "provider": "trello",
+        "mode": "readonly",
+        "card_id": "69c1229edc9b8ec895640c5b",
+        "board_id": "69be462743bfa0038ca10f7a",
+        "list_id": "69be462743bfa0038ca10f8f"
+      },
+      "acceptance_criteria": [
+        "Produce the expected script artifact at expected_outputs[0].path",
+        "Script behavior remains runnable, deterministic, and reviewable"
+      ],
+      "metadata": {
+        "integration_phase": "8B",
+        "pipeline": "inbox->adapter->manager->automation->critic",
+        "request_type": "pdf_to_excel_ocr",
+        "payload_hash": "d01d1c92df6b82b9cf6ea28869b7249cbf8ae1b486f54d0b78cbb1bb37fcc3f5",
+        "labels": [
+          "best_effort",
+          "evidence_backed",
+          "readonly",
+          "reviewable",
+          "trello"
+        ],
+        "external_metadata": {
+          "source_system": "trello",
+          "card_id": "69c1229edc9b8ec895640c5b",
+          "card_short_id": 5,
+          "board_id": "69be462743bfa0038ca10f7a",
+          "list_id": "69be462743bfa0038ca10f8f",
+          "date_last_activity": "2026-03-23T11:23:21.615Z",
+          "readonly_mapped_at": "2026-03-23T11:24:28.437754Z",
+          "contract_profile": "best_effort_evidence_backed",
+          "ocr_claim_policy": "do_not_claim_success_without_evidence",
+          "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable"
+        },
+        "automation_contract_profile": "narrow_script_artifact"
+      }
+    },
+    "critic": {
+      "task_id": "CRITIC-20260323-934",
+      "worker": "critic",
+      "task_type": "review_artifact",
+      "objective": "Review automation artifact from local inbox pipeline and provide a structured verdict using one of: pass, fail, needs_revision. Always output a review markdown artifact and include verdict in metadata.",
+      "inputs": {
+        "artifacts": [
+          {
+            "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+            "type": "script"
+          }
+        ],
+        "params": {
+          "origin_id": "trello:69c1229edc9b8ec895640c5b",
+          "title": "Generate one local PDF inventory manifest script (best-effort reviewable attempt)",
+          "description": "Use ~/Desktop/pdf样本 as input.\nCreate one runnable local Python script that scans PDF files and writes one deterministic reviewable manifest under artifacts/.\nLocal-only. Do not claim OCR success.\n\nExecution contract: treat this as a best-effort, evidence-backed PDF extraction/conversion attempt. Do not claim OCR success without evidence. If full OCR/Excel conversion is not honestly achievable, return reviewable intermediate artifacts, explicit limitations, and next-step guidance. Keep behavior deterministic and limited to declared local artifacts.",
+          "labels": [
+            "best_effort",
+            "evidence_backed",
+            "readonly",
+            "reviewable",
+            "trello"
+          ]
+        }
+      },
+      "expected_outputs": [
+        {
+          "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+          "type": "review"
+        }
+      ],
+      "constraints": [
+        "Review must be grounded in produced automation artifact",
+        "Do not invent missing artifact content",
+        "Return a clear verdict: pass, fail, or needs_revision",
+        "Include metadata.verdict in output",
+        "Generate review artifact markdown for expected_outputs[0].path"
+      ],
+      "priority": "medium",
+      "source": {
+        "kind": "local_inbox",
+        "origin_id": "trello:69c1229edc9b8ec895640c5b",
+        "inbox_file": "trello-readonly-69c1229edc9b8ec895640c5b.json",
+        "received_at": "2026-03-23T11:24:28.464229Z",
+        "title": "Generate one local PDF inventory manifest script (best-effort reviewable attempt)",
+        "labels": [
+          "best_effort",
+          "evidence_backed",
+          "readonly",
+          "reviewable",
+          "trello"
+        ],
+        "provider": "trello",
+        "mode": "readonly",
+        "card_id": "69c1229edc9b8ec895640c5b",
+        "board_id": "69be462743bfa0038ca10f7a",
+        "list_id": "69be462743bfa0038ca10f8f"
+      },
+      "acceptance_criteria": [
+        "Produce a review artifact with explicit verdict (pass/fail/needs_revision)"
+      ],
+      "metadata": {
+        "integration_phase": "8B",
+        "pipeline": "inbox->adapter->manager->automation->critic",
+        "request_type": "pdf_to_excel_ocr",
+        "payload_hash": "d01d1c92df6b82b9cf6ea28869b7249cbf8ae1b486f54d0b78cbb1bb37fcc3f5",
+        "labels": [
+          "best_effort",
+          "evidence_backed",
+          "readonly",
+          "reviewable",
+          "trello"
+        ],
+        "external_metadata": {
+          "source_system": "trello",
+          "card_id": "69c1229edc9b8ec895640c5b",
+          "card_short_id": 5,
+          "board_id": "69be462743bfa0038ca10f7a",
+          "list_id": "69be462743bfa0038ca10f8f",
+          "date_last_activity": "2026-03-23T11:23:21.615Z",
+          "readonly_mapped_at": "2026-03-23T11:24:28.437754Z",
+          "contract_profile": "best_effort_evidence_backed",
+          "ocr_claim_policy": "do_not_claim_success_without_evidence",
+          "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable"
+        }
+      }
+    }
+  },
+  "expected_artifacts": [
+    "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+    "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py"
+  ],
+  "dedupe_keys": [
+    "origin:trello:69c1229edc9b8ec895640c5b",
+    "hash:d01d1c92df6b82b9cf6ea28869b7249cbf8ae1b486f54d0b78cbb1bb37fcc3f5"
+  ],
+  "risk_warnings": [],
+  "execution": {
+    "status": "processed",
+    "executed": true,
+    "attempts": 1,
+    "executed_at": "2026-03-23T11:26:08.733604Z",
+    "decision_reason": "critic_verdict=pass"
+  },
+  "approval": {
+    "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.json",
+    "approved_by": "trello-pass-oriented-recheck",
+    "approved_at": "2026-03-23T11:24:49Z",
+    "note": "Single-card real-mode validation for fresh Trello manifest-script sample"
+  },
+  "last_execution": {
+    "decision": "processed",
+    "decision_reason": "critic_verdict=pass",
+    "automation_result": {
+      "task_id": "AUTO-20260323-219",
+      "worker": "automation",
+      "status": "success",
+      "summary": "Generated one deterministic local Python helper script artifact that scans PDFs from the configured input directory and writes a reviewable manifest to the configured .xlsx path using only standard-library behavior plus optional openpyxl if available, with a CSV fallback written at the same target path when XLSX support is unavailable.",
+      "artifacts": [
+        {
+          "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+          "type": "script"
+        }
+      ],
+      "timestamp": "2026-03-23T11:25:55.441801Z",
+      "duration_ms": 43076,
+      "notes": [
+        "The script is best-effort and intentionally does not claim OCR or text extraction success without local evidence.",
+        "The script produces a deterministic PDF inventory manifest suitable for review.",
+        "If openpyxl is unavailable, the script writes CSV-formatted manifest data to the requested output path for reviewability rather than claiming real XLSX generation."
+      ],
+      "metadata": {
+        "task_id": "AUTO-20260323-219",
+        "worker": "automation",
+        "request_type": "pdf_to_excel_ocr",
+        "origin_id": "trello:69c1229edc9b8ec895640c5b"
+      }
+    },
+    "critic_result": {
+      "task_id": "CRITIC-20260323-934",
+      "worker": "critic",
+      "status": "success",
+      "summary": "Reviewed the provided local PDF inventory manifest script snapshot and generated a structured review artifact with verdict.",
+      "artifacts": [
+        {
+          "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+          "type": "review"
+        }
+      ],
+      "timestamp": "2026-03-23T11:26:08.593838Z",
+      "duration_ms": 12745,
+      "metadata": {
+        "verdict": "pass",
+        "reviewed_artifact": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+        "origin_id": "trello:69c1229edc9b8ec895640c5b",
+        "task_id": "CRITIC-20260323-934"
+      }
+    },
+    "critic_verdict": "pass"
+  },
+  "finalization": {
+    "status": "in_progress",
+    "attempts": 1,
+    "git": {
+      "add": {
+        "status": "pending"
+      },
+      "commit": {
+        "status": "pending"
+      },
+      "push": {
+        "status": "pending"
+      }
+    },
+    "trello": {
+      "status": "pending"
+    },
+    "started_at": "2026-03-23T14:23:51.705800Z",
+    "last_error": null,
+    "last_step": "prepare"
+  }
+}
