@@ -176,7 +176,7 @@ def _collect_commit_paths(preview_path: Path, preview_payload: dict[str, Any], r
     processed_dir = repo_root / "processed"
     tasks_dir = repo_root / "tasks"
     workspaces_dir = repo_root / "workspaces"
-    paths: list[Path] = [preview_path]
+    paths: list[Path] = []
 
     approval = preview_payload.get("approval")
     if isinstance(approval, dict):
