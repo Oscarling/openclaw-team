@@ -464,3 +464,40 @@ Next best step:
 
 - decide the branch-protection enforcement route first
 - then merge the stacked governance PRs through normal review once the enforcement decision is clear
+
+### 15. Public Visibility Route And Platform Branch Protection
+
+User objective:
+
+- unlock GitHub-native branch protection without upgrading the account plan
+- keep the repo on a normal PR-based workflow with enforceable CI and review gates
+
+Main work areas:
+
+- changed the repository visibility from private to public
+- verified that GitHub now reports the repository as `PUBLIC`
+- confirmed that the actual remote default branch is `codex/next-task`, not `main`
+- enabled branch protection on `codex/next-task`
+
+Branch protection policy applied:
+
+- required status checks:
+  - `baseline-tests`
+  - `shell-checks`
+- require branches to be up to date before merging
+- require 1 approving review
+- dismiss stale approvals on new commits
+- require conversation resolution
+- enforce rules for admins
+- disallow force-push and deletion
+
+Key result:
+
+- the original private-repo plan blocker was resolved without a paid GitHub upgrade
+- the current primary branch now has platform-enforced PR and CI gates
+- the remaining branch-governance gap is naming and default-branch normalization, not protection capability
+
+Current follow-up:
+
+- the repository still uses `codex/next-task` as the remote default branch
+- a later cleanup can normalize the default branch name to `main` after the active PR stack settles

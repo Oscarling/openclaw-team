@@ -93,19 +93,19 @@ Allowed enum values:
 - opened_at: 2026-03-24
 
 ### BL-20260324-003
-- title: Enable branch protection for main with required CI and review
+- title: Enable branch protection for the primary branch with required CI and review
 - type: blocker
-- status: blocked
+- status: done
 - phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260324-001, BL-20260324-002, BL-20260324-006
 - start_when: Governance and smoke-hardening PR branches are ready to enter normal merge flow and GitHub plan/public-visibility limits no longer block branch protection
-- done_when: main rejects direct push and requires passing CI plus at least one review, or an approved alternative enforcement policy is explicitly recorded
+- done_when: The primary branch rejects direct push and requires passing CI plus at least one review
 - source: PROJECT_CHAT_AND_WORK_LOG.md
 - link: https://github.com/Oscarling/openclaw-team/settings/branches
 - issue: https://github.com/Oscarling/openclaw-team/issues/5
-- evidence: -
+- evidence: Branch protection is enabled on `codex/next-task` with required checks `baseline-tests` and `shell-checks`, one approving review, stale review dismissal, admin enforcement, and required conversation resolution
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
 
@@ -146,7 +146,7 @@ Allowed enum values:
 ### BL-20260324-006
 - title: Resolve GitHub plan limitation blocking private-repo branch protection
 - type: blocker
-- status: active
+- status: done
 - phase: now
 - priority: p1
 - owner: Oscarling
@@ -156,6 +156,23 @@ Allowed enum values:
 - source: GitHub API branch protection check on 2026-03-24 returned HTTP 403 upgrade/public requirement
 - link: https://github.com/Oscarling/openclaw-team/settings/branches
 - issue: https://github.com/Oscarling/openclaw-team/issues/8
-- evidence: `gh api repos/Oscarling/openclaw-team/branches/main/protection` returned `HTTP 403: Upgrade to GitHub Pro or make this repository public to enable this feature.`
+- evidence: Repository visibility changed to `PUBLIC`, `gh repo view Oscarling/openclaw-team` confirms `visibility=PUBLIC`, and branch protection was then applied successfully on the default branch
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-007
+- title: Normalize remote default branch naming from codex/next-task to main
+- type: debt
+- status: planned
+- phase: next
+- priority: p2
+- owner: Oscarling
+- depends_on: BL-20260324-003
+- start_when: The current stacked PR flow is stable enough to retarget or rename the default branch without unnecessary churn
+- done_when: The remote default branch is `main` and review, CI, and protection settings are aligned with that name
+- source: GitHub repository snapshot on 2026-03-24 shows default branch `codex/next-task` even after public visibility and branch protection setup
+- link: https://github.com/Oscarling/openclaw-team/settings/branches
+- issue: deferred:after-current-pr-stack-stabilizes
+- evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
