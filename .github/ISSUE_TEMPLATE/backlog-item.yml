@@ -1,0 +1,71 @@
+name: Backlog Item
+description: Mirror a tracked backlog item from PROJECT_BACKLOG.md into GitHub issues.
+title: "[Backlog] <title>"
+body:
+  - type: input
+    id: backlog_id
+    attributes:
+      label: Backlog ID
+      description: Copy the canonical id from PROJECT_BACKLOG.md.
+      placeholder: BL-20260324-001
+    validations:
+      required: true
+  - type: dropdown
+    id: backlog_type
+    attributes:
+      label: Type
+      options:
+        - mainline
+        - sideline
+        - blocker
+        - debt
+        - future
+    validations:
+      required: true
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Phase
+      options:
+        - now
+        - next
+        - later
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - p0
+        - p1
+        - p2
+        - p3
+    validations:
+      required: true
+  - type: textarea
+    id: start_when
+    attributes:
+      label: Start When
+      description: Copy the gating condition from PROJECT_BACKLOG.md.
+    validations:
+      required: true
+  - type: textarea
+    id: done_when
+    attributes:
+      label: Done When
+      description: Copy the exact exit condition from PROJECT_BACKLOG.md.
+    validations:
+      required: true
+  - type: textarea
+    id: source_and_links
+    attributes:
+      label: Source And Links
+      description: Include source, branch/PR link, evidence, and any dependencies.
+      placeholder: |
+        source: PROJECT_BACKLOG.md
+        link: origin/feat/backlog-governance-kit
+        depends_on: BL-20260324-001
+        evidence: -
+    validations:
+      required: true

@@ -52,8 +52,9 @@ Allowed enum values:
 - Update `status`, `phase`, and `last_reviewed_at` whenever the item's real state
   changes.
 - When an item becomes `done`, replace `evidence: -` with concrete proof.
-- For `phase=now` items, create a GitHub issue or explicitly defer mirroring in
-  the PR description until the issue mirror is in place.
+- For `phase=now` items with `status=planned|active|blocked`, create a mirrored
+  GitHub issue and record it in `issue`.
+- `deferred:...` is acceptable only for non-`now` items.
 
 ## Backlog Items
 
@@ -68,8 +69,8 @@ Allowed enum values:
 - start_when: Governance baseline branch is available for follow-up process hardening
 - done_when: PROJECT_BACKLOG.md, backlog lint, CI, and merge gates are all merged through normal review
 - source: PROJECT_CHAT_AND_WORK_LOG.md
-- link: origin/feat/backlog-governance-kit
-- issue: -
+- link: https://github.com/Oscarling/openclaw-team/pull/1
+- issue: https://github.com/Oscarling/openclaw-team/issues/3
 - evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
@@ -85,42 +86,42 @@ Allowed enum values:
 - start_when: fix/formal-preview-smoke-hardening branch is ready for review
 - done_when: The hardening PR merges to main with required checks green
 - source: PROCESSED_FINALIZATION_REPORT.md
-- link: origin/fix/formal-preview-smoke-hardening
-- issue: -
+- link: https://github.com/Oscarling/openclaw-team/pull/2
+- issue: https://github.com/Oscarling/openclaw-team/issues/4
 - evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
 
 ### BL-20260324-003
-- title: Enable branch protection for main with required CI and review
+- title: Enable branch protection for the primary branch with required CI and review
 - type: blocker
-- status: planned
+- status: done
 - phase: now
 - priority: p1
 - owner: Oscarling
-- depends_on: BL-20260324-001, BL-20260324-002
-- start_when: Governance and smoke-hardening PR branches are ready to enter normal merge flow
-- done_when: main rejects direct push and requires passing CI plus at least one review
+- depends_on: BL-20260324-001, BL-20260324-002, BL-20260324-006
+- start_when: Governance and smoke-hardening PR branches are ready to enter normal merge flow and GitHub plan/public-visibility limits no longer block branch protection
+- done_when: The primary branch rejects direct push and requires passing CI plus at least one review
 - source: PROJECT_CHAT_AND_WORK_LOG.md
 - link: https://github.com/Oscarling/openclaw-team/settings/branches
-- issue: -
-- evidence: -
+- issue: https://github.com/Oscarling/openclaw-team/issues/5
+- evidence: Branch protection is enabled on `codex/next-task` with required checks `baseline-tests` and `shell-checks`, one approving review, stale review dismissal, admin enforcement, and required conversation resolution
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
 
 ### BL-20260324-004
 - title: Mirror active backlog items into GitHub issues
 - type: sideline
-- status: planned
-- phase: next
+- status: active
+- phase: now
 - priority: p2
 - owner: Oscarling
 - depends_on: BL-20260324-001
 - start_when: The backlog format and lint gate are merged so issue mirroring has a stable source
-- done_when: Each worthwhile active item has a linked GitHub issue or an explicit defer reason
+- done_when: Each phase=now actionable backlog item has a linked GitHub issue and mirror checks run in local gates plus CI
 - source: PROJECT_BACKLOG.md
-- link: https://github.com/Oscarling/openclaw-team/issues
-- issue: -
+- link: https://github.com/Oscarling/openclaw-team/pull/7
+- issue: https://github.com/Oscarling/openclaw-team/issues/6
 - evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
@@ -137,7 +138,41 @@ Allowed enum values:
 - done_when: Formal finalization no longer depends on list-name lookup for the Done list
 - source: PROCESSED_FINALIZATION_REPORT.md
 - link: /tmp/trello_env.sh
-- issue: -
+- issue: deferred:after-formal-preview-hardening-merges
+- evidence: -
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-006
+- title: Resolve GitHub plan limitation blocking private-repo branch protection
+- type: blocker
+- status: done
+- phase: now
+- priority: p1
+- owner: Oscarling
+- depends_on: -
+- start_when: Main branch policy must move from convention to enforced platform settings
+- done_when: The repo either supports GitHub branch protection or rulesets on the current plan, becomes public, upgrades plan, or an explicit alternative enforcement decision is recorded
+- source: GitHub API branch protection check on 2026-03-24 returned HTTP 403 upgrade/public requirement
+- link: https://github.com/Oscarling/openclaw-team/settings/branches
+- issue: https://github.com/Oscarling/openclaw-team/issues/8
+- evidence: Repository visibility changed to `PUBLIC`, `gh repo view Oscarling/openclaw-team` confirms `visibility=PUBLIC`, and branch protection was then applied successfully on the default branch
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-007
+- title: Normalize remote default branch naming from codex/next-task to main
+- type: debt
+- status: planned
+- phase: next
+- priority: p2
+- owner: Oscarling
+- depends_on: BL-20260324-003
+- start_when: The current stacked PR flow is stable enough to retarget or rename the default branch without unnecessary churn
+- done_when: The remote default branch is `main` and review, CI, and protection settings are aligned with that name
+- source: GitHub repository snapshot on 2026-03-24 shows default branch `codex/next-task` even after public visibility and branch protection setup
+- link: https://github.com/Oscarling/openclaw-team/settings/branches
+- issue: deferred:after-current-pr-stack-stabilizes
 - evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24

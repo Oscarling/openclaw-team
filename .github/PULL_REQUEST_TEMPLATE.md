@@ -13,7 +13,9 @@ What is intentionally not changed here?
 ## Tests
 
 - [ ] `python3 scripts/backlog_lint.py`
+- [ ] `python3 scripts/backlog_sync.py`
 - [ ] `python3 -m unittest -v tests/test_backlog_lint.py`
+- [ ] `python3 -m unittest -v tests/test_backlog_sync.py`
 - [ ] `python3 -m unittest -v tests/test_argus_hardening.py`
 - [ ] `python3 -m unittest -v tests/test_processed_finalization.py`
 - [ ] Other commands run are listed below
@@ -37,7 +39,7 @@ Backlog IDs touched in this PR:
 - [ ] `PROJECT_BACKLOG.md` was reviewed during this PR
 - [ ] Relevant backlog items had `status` / `phase` / `last_reviewed_at` updated
 - [ ] Any new sideline / blocker / debt / future item discovered during implementation was recorded before requesting review
-- [ ] GitHub issue mirror was updated, or an explicit defer reason is stated below
+- [ ] GitHub issue mirror was updated for every phase=now actionable backlog item, or a valid non-now defer reason is stated below
 
 Issue mirror defer reason:
 
