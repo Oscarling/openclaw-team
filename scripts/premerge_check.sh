@@ -70,6 +70,12 @@ else
   fail "PROJECT_BACKLOG.md backlog lint failed."
 fi
 
+if python3 scripts/backlog_sync.py; then
+  pass "PROJECT_BACKLOG.md passes issue mirror sync checks."
+else
+  fail "PROJECT_BACKLOG.md issue mirror sync failed."
+fi
+
 runtime_residue="$(printf '%s\n' "$status_output" | grep -E '(^|\s)(preview|approvals|processed)/' || true)"
 if [[ -n "$runtime_residue" ]]; then
   unclassified_runtime=""
@@ -109,6 +115,12 @@ if python3 -m unittest -v tests/test_backlog_lint.py; then
   pass "tests/test_backlog_lint.py passed."
 else
   fail "tests/test_backlog_lint.py failed."
+fi
+
+if python3 -m unittest -v tests/test_backlog_sync.py; then
+  pass "tests/test_backlog_sync.py passed."
+else
+  fail "tests/test_backlog_sync.py failed."
 fi
 
 if python3 -m unittest -v tests/test_argus_hardening.py; then
