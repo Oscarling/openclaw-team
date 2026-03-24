@@ -56,6 +56,20 @@ else
   warn "PROJECT_CHAT_AND_WORK_LOG.md is missing. Confirm another current-state ledger is in force."
 fi
 
+if git ls-files --error-unmatch PROJECT_BACKLOG.md >/dev/null 2>&1; then
+  pass "PROJECT_BACKLOG.md is tracked."
+elif [[ -f PROJECT_BACKLOG.md ]]; then
+  warn "PROJECT_BACKLOG.md exists but is not tracked. Track it before merge-ready validation."
+else
+  fail "PROJECT_BACKLOG.md is missing. Backlog sweep cannot be verified."
+fi
+
+if python3 scripts/backlog_lint.py; then
+  pass "PROJECT_BACKLOG.md passes backlog lint."
+else
+  fail "PROJECT_BACKLOG.md backlog lint failed."
+fi
+
 runtime_residue="$(printf '%s\n' "$status_output" | grep -E '(^|\s)(preview|approvals|processed)/' || true)"
 if [[ -n "$runtime_residue" ]]; then
   unclassified_runtime=""
@@ -91,6 +105,12 @@ fi
 
 echo
 echo "Running baseline unit tests..."
+if python3 -m unittest -v tests/test_backlog_lint.py; then
+  pass "tests/test_backlog_lint.py passed."
+else
+  fail "tests/test_backlog_lint.py failed."
+fi
+
 if python3 -m unittest -v tests/test_argus_hardening.py; then
   pass "tests/test_argus_hardening.py passed."
 else

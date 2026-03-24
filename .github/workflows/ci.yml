@@ -21,8 +21,12 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Run backlog lint
+        run: python3 scripts/backlog_lint.py
+
       - name: Run baseline unit tests
         run: |
+          python3 -m unittest -v tests/test_backlog_lint.py
           python3 -m unittest -v tests/test_argus_hardening.py
           python3 -m unittest -v tests/test_processed_finalization.py
 

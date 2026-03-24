@@ -38,6 +38,23 @@ Rules:
 - Track it in git before phase closeout.
 - Do not let a local-only copy become the team's only state record.
 
+### Open-work backlog
+
+- `PROJECT_BACKLOG.md`
+
+This is the default answer to: "What still needs attention, under what
+conditions, and in what order?"
+
+Rules:
+
+- Record every durable `mainline`, `sideline`, `blocker`, `debt`, or `future`
+  item here before review if it matters beyond the current shell session.
+- Keep fixed fields on every item; do not use free-form notes as the only state.
+- GitHub issues can mirror backlog items, but `PROJECT_BACKLOG.md` remains the
+  authority until sync automation exists.
+- Backlog items must update `status`, `phase`, and `last_reviewed_at` whenever
+  their real state changes.
+
 ### Capability evidence
 
 - phase reports in repo root
@@ -101,6 +118,13 @@ Run `docs/PRE_MERGE_CHECKLIST.md` before:
 - phase freeze
 - ship / formal closeout
 
+Gate B always includes one backlog sweep:
+
+- review `PROJECT_BACKLOG.md`
+- record any new sideline / blocker / debt / future item before asking for review
+- update `last_reviewed_at` on the relevant active items
+- confirm issue mirroring was updated or explicitly deferred
+
 ### Gate C: Phase exit
 
 Every phase closes only when all three are true:
@@ -125,10 +149,15 @@ Every phase closes only when all three are true:
    - ordinary phase: `1 smoke + 3 regression`
    - key milestone: `5 formal validation rounds`
 5. Run pre-run gate if the phase touches real Git / Trello integration.
-6. Open PR with evidence, risk note, rollback note, and document updates.
-7. Run one formal smoke for the exact stage being closed.
-8. Freeze the phase.
+6. Run backlog sweep.
+   - update `PROJECT_BACKLOG.md`
+   - capture any new sidelines before review
+   - confirm issue mirror state
+7. Open PR with evidence, risk note, rollback note, and document updates.
+8. Run one formal smoke for the exact stage being closed.
+9. Freeze the phase.
    - update current-state ledger
+   - update the backlog if open work changed
    - update capability evidence
    - mark stale snapshots as historical if needed
    - resolve runtime audit residue
@@ -158,6 +187,8 @@ Rules:
 The current repo-level minimum command set is:
 
 ```bash
+python3 scripts/backlog_lint.py
+python3 -m unittest -v tests/test_backlog_lint.py
 python3 -m unittest -v tests/test_argus_hardening.py
 python3 -m unittest -v tests/test_processed_finalization.py
 scripts/premerge_check.sh
@@ -173,6 +204,8 @@ scripts/preflight_finalization_check.sh <preview_json_path>
 
 The repository should keep a minimal CI job that runs:
 
+- `python3 scripts/backlog_lint.py`
+- `python3 -m unittest -v tests/test_backlog_lint.py`
 - `python3 -m unittest -v tests/test_argus_hardening.py`
 - `python3 -m unittest -v tests/test_processed_finalization.py`
 - shell syntax checks for governance scripts under `scripts/`
