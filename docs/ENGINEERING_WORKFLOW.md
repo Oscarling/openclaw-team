@@ -133,6 +133,101 @@ Every phase closes only when all three are true:
 2. The evidence doc is written or updated.
 3. The current-state ledger is updated.
 
+## Gstack Checkpoints
+
+Use the smallest matching gstack skill at the correct stage. Do not call every
+skill on every phase.
+
+### 1. Before coding a new phase or changing scope
+
+Use when:
+
+- the problem framing is still fuzzy
+- the phase could expand or contract materially
+- the repo is about to move from idea to implementation
+
+Recommended skills:
+
+- `office-hours` for wedge / demand / "what are we actually building?"
+- `plan-eng-review` before coding a non-trivial architecture or data-flow change
+- `plan-ceo-review` only when the question is strategy or ambition, not ordinary implementation
+
+### 2. Before substantial UI or UX work
+
+Use when:
+
+- a new interface or visual system is being defined
+- a phase can succeed technically but still fail at usability or polish
+
+Recommended skills:
+
+- `plan-design-review` before implementation
+- `design-review` after implementation or before merge when the UI is real
+
+### 3. When blocked by unexpected behavior
+
+Use when:
+
+- a regression, flaky run, or environment problem blocks progress
+- the root cause is not yet proven
+
+Recommended skills:
+
+- `investigate`
+
+Rule:
+
+- do not jump to fixes before root cause is identified
+
+### 4. Before merging meaningful code changes
+
+Use when:
+
+- the branch changes runtime behavior, trust boundaries, state transitions, or merge-critical scripts
+
+Recommended skills:
+
+- `review`
+
+Rule:
+
+- review is especially recommended before merging changes to execution control,
+  finalization, runtime contracts, or Git / Trello integration
+
+### 5. During ship / deploy / post-merge closeout
+
+Use when:
+
+- a branch is being shipped or landed
+- production or post-merge health needs verification
+- shipped behavior changed and docs must stay truthful
+
+Recommended skills:
+
+- `ship`
+- `land-and-deploy`
+- `canary`
+- `document-release`
+
+### 6. Safety-sensitive runs
+
+Use when:
+
+- a command can affect a live remote, production-like state, or shared runtime files
+
+Recommended skills:
+
+- `careful` or `guard`
+
+## Checkpoint Rule
+
+If a phase materially benefits from one of the checkpoints above, either:
+
+1. run the matching gstack skill and reference the result in the PR / evidence, or
+2. explicitly record why the checkpoint was not needed
+
+Do not let "we meant to ask gstack later" live only in shell history.
+
 ## Standard Phase Flow
 
 1. Define phase scope.
@@ -149,13 +244,14 @@ Every phase closes only when all three are true:
    - ordinary phase: `1 smoke + 3 regression`
    - key milestone: `5 formal validation rounds`
 5. Run pre-run gate if the phase touches real Git / Trello integration.
-6. Run backlog sweep.
+6. Run the relevant gstack checkpoint if the phase matches one of the rules above.
+7. Run backlog sweep.
    - update `PROJECT_BACKLOG.md`
    - capture any new sidelines before review
    - confirm issue mirror state
-7. Open PR with evidence, risk note, rollback note, and document updates.
-8. Run one formal smoke for the exact stage being closed.
-9. Freeze the phase.
+8. Open PR with evidence, risk note, rollback note, and document updates.
+9. Run one formal smoke for the exact stage being closed.
+10. Freeze the phase.
    - update current-state ledger
    - update the backlog if open work changed
    - update capability evidence

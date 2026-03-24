@@ -730,3 +730,37 @@ Verification snapshot on 2026-03-24:
   - `duplicate_skipped = 4`
   - `preview_created = 0`
   - `processing_recovered = 1`
+
+### 22. Gstack Checkpoint Policy Formalization
+
+User objective:
+
+- clarify the next standard-process step after the Trello preview smoke
+- stop treating gstack expert involvement as informal memory
+- write the intervention stages into repo governance, not only chat
+
+Main work areas:
+
+- identified the next development step as `BL-20260324-012`:
+  stop `trello_readonly_prep` smoke output from contaminating the live
+  processing queue, then rerun a clean Trello preview smoke
+- updated the engineering workflow with explicit gstack checkpoint stages
+- recorded that governance change as `BL-20260324-013`
+
+Key result:
+
+- the repo now has a written rule for when to involve gstack during:
+  - phase framing and scope changes
+  - UI / UX planning and review
+  - blocked investigations
+  - pre-merge review of meaningful code changes
+  - ship / deploy / post-merge closeout
+  - safety-sensitive runs
+- future phases no longer need to rely on memory to decide whether gstack should
+  intervene
+
+Verification snapshot on 2026-03-24:
+
+- [docs/ENGINEERING_WORKFLOW.md](/Users/lingguozhong/openclaw-team/docs/ENGINEERING_WORKFLOW.md)
+  now includes the `Gstack Checkpoints` section
+- `BL-20260324-012` remains the next real implementation item
