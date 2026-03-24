@@ -431,3 +431,37 @@ Allowed enum values:
 - evidence: `INBOX_RUNNER_CONTRACT_PROPAGATION_REPORT.md` records the source-side contract propagation that adds reviewable partial-outcome, delegate-resolution, and reviewed-script delegation rules to `adapters/local_inbox_adapter.py`, gates `tests/test_local_inbox_adapter.py` in local/CI merge checks, and passes `bash scripts/premerge_check.sh`
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
+
+### BL-20260324-023
+- title: Validate the propagated runner contract on a fresh preview candidate
+- type: mainline
+- status: done
+- phase: now
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-020, BL-20260324-022
+- start_when: `BL-20260324-022` is merged and the controlled same-origin regeneration path is still available, so a fresh preview candidate can be created under the propagated source-side runner contract
+- done_when: One governed validation phase creates a fresh same-origin preview candidate under the propagated runner contract, runs one explicit approval plus one real execute, and records whether Critic now passes or still returns `needs_revision` without expanding scope into Git finalization or Trello Done
+- source: `INBOX_RUNNER_CONTRACT_PROPAGATION_REPORT.md` on 2026-03-24 concluded that the next correct step is another governed validation phase that exercises a preview candidate under the propagated source-side contract
+- link: /Users/lingguozhong/openclaw-team/PROPAGATED_RUNNER_CONTRACT_VALIDATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/39
+- evidence: `PROPAGATED_RUNNER_CONTRACT_VALIDATION_REPORT.md` records one real same-origin Trello regeneration using token `regen-20260324-bl023-001`, a fresh preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-92872bb091b6`, one explicit approval, and one real execute showing the propagated contract did reach the fresh candidate even though the run still ended with a new `needs_revision` set
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-024
+- title: Address residual delegate-evidence and robustness gaps exposed by BL-20260324-023 validation
+- type: debt
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-023
+- start_when: `BL-20260324-023` has validated that the propagated runner contract reaches a fresh preview candidate, but the governed execute still returns `needs_revision` because the generated runner leaves gaps around delegate evidence visibility, stronger success evidence, traceability fidelity, or subprocess timeout handling
+- done_when: The repo either resolves or explicitly accepts the residual delegate-evidence and robustness review gaps before another governed validation or production use of the generated inbox runner
+- source: `PROPAGATED_RUNNER_CONTRACT_VALIDATION_REPORT.md` on 2026-03-24 will record the post-propagation governed execute result and the remaining Critic concerns
+- link: /Users/lingguozhong/openclaw-team/PROPAGATED_RUNNER_CONTRACT_VALIDATION_REPORT.md
+- issue: deferred:phase=next until scope is selected after BL-20260324-023 closeout
+- evidence: -
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
