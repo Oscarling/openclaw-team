@@ -282,16 +282,33 @@ Allowed enum values:
 ### BL-20260324-014
 - title: Run a clean Trello preview-creation smoke against an unseen live card or scope
 - type: mainline
-- status: planned
-- phase: next
+- status: blocked
+- phase: now
 - priority: p1
 - owner: Oscarling
-- depends_on: BL-20260324-012
-- start_when: Prep-helper queue pollution is fixed and the next blocker is no longer local sample contamination
+- depends_on: BL-20260324-012, BL-20260324-015
+- start_when: Prep-helper queue pollution is fixed and at least one approved live Trello card or scope is outside local dedupe history
 - done_when: A governed real Trello preview smoke targets an unseen live card or narrower live scope and truthfully records whether a new preview is created
-- source: `TRELLO_READONLY_PREP_QUEUE_HARDENING_REPORT.md` on 2026-03-24 confirmed `processing_recovered=0` but the live fetched cards still hit existing dedupe history
-- link: /Users/lingguozhong/openclaw-team/TRELLO_READONLY_PREP_QUEUE_HARDENING_REPORT.md
-- issue: deferred:promote-when-fresh-live-sample-plan-is-ready
-- evidence: -
+- source: `TRELLO_LIVE_TARGET_DISCOVERY_REPORT.md` on 2026-03-24 confirmed the current board scope still has `unseen_cards=0`
+- link: /Users/lingguozhong/openclaw-team/TRELLO_LIVE_TARGET_DISCOVERY_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/22
+- evidence: `TRELLO_LIVE_TARGET_DISCOVERY_REPORT.md` records a read-only discovery rerun with `open_board_cards=6`, `unseen_cards=0`, and no list containing unseen cards, so the smoke is currently blocked by live sample freshness
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-015
+- title: Provide an unseen live Trello card or alternate live scope for the preview smoke
+- type: blocker
+- status: blocked
+- phase: now
+- priority: p1
+- owner: Oscarling
+- depends_on: -
+- start_when: `BL-20260324-014` discovery has confirmed that the current configured board scope contains no unseen open cards outside local dedupe history
+- done_when: At least one approved live Trello card or alternate board/list scope exists whose mapped origin id is not already present in local dedupe history and can be used for a governed rerun of `BL-20260324-014`
+- source: `TRELLO_LIVE_TARGET_DISCOVERY_REPORT.md` on 2026-03-24 recorded `seen_trello_origin_ids=8`, `open_board_cards=6`, and `unseen_cards=0` for the current board scope
+- link: /Users/lingguozhong/openclaw-team/TRELLO_LIVE_TARGET_DISCOVERY_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/23
+- evidence: `TRELLO_LIVE_TARGET_DISCOVERY_REPORT.md` shows the current scope has no unseen live card and no list with unseen cards, so a fresh card or alternate scope must be provided before the mainline smoke can continue
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24

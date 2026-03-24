@@ -805,3 +805,54 @@ Verification snapshot on 2026-03-24:
   - `duplicate_skipped = 3`
   - `preview_created = 0`
   - `processing_recovered = 0`
+
+### 24. Live Trello Target Discovery And Blocker Formalization
+
+User objective:
+
+- continue the standard-process next step after the queue-pollution fix
+- verify whether the current live Trello scope contains any unseen card for a
+  clean preview-creation smoke
+- record the blocker truthfully instead of retrying random live runs
+
+Main work areas:
+
+- kept `BL-20260324-014` as the active mainline thread long enough to perform a
+  read-only live discovery
+- confirmed the first sandboxed discovery attempt failed with DNS resolution to
+  `api.trello.com`
+- reran the same discovery with approved escalated network access
+- compared current live Trello card origins against local dedupe history loaded
+  from `preview/`, `processed/`, and `rejected/`
+- converted the result into a formal blocker `BL-20260324-015` and mirrored it
+  to GitHub issue #23
+
+Primary output:
+
+- [TRELLO_LIVE_TARGET_DISCOVERY_REPORT.md](/Users/lingguozhong/openclaw-team/TRELLO_LIVE_TARGET_DISCOVERY_REPORT.md)
+
+Key result:
+
+- the current configured board scope still has no unseen open Trello card
+- the clean live preview smoke remains blocked by sample availability, not by
+  queue contamination or another newly proven code defect
+- `BL-20260324-014` is now formally tracked as blocked behind `BL-20260324-015`
+  instead of being left ambiguously active
+
+Verification snapshot on 2026-03-24:
+
+- sandboxed read-only discovery failed with `NameResolutionError` while
+  resolving `api.trello.com`
+- the approved escalated rerun returned:
+  - `scope_kind = board`
+  - `seen_trello_origin_ids = 8`
+  - `open_board_cards = 6`
+  - `unseen_cards = 0`
+  - `lists_with_unseen_cards = {}`
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed and confirmed:
+  - `BL-20260324-014 -> #22`
+  - `BL-20260324-015 -> #23`
+- `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`
+- `BL-20260324-014` remains mirrored to GitHub issue #22
+- `BL-20260324-015` is mirrored to GitHub issue #23
