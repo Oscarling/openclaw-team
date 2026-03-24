@@ -105,7 +105,7 @@ Allowed enum values:
 - source: PROJECT_CHAT_AND_WORK_LOG.md
 - link: https://github.com/Oscarling/openclaw-team/settings/branches
 - issue: https://github.com/Oscarling/openclaw-team/issues/5
-- evidence: Branch protection is enabled on `codex/next-task` with required checks `baseline-tests` and `shell-checks`, one approving review, stale review dismissal, admin enforcement, and required conversation resolution
+- evidence: Branch protection is enabled on `main` with required checks `baseline-tests` and `shell-checks`, one approving review, stale review dismissal, admin enforcement, and required conversation resolution
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
 
@@ -163,8 +163,8 @@ Allowed enum values:
 ### BL-20260324-007
 - title: Normalize remote default branch naming from codex/next-task to main
 - type: debt
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p2
 - owner: Oscarling
 - depends_on: BL-20260324-003
@@ -172,7 +172,7 @@ Allowed enum values:
 - done_when: The remote default branch is `main` and review, CI, and protection settings are aligned with that name
 - source: GitHub repository snapshot on 2026-03-24 shows default branch `codex/next-task` even after public visibility and branch protection setup
 - link: https://github.com/Oscarling/openclaw-team/settings/branches
-- issue: deferred:after-current-pr-stack-stabilizes
-- evidence: -
+- issue: https://github.com/Oscarling/openclaw-team/issues/9
+- evidence: Remote `main` now matches `codex/next-task`, GitHub default branch is `main`, branch protection is enabled on `main`, and PRs #1 and #2 now target `main`
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
