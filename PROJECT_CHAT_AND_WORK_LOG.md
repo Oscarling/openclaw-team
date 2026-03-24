@@ -1139,6 +1139,58 @@ Verification snapshot on 2026-03-24:
 - no critic workspace was created because automation never produced a reviewable
   artifact
 
+### 36. Automation Timeout Hardening After BL-20260324-025
+
+User objective:
+
+- continue after `BL-20260324-025` exposed an automation runtime blocker
+- fix the timeout policy at the worker/runtime layer instead of replaying the
+  same validation branch blindly
+- keep the next live verification as a separate governed phase
+
+Main work areas:
+
+- promoted `BL-20260324-026` into the active phase and mirrored it to GitHub
+  issue #45
+- traced the repeated live automation failure back to
+  `dispatcher/worker_runtime.py`, where the LLM read timeout was hard-coded to
+  `60` seconds
+- confirmed from the runtime log that the worker hit three consecutive timeout
+  failures at roughly 60-second intervals against
+  `https://fast.vpsairobot.com/v1/chat/completions`
+- hardened the worker runtime so it now:
+  - uses a more relaxed default LLM timeout of `120` seconds
+  - resolves timeout and retry counts through environment-aware helpers
+  - logs the effective timeout / attempt policy on worker startup
+- updated `skills/delegate_task.py` so host-side timeout / retry overrides can
+  flow into the worker container through:
+  - `ARGUS_LLM_TIMEOUT_SECONDS`
+  - `ARGUS_LLM_MAX_RETRIES`
+- added focused regression coverage for:
+  - relaxed default timeout
+  - env-driven timeout / retry overrides
+- recorded the next fresh governed validation as `BL-20260324-027`
+
+Primary output:
+
+- [AUTOMATION_TIMEOUT_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/AUTOMATION_TIMEOUT_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260324-026` is complete as a timeout hardening phase
+- the runtime now has a more defensible default policy for slower real LLM
+  responses and an explicit override path for future tuning
+- the next correct step is a fresh governed validation phase under the new
+  timeout policy, not another same-preview replay
+
+Verification snapshot on 2026-03-24:
+
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed while `BL-20260324-026` was mirrored
+  to issue `#45`
+- `python3 -m unittest -v tests/test_argus_hardening.py` passed `6/6`
+- `python3 -m unittest -v tests/test_execute_approved_previews.py` passed `3/3`
+
 ### 31. Close Residual Inbox Runner Contract Gaps Before Reuse
 
 User objective:

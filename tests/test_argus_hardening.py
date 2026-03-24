@@ -10,6 +10,7 @@ import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
@@ -383,6 +384,104 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertTrue((self.tmpdir / "artifacts" / "reviews" / "local_test_mode_review.md").exists())
         runtime_log = (self.tmpdir / "workspaces" / "critic" / "CRITIC-20260324-001" / "runtime.log").read_text()
         self.assertIn("local-test-mode", runtime_log)
+
+    def test_call_llm_uses_relaxed_default_timeout(self) -> None:
+        calls: list[int] = []
+
+        class FakeResponse:
+            def __enter__(self) -> "FakeResponse":
+                return self
+
+            def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+                return False
+
+            def read(self) -> bytes:
+                payload = {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps({"status": "success", "summary": "ok"})
+                            }
+                        }
+                    ]
+                }
+                return json.dumps(payload).encode("utf-8")
+
+        class RecordingOpener:
+            def open(self, req: Any, timeout: int | None = None) -> FakeResponse:  # noqa: ARG002
+                calls.append(timeout or 0)
+                return FakeResponse()
+
+        with mock.patch.object(worker_runtime, "NO_PROXY_OPENER", RecordingOpener()):
+            with mock.patch.dict(os.environ, {}, clear=False):
+                content = worker_runtime.call_llm(
+                    "system",
+                    "user",
+                    "automation",
+                    {
+                        "api_key": "key",
+                        "api_base": "https://example.invalid/v1",
+                        "chat_url": "https://example.invalid/v1/chat/completions",
+                        "model_name": "demo-model",
+                    },
+                )
+
+        self.assertEqual(calls, [120])
+        self.assertEqual(json.loads(content)["status"], "success")
+
+    def test_call_llm_honors_env_timeout_and_retry_overrides(self) -> None:
+        calls: list[int] = []
+        attempts = {"count": 0}
+
+        class FakeResponse:
+            def __enter__(self) -> "FakeResponse":
+                return self
+
+            def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+                return False
+
+            def read(self) -> bytes:
+                payload = {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps({"status": "success", "summary": "ok"})
+                            }
+                        }
+                    ]
+                }
+                return json.dumps(payload).encode("utf-8")
+
+        class FlakyOpener:
+            def open(self, req: Any, timeout: int | None = None) -> FakeResponse:  # noqa: ARG002
+                calls.append(timeout or 0)
+                attempts["count"] += 1
+                if attempts["count"] == 1:
+                    raise TimeoutError("The read operation timed out")
+                return FakeResponse()
+
+        with mock.patch.object(worker_runtime, "NO_PROXY_OPENER", FlakyOpener()):
+            with mock.patch.object(worker_runtime.time, "sleep", return_value=None):
+                with mock.patch.dict(
+                    os.environ,
+                    {"ARGUS_LLM_TIMEOUT_SECONDS": "7", "ARGUS_LLM_MAX_RETRIES": "2"},
+                    clear=False,
+                ):
+                    content = worker_runtime.call_llm(
+                        "system",
+                        "user",
+                        "automation",
+                        {
+                            "api_key": "key",
+                            "api_base": "https://example.invalid/v1",
+                            "chat_url": "https://example.invalid/v1/chat/completions",
+                            "model_name": "demo-model",
+                        },
+                    )
+
+        self.assertEqual(calls, [7, 7])
+        self.assertEqual(attempts["count"], 2)
+        self.assertEqual(json.loads(content)["status"], "success")
 
 
 if __name__ == "__main__":

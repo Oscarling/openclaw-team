@@ -486,16 +486,33 @@ Allowed enum values:
 ### BL-20260324-026
 - title: Stabilize automation LLM read timeouts blocking post-hardening live validation
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260324-025
 - start_when: `BL-20260324-025` has proved that the fresh preview candidate carries the BL-20260324-024 hardening, but the automation worker still fails real execute because the configured LLM endpoint times out before producing any script artifact
 - done_when: The repo either mitigates the automation LLM read-timeout failure path or explicitly changes runtime/provider policy enough to let the next governed live validation reach artifact generation and review
 - source: `POST_PROPAGATION_HARDENING_VALIDATION_REPORT.md` on 2026-03-24 records three consecutive automation LLM read timeouts at `https://fast.vpsairobot.com/v1/chat/completions`, which now block further governed validation
-- link: /Users/lingguozhong/openclaw-team/POST_PROPAGATION_HARDENING_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260324-025 lands on main
+- link: /Users/lingguozhong/openclaw-team/AUTOMATION_TIMEOUT_HARDENING_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/45
+- evidence: `AUTOMATION_TIMEOUT_HARDENING_REPORT.md` records the runtime fix that raises the default worker LLM read timeout to 120 seconds, exposes timeout/retry overrides through `ARGUS_LLM_TIMEOUT_SECONDS` and `ARGUS_LLM_MAX_RETRIES`, forwards those settings through `skills/delegate_task.py`, and passes focused regression coverage in `tests/test_argus_hardening.py`
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-027
+- title: Validate BL-20260324-026 timeout mitigation on a fresh same-origin preview candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-026
+- start_when: `BL-20260324-026` is merged so the relaxed default timeout policy can be exercised through the normal governed preview pipeline under real execution
+- done_when: One governed validation creates a fresh same-origin preview candidate after the timeout hardening, runs one explicit approval plus one real execute, and records whether automation now reaches artifact generation and critic review under the new timeout policy
+- source: `AUTOMATION_TIMEOUT_HARDENING_REPORT.md` on 2026-03-24 concludes the next correct step is a fresh governed validation rather than a same-preview replay
+- link: /Users/lingguozhong/openclaw-team/AUTOMATION_TIMEOUT_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260324-026 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
