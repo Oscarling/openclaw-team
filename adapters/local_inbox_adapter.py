@@ -35,7 +35,7 @@ def _normalize_priority(value: Any) -> str:
     return "medium"
 
 
-def _condense_automation_description(description: str, max_chars: int = 180) -> str:
+def _condense_automation_description(description: str, max_chars: int | None = None) -> str:
     text = str(description or "").strip()
     if not text:
         return "Best-effort local extraction/conversion request."
@@ -54,7 +54,7 @@ def _condense_automation_description(description: str, max_chars: int = 180) -> 
 
     if not primary:
         primary = re.sub(r"\s+", " ", text).strip()
-    if len(primary) <= max_chars:
+    if max_chars is None or len(primary) <= max_chars:
         return primary
     return primary[: max_chars - 3].rstrip() + "..."
 
@@ -321,6 +321,18 @@ def normalize_local_inbox_payload(
                         "repository script artifacts/scripts/pdf_to_excel_ocr.py or fail "
                         "honestly instead of broadening behavior through an arbitrary helper."
                     ),
+                    "delegate_success_evidence": (
+                        "Do not treat zero exit code plus output-file existence as sufficient "
+                        "wrapper success evidence on their own. Prefer a structured delegate "
+                        "report that confirms a real success outcome with at least one "
+                        "processed input and no failed-file counterexamples before the wrapper "
+                        "claims success."
+                    ),
+                    "delegate_timeout": (
+                        "Bound delegate subprocess execution with an explicit timeout and "
+                        "report timeout as an honest failed/partial outcome instead of "
+                        "allowing smoke automation to hang indefinitely."
+                    ),
                     "runtime_summary": (
                         "The generated script should emit a structured summary of what it "
                         "produced so later review can inspect behavior without guessing."
@@ -344,6 +356,8 @@ def normalize_local_inbox_payload(
             "If dry_run is true or no PDFs are discovered, report a reviewable partial outcome instead of claiming success without an XLSX artifact.",
             "Resolve relative delegate script paths from the repository or script location, not from Path.cwd().",
             "For readonly reviewable preview flows, only delegate to the reviewed repository script artifacts/scripts/pdf_to_excel_ocr.py unless failing honestly.",
+            "Do not claim wrapper success from exit code plus output existence alone when the reviewed delegate report does not provide strong enough success evidence.",
+            "Use an explicit timeout on delegate subprocess execution so the smoke wrapper cannot hang indefinitely.",
         ],
         "priority": priority,
         "source": source,
@@ -354,6 +368,8 @@ def normalize_local_inbox_payload(
             "Artifact behavior remains parameter-driven for input_dir and output_xlsx rather than hardcoding unrelated local defaults.",
             "Dry-run or zero-input behavior is represented as a reviewable partial outcome instead of artifact-production success.",
             "Relative preferred_base_script resolution remains portable and does not depend on Path.cwd().",
+            "Wrapper success requires stronger delegate evidence than zero exit code plus a non-empty output file alone.",
+            "Delegate execution is bounded by an explicit timeout and reports timeout honestly.",
         ],
         "metadata": {
             "integration_phase": "8B",
@@ -372,17 +388,29 @@ def normalize_local_inbox_payload(
         "worker": "critic",
         "task_type": "review_artifact",
         "objective": (
-            "Review automation artifact from local inbox pipeline and provide a "
-            "structured verdict using one of: pass, fail, needs_revision. "
-            "Always output a review markdown artifact and include verdict in metadata."
+            "Review the generated inbox runner together with its reviewed delegate "
+            "script from the local inbox pipeline and provide a structured verdict "
+            "using one of: pass, fail, needs_revision. Always output a review "
+            "markdown artifact and include verdict in metadata."
         ),
         "inputs": {
-            "artifacts": [{"path": automation_artifact, "type": "script"}],
+            "artifacts": [
+                {"path": automation_artifact, "type": "script"},
+                {"path": "artifacts/scripts/pdf_to_excel_ocr.py", "type": "script"},
+            ],
             "params": {
                 "origin_id": origin_id,
                 "title": title,
                 "description": description,
                 "labels": labels,
+                "review_scope": {
+                    "primary_artifact": automation_artifact,
+                    "paired_artifacts": ["artifacts/scripts/pdf_to_excel_ocr.py"],
+                    "goal": (
+                        "Audit the wrapper and the reviewed delegate together so the "
+                        "review evidence can speak to the end-to-end readonly smoke path."
+                    ),
+                },
             },
         },
         "expected_outputs": [
@@ -390,6 +418,7 @@ def normalize_local_inbox_payload(
         ],
         "constraints": [
             "Review must be grounded in produced automation artifact",
+            "When both wrapper and reviewed delegate snapshots are supplied, evaluate them as one end-to-end readonly pair instead of ignoring the delegate evidence.",
             "Do not invent missing artifact content",
             "Return a clear verdict: pass, fail, or needs_revision",
             "Include metadata.verdict in output",

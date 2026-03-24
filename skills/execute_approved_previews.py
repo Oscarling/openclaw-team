@@ -188,6 +188,29 @@ def _critic_review_contract(expected_review_path: str) -> dict[str, Any]:
     }
 
 
+def _append_normalized_artifact(
+    normalized_artifacts: list[dict[str, Any]],
+    seen_paths: set[str],
+    item: Any,
+) -> None:
+    if isinstance(item, dict):
+        path = item.get("path")
+        atype = item.get("type")
+        if not isinstance(path, str) or path in seen_paths:
+            return
+        normalized_artifacts.append(
+            {
+                "path": path,
+                "type": atype if isinstance(atype, str) else "doc",
+            }
+        )
+        seen_paths.add(path)
+        return
+    if isinstance(item, str) and item not in seen_paths:
+        normalized_artifacts.append({"path": item, "type": "doc"})
+        seen_paths.add(item)
+
+
 def build_critic_from_automation(critic_task: dict[str, Any], auto_result: dict[str, Any]) -> dict[str, Any]:
     updated = json.loads(json.dumps(critic_task))
     artifacts = auto_result.get("artifacts")
@@ -196,22 +219,16 @@ def build_critic_from_automation(critic_task: dict[str, Any], auto_result: dict[
 
     normalized_artifacts: list[dict[str, Any]] = []
     snapshots: list[dict[str, Any]] = []
+    seen_paths: set[str] = set()
+    existing_artifacts = updated["inputs"].get("artifacts")
+    if isinstance(existing_artifacts, list):
+        for item in existing_artifacts:
+            _append_normalized_artifact(normalized_artifacts, seen_paths, item)
     if isinstance(artifacts, list):
         for item in artifacts:
-            if isinstance(item, dict):
-                path = item.get("path")
-                atype = item.get("type")
-                if isinstance(path, str):
-                    normalized_artifacts.append(
-                        {
-                            "path": path,
-                            "type": atype if isinstance(atype, str) else "doc",
-                        }
-                    )
-                    snapshots.append(_read_artifact_text(path))
-            elif isinstance(item, str):
-                normalized_artifacts.append({"path": item, "type": "doc"})
-                snapshots.append(_read_artifact_text(item))
+            _append_normalized_artifact(normalized_artifacts, seen_paths, item)
+    for artifact in normalized_artifacts:
+        snapshots.append(_read_artifact_text(artifact["path"]))
     if normalized_artifacts:
         updated["inputs"]["artifacts"] = normalized_artifacts
 
@@ -245,6 +262,7 @@ def build_critic_from_automation(critic_task: dict[str, Any], auto_result: dict[
     constraints.extend(
         [
             "Use artifact_snapshots when provided; avoid claiming access problems if snapshot content exists.",
+            "When both the generated wrapper and reviewed delegate snapshots are provided, review them together rather than silently narrowing scope to one file.",
             "Return metadata.verdict with one of: pass, fail, needs_revision.",
             "Always generate review artifact content for expected_outputs[0].path.",
             "If evidence is insufficient, use partial + errors + verdict=needs_revision, but still output review artifact.",

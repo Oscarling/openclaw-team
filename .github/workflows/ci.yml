@@ -36,6 +36,7 @@ jobs:
           python3 -m unittest -v tests/test_argus_hardening.py
           python3 -m unittest -v tests/test_processed_finalization.py
           python3 -m unittest -v tests/test_pdf_to_excel_ocr_inbox_runner.py
+          python3 -m unittest -v tests/test_execute_approved_previews.py
 
   shell-checks:
     runs-on: ubuntu-latest

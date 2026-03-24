@@ -159,6 +159,12 @@ else
   fail "tests/test_pdf_to_excel_ocr_inbox_runner.py failed."
 fi
 
+if python3 -m unittest -v tests/test_execute_approved_previews.py; then
+  pass "tests/test_execute_approved_previews.py passed."
+else
+  fail "tests/test_execute_approved_previews.py failed."
+fi
+
 echo
 echo "Warnings: $warnings"
 echo "Failures: $failures"

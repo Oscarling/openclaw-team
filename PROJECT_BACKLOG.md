@@ -452,16 +452,33 @@ Allowed enum values:
 ### BL-20260324-024
 - title: Address residual delegate-evidence and robustness gaps exposed by BL-20260324-023 validation
 - type: debt
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260324-023
 - start_when: `BL-20260324-023` has validated that the propagated runner contract reaches a fresh preview candidate, but the governed execute still returns `needs_revision` because the generated runner leaves gaps around delegate evidence visibility, stronger success evidence, traceability fidelity, or subprocess timeout handling
 - done_when: The repo either resolves or explicitly accepts the residual delegate-evidence and robustness review gaps before another governed validation or production use of the generated inbox runner
 - source: `PROPAGATED_RUNNER_CONTRACT_VALIDATION_REPORT.md` on 2026-03-24 will record the post-propagation governed execute result and the remaining Critic concerns
-- link: /Users/lingguozhong/openclaw-team/PROPAGATED_RUNNER_CONTRACT_VALIDATION_REPORT.md
-- issue: deferred:phase=next until scope is selected after BL-20260324-023 closeout
+- link: /Users/lingguozhong/openclaw-team/POST_PROPAGATION_RUNNER_GAP_HARDENING_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/41
+- evidence: `POST_PROPAGATION_RUNNER_GAP_HARDENING_REPORT.md` records the source-side contract hardening that preserves richer automation description context, keeps `artifacts/scripts/pdf_to_excel_ocr.py` in execute-time critic scope, requires stronger delegate success evidence, adds delegate timeout handling, and passes `bash scripts/premerge_check.sh`
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-025
+- title: Validate BL-20260324-024 hardening on a fresh same-origin preview candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-024
+- start_when: `BL-20260324-024` is merged so the tightened description-fidelity, delegate-evidence, review-scope, and timeout rules can be tested through the normal governed preview pipeline
+- done_when: One governed validation creates a fresh same-origin preview candidate after the BL-20260324-024 hardening, runs one explicit approval plus one real execute, and records whether the new live-generated runner clears the post-propagation residual review concerns or exposes a smaller new set
+- source: `POST_PROPAGATION_RUNNER_GAP_HARDENING_REPORT.md` on 2026-03-24 concludes the next correct step is another governed validation on a fresh same-origin candidate rather than mutating the hardening phase
+- link: /Users/lingguozhong/openclaw-team/POST_PROPAGATION_RUNNER_GAP_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260324-024 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24

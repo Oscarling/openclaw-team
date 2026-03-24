@@ -76,6 +76,59 @@ class CriticVerdictExtractionTests(unittest.TestCase):
 
             self.assertEqual(verdict, "needs_revision")
 
+    def test_build_critic_from_automation_preserves_declared_delegate_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="execute-approved-previews-") as tmp:
+            repo_root = Path(tmp)
+            runner_path = repo_root / "artifacts" / "scripts" / "pdf_to_excel_ocr_inbox_runner.py"
+            delegate_path = repo_root / "artifacts" / "scripts" / "pdf_to_excel_ocr.py"
+            runner_path.parent.mkdir(parents=True, exist_ok=True)
+            runner_path.write_text("print('runner')\n", encoding="utf-8")
+            delegate_path.write_text("print('delegate')\n", encoding="utf-8")
+
+            critic_task = {
+                "inputs": {
+                    "artifacts": [
+                        {"path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py", "type": "script"},
+                        {"path": "artifacts/scripts/pdf_to_excel_ocr.py", "type": "script"},
+                    ],
+                    "params": {"review_scope": "pair"},
+                },
+                "expected_outputs": [
+                    {"path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md", "type": "review"}
+                ],
+                "constraints": [],
+            }
+            auto_result = {
+                "artifacts": [
+                    {"path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py", "type": "script"}
+                ]
+            }
+
+            original_repo_root = executor.REPO_ROOT
+            try:
+                executor.REPO_ROOT = repo_root
+                updated = executor.build_critic_from_automation(critic_task, auto_result)
+            finally:
+                executor.REPO_ROOT = original_repo_root
+
+            self.assertEqual(
+                updated["inputs"]["artifacts"],
+                [
+                    {"path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py", "type": "script"},
+                    {"path": "artifacts/scripts/pdf_to_excel_ocr.py", "type": "script"},
+                ],
+            )
+            snapshots = updated["inputs"]["params"]["artifact_snapshots"]
+            self.assertEqual(
+                [item["path"] for item in snapshots],
+                [
+                    "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+                    "artifacts/scripts/pdf_to_excel_ocr.py",
+                ],
+            )
+            self.assertIn("runner", snapshots[0]["content"])
+            self.assertIn("delegate", snapshots[1]["content"])
+
 
 if __name__ == "__main__":
     unittest.main()

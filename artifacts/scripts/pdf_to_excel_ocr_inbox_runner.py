@@ -18,10 +18,11 @@ DEFAULT_TITLE = "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effo
 DEFAULT_DESCRIPTION = (
     "Purpose: | Controlled Trello live preview smoke for openclaw-team. | "
     "Expected behavior: | - read-only Trello ingest | - preview creation smoke only | "
-    "- no business execution cla..."
+    "Traceability: | - backlog: BL-20260324-014"
 )
 DEFAULT_LABELS = ["best_effort", "evidence_backed", "readonly", "reviewable", "trello"]
 DEFAULT_PREFERRED_BASE_SCRIPT = "artifacts/scripts/pdf_to_excel_ocr.py"
+DEFAULT_DELEGATE_TIMEOUT_SECONDS = 120
 DEFAULT_REFERENCE_DOCS = [
     "artifacts/docs/pdf_to_excel_ocr_usage.md",
     "artifacts/reviews/pdf_to_excel_ocr_review.md",
@@ -88,6 +89,29 @@ def parse_delegate_report(stdout_text: str) -> dict[str, Any] | None:
     return None
 
 
+def has_strong_delegate_success_evidence(delegate_report: dict[str, Any] | None) -> tuple[bool, str | None]:
+    if not isinstance(delegate_report, dict):
+        return False, "Delegate did not emit a structured JSON report for success evidence."
+
+    if str(delegate_report.get("status", "")).strip().lower() != "success":
+        return False, "Delegate report did not confirm a success status."
+
+    total_files = delegate_report.get("total_files")
+    if not isinstance(total_files, int) or total_files < 1:
+        return False, "Delegate report did not confirm at least one processed PDF file."
+
+    status_counter = delegate_report.get("status_counter")
+    if isinstance(status_counter, dict):
+        failed_count = status_counter.get("failed", 0)
+        if isinstance(failed_count, int) and failed_count > 0:
+            return False, "Delegate report still records failed file outcomes."
+
+    if bool(delegate_report.get("dry_run", False)):
+        return False, "Delegate reported dry-run mode, so wrapper success would overclaim execution."
+
+    return True, None
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Best-effort inbox runner that reuses the repository PDF-to-Excel OCR script."
@@ -102,6 +126,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--labels", nargs="*", default=DEFAULT_LABELS)
     parser.add_argument("--preferred-base-script", default=DEFAULT_PREFERRED_BASE_SCRIPT)
     parser.add_argument("--reference-docs", nargs="*", default=DEFAULT_REFERENCE_DOCS)
+    parser.add_argument("--delegate-timeout-seconds", type=int, default=DEFAULT_DELEGATE_TIMEOUT_SECONDS)
     parser.add_argument("--summary-json", default="")
     return parser
 
@@ -148,6 +173,11 @@ def main() -> int:
             "reviewed_base_script": str(REVIEWED_BASE_SCRIPT),
             "readonly_labels_present": readonly_labels_present,
             "readonly_delegate_verified": delegate_contract_error is None,
+            "delegate_timeout_seconds": max(int(args.delegate_timeout_seconds), 1),
+            "delegate_success_evidence_policy": (
+                "Require delegate report status=success, total_files>=1, no failed files, "
+                "and a real XLSX artifact before the wrapper reports success."
+            ),
         },
         "discovery": {
             "input_dir_exists": input_dir.exists(),
@@ -158,6 +188,7 @@ def main() -> int:
             "delegated": False,
             "command": [],
             "returncode": None,
+            "timeout_seconds": max(int(args.delegate_timeout_seconds), 1),
             "stdout": "",
             "stderr": "",
             "delegate_report": None,
@@ -217,7 +248,26 @@ def main() -> int:
     summary["execution"]["command"] = cmd
 
     try:
-        completed = subprocess.run(cmd, capture_output=True, text=True, check=False)
+        completed = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=max(int(args.delegate_timeout_seconds), 1),
+        )
+    except subprocess.TimeoutExpired as exc:
+        summary["execution"]["stderr"] = (
+            f"delegate timed out after {max(int(args.delegate_timeout_seconds), 1)} seconds: {exc}"
+        )
+        output_exists = output_xlsx.exists() and output_xlsx.is_file()
+        summary["output"]["exists"] = output_exists
+        if output_exists:
+            summary["output"]["size_bytes"] = output_xlsx.stat().st_size
+        summary["notes"].append(
+            f"Delegate timed out after {max(int(args.delegate_timeout_seconds), 1)} seconds."
+        )
+        emit_summary(summary, args.summary_json)
+        return 124
     except Exception as exc:
         summary["execution"]["stderr"] = f"delegate invocation error: {exc}"
         emit_summary(summary, args.summary_json)
@@ -242,13 +292,20 @@ def main() -> int:
             delegate_status = candidate
 
     if completed.returncode == 0 and output_exists:
+        success_evidence_ok, success_evidence_note = has_strong_delegate_success_evidence(delegate_report)
         if delegate_status == "partial":
             summary["status"] = "partial"
             summary["notes"].append("Delegate reported a reviewable partial outcome; preserving partial status.")
         elif delegate_status == "failed":
             summary["notes"].append("Delegate reported failed status despite producing an XLSX artifact.")
-        elif delegate_status == "success":
+        elif success_evidence_ok:
             summary["status"] = "success"
+        elif delegate_status == "success":
+            summary["status"] = "partial"
+            summary["notes"].append(
+                success_evidence_note
+                or "Delegate success evidence was too weak for the wrapper to claim success."
+            )
         else:
             summary["status"] = "partial"
             summary["notes"].append("Delegate produced XLSX output but did not provide a recognized summary status.")
