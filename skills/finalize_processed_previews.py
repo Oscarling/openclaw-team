@@ -9,7 +9,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
-import requests
+try:
+    import requests as REQUESTS_MODULE
+except ModuleNotFoundError:
+    REQUESTS_MODULE = None
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
@@ -22,6 +25,24 @@ TASKS_DIR = REPO_ROOT / "tasks"
 WORKSPACES_DIR = REPO_ROOT / "workspaces"
 
 DONE_LIST_NAME_CANDIDATES = ("done", "完成", "completed", "complete")
+
+
+def _missing_requests_dependency(*_args: Any, **_kwargs: Any) -> Any:
+    raise RuntimeError(
+        "Missing Python dependency 'requests'. Install it before using default Trello HTTP calls."
+    )
+
+
+def _default_requests_get(*args: Any, **kwargs: Any) -> Any:
+    if REQUESTS_MODULE is None:
+        return _missing_requests_dependency(*args, **kwargs)
+    return REQUESTS_MODULE.get(*args, **kwargs)
+
+
+def _default_requests_put(*args: Any, **kwargs: Any) -> Any:
+    if REQUESTS_MODULE is None:
+        return _missing_requests_dependency(*args, **kwargs)
+    return REQUESTS_MODULE.put(*args, **kwargs)
 
 
 def utc_now() -> str:
@@ -321,9 +342,14 @@ def process_preview(
     trello_done_list_id: str | None,
     trello_done_list_name: str | None,
     allow_replay_finalization: bool,
-    requests_get: Callable[..., Any] = requests.get,
-    requests_put: Callable[..., Any] = requests.put,
+    requests_get: Callable[..., Any] | None = None,
+    requests_put: Callable[..., Any] | None = None,
 ) -> dict[str, Any]:
+    if requests_get is None:
+        requests_get = _default_requests_get
+    if requests_put is None:
+        requests_put = _default_requests_put
+
     preview_payload = load_json(preview_path)
     preview_id = str(preview_payload.get("preview_id") or preview_path.stem).strip()
     execution = preview_payload.get("execution")
