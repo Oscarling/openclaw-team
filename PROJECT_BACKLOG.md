@@ -414,3 +414,20 @@ Allowed enum values:
 - evidence: `INBOX_RUNNER_CONTRACT_HARDENING_REPORT.md` records the runner hardening that adds reviewable `partial` outcomes, repo-root delegate resolution, reviewed-script enforcement, focused regression coverage, and passing local gates through `bash scripts/premerge_check.sh`
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
+
+### BL-20260324-022
+- title: Propagate BL-20260324-021 runner hardening into the source-side preview contract
+- type: debt
+- status: done
+- phase: now
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-021
+- start_when: `BL-20260324-021` has hardened the current generated runner artifact, but the source-side preview contract still does not encode the new rules for reviewable partial outcomes, delegate path resolution, or reviewed-script delegation
+- done_when: The source-side automation contract encodes the `BL-20260324-021` runner rules so future regenerated previews can inherit reviewable `partial` semantics, repo-root delegate resolution expectations, and reviewed-script delegation constraints before the next governed validation run
+- source: `INBOX_RUNNER_CONTRACT_HARDENING_REPORT.md` on 2026-03-24 recorded that the current phase hardened the generated runner artifact itself, but did not yet push those rules back into the source-side preview contract
+- link: /Users/lingguozhong/openclaw-team/INBOX_RUNNER_CONTRACT_PROPAGATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/37
+- evidence: `INBOX_RUNNER_CONTRACT_PROPAGATION_REPORT.md` records the source-side contract propagation that adds reviewable partial-outcome, delegate-resolution, and reviewed-script delegation rules to `adapters/local_inbox_adapter.py`, gates `tests/test_local_inbox_adapter.py` in local/CI merge checks, and passes `bash scripts/premerge_check.sh`
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24

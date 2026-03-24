@@ -135,6 +135,12 @@ else
   fail "tests/test_trello_readonly_ingress.py failed."
 fi
 
+if python3 -m unittest -v tests/test_local_inbox_adapter.py; then
+  pass "tests/test_local_inbox_adapter.py passed."
+else
+  fail "tests/test_local_inbox_adapter.py failed."
+fi
+
 if python3 -m unittest -v tests/test_argus_hardening.py; then
   pass "tests/test_argus_hardening.py passed."
 else
