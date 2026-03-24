@@ -366,6 +366,12 @@ def process_preview(
     try:
         resolved_remote = (git_remote or "").strip() or _git_origin_url(repo_root)
         if not resolved_remote:
+            finalization["git"]["push"] = {
+                "status": "failed",
+                "reason": "missing_git_push_remote",
+                "remote": "missing",
+                "branch": (git_branch or "").strip() or None,
+            }
             raise RuntimeError("Missing git push remote: provide --git-remote / GIT_PUSH_REMOTE or configure origin")
         resolved_branch = (git_branch or "").strip() or _git_current_branch(repo_root)
 
@@ -464,6 +470,12 @@ def process_preview(
             api_key = auth["api_key"]
             api_token = auth["api_token"]
             if not api_key or not api_token:
+                finalization["trello"] = {
+                    "status": "failed",
+                    "reason": "missing_trello_write_credentials",
+                    "presence": auth["presence"],
+                    "selected_names": auth["selected_names"],
+                }
                 raise RuntimeError("Missing Trello write credentials")
 
             external = preview_payload.get("external_input")
@@ -472,6 +484,13 @@ def process_preview(
             from_list_id = str(metadata.get("list_id") or "").strip() if isinstance(metadata, dict) else ""
             card_id = str(metadata.get("card_id") or "").strip() if isinstance(metadata, dict) else ""
             if not board_id or not card_id:
+                finalization["trello"] = {
+                    "status": "failed",
+                    "reason": "missing_trello_board_or_card_metadata",
+                    "board_id": board_id or None,
+                    "card_id": card_id or None,
+                    "from_list_id": from_list_id or None,
+                }
                 raise RuntimeError("Processed preview is missing Trello board/card metadata")
 
             done_id, resolution = _resolve_done_list_id(
@@ -481,6 +500,13 @@ def process_preview(
                 requests_get=requests_get,
             )
             if not done_id:
+                finalization["trello"] = {
+                    "status": "failed",
+                    "reason": "empty_trello_done_list_id",
+                    "card_id": card_id,
+                    "from_list_id": from_list_id,
+                    "resolution": resolution,
+                }
                 raise RuntimeError("Resolved Trello Done list id is empty")
 
             put_resp = requests_put(

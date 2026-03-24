@@ -380,6 +380,29 @@ class ProcessedFinalizationTests(unittest.TestCase):
         retried_preview = json.loads(self.preview_path.read_text())
         self.assertEqual(first_commit_hash, retried_preview["finalization"]["git"]["commit"]["commit_hash"])
 
+    def test_finalize_records_missing_git_remote_as_structured_failure(self) -> None:
+        self._write_processed_preview(execution_status="processed", decision_reason="critic_verdict=pass")
+
+        result = finalizer.process_preview(
+            self.preview_path,
+            repo_root=self.repo,
+            git_remote=None,
+            git_branch="main",
+            trello_done_list_id=self.done_list_id,
+            trello_done_list_name=None,
+            allow_replay_finalization=False,
+            requests_get=lambda *_a, **_k: FakeResponse(500, "should not be called"),
+            requests_put=lambda *_a, **_k: FakeResponse(500, "should not be called"),
+        )
+
+        self.assertEqual(result["status"], "failed")
+        self.assertIn("Missing git push remote", result["decision_reason"])
+        failed_preview = json.loads(self.preview_path.read_text())
+        self.assertEqual(failed_preview["finalization"]["status"], "failed")
+        self.assertEqual(failed_preview["finalization"]["git"]["push"]["status"], "failed")
+        self.assertEqual(failed_preview["finalization"]["git"]["push"]["reason"], "missing_git_push_remote")
+        self.assertEqual(failed_preview["finalization"]["git"]["push"]["remote"], "missing")
+
     def test_finalize_records_trello_failure_and_retries(self) -> None:
         self._write_processed_preview(execution_status="processed", decision_reason="critic_verdict=pass")
         remote = self.tmpdir / "remote-for-trello.git"
@@ -420,6 +443,44 @@ class ProcessedFinalizationTests(unittest.TestCase):
         retried_preview = json.loads(self.preview_path.read_text())
         self.assertEqual(commit_hash, retried_preview["finalization"]["git"]["commit"]["commit_hash"])
         self.assertEqual(retried_preview["finalization"]["trello"]["status"], "success")
+
+    def test_finalize_records_missing_trello_credentials_as_structured_failure(self) -> None:
+        self._write_processed_preview(execution_status="processed", decision_reason="critic_verdict=pass")
+        remote = self.tmpdir / "remote-missing-trello-creds.git"
+        self._git(["init", "--bare", str(remote)], cwd=self.tmpdir)
+        for name in ("TRELLO_API_KEY", "TRELLO_API_TOKEN", "TRELLO_KEY", "TRELLO_TOKEN"):
+            os.environ.pop(name, None)
+
+        result = finalizer.process_preview(
+            self.preview_path,
+            repo_root=self.repo,
+            git_remote=str(remote),
+            git_branch="main",
+            trello_done_list_id=self.done_list_id,
+            trello_done_list_name=None,
+            allow_replay_finalization=False,
+            requests_get=lambda *_a, **_k: FakeResponse(500, "should not be called"),
+            requests_put=lambda *_a, **_k: FakeResponse(500, "should not be called"),
+        )
+
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["decision_reason"], "Missing Trello write credentials")
+        failed_preview = json.loads(self.preview_path.read_text())
+        self.assertEqual(failed_preview["finalization"]["status"], "failed")
+        self.assertEqual(failed_preview["finalization"]["git"]["push"]["status"], "success")
+        self.assertEqual(failed_preview["finalization"]["trello"]["status"], "failed")
+        self.assertEqual(
+            failed_preview["finalization"]["trello"]["reason"],
+            "missing_trello_write_credentials",
+        )
+        self.assertEqual(
+            failed_preview["finalization"]["trello"]["presence"]["TRELLO_API_KEY"],
+            "missing",
+        )
+        self.assertEqual(
+            failed_preview["finalization"]["trello"]["presence"]["TRELLO_API_TOKEN"],
+            "missing",
+        )
 
     def test_finalize_completed_preview_is_replay_safe(self) -> None:
         self._write_processed_preview(execution_status="processed", decision_reason="critic_verdict=pass")
