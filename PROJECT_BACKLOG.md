@@ -367,17 +367,17 @@ Allowed enum values:
 ### BL-20260324-019
 - title: Validate the hardened preview artifact contract on a fresh preview candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260324-018, BL-20260324-020
 - start_when: The explicit same-origin regeneration path is merged and can produce a fresh governed preview candidate under the hardened source-side contract
 - done_when: A governed validation phase proves whether the hardened contract clears the prior review findings on a fresh preview candidate, without guessing around dedupe-frozen runtime state
 - source: `PREVIEW_ARTIFACT_CONTRACT_HARDENING_REPORT.md` on 2026-03-24 noted that the already-executed preview cannot inherit the new adapter contract and the current dedupe freeze blocks a simple same-origin re-preview
-- link: /Users/lingguozhong/openclaw-team/PREVIEW_ARTIFACT_CONTRACT_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260324-020 lands and a regenerated preview candidate exists
-- evidence: -
+- link: /Users/lingguozhong/openclaw-team/HARDENED_PREVIEW_VALIDATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/33
+- evidence: `HARDENED_PREVIEW_VALIDATION_REPORT.md` records one real same-origin Trello regeneration using token `regen-20260324-bl019-001`, a fresh preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-18b3caaace36`, one explicit approval, and one real execute showing the prior four review findings were cleared even though the regenerated runner still ended with new `needs_revision` concerns
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
 
@@ -395,5 +395,22 @@ Allowed enum values:
 - link: /Users/lingguozhong/openclaw-team/PREVIEW_REGENERATION_PATH_REPORT.md
 - issue: https://github.com/Oscarling/openclaw-team/issues/31
 - evidence: `PREVIEW_REGENERATION_PATH_REPORT.md` records the explicit `regeneration_token` path that preserves default `origin` freeze, adds governed `origin_regeneration:<origin_id>:<token>` dedupe for same-origin re-preview, updates `BASELINE_FREEZE_NOTE.md`, and passes phase-local smoke/regressions plus `backlog_lint`, `backlog_sync`, and `premerge_check`
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-021
+- title: Address residual inbox-runner contract gaps exposed by BL-20260324-019 validation
+- type: debt
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-019
+- start_when: The BL-20260324-019 validation report has confirmed the original four findings are cleared, but the regenerated runner still returns `needs_revision` for status-model, path-resolution, readonly-enforcement, and zero-input-behavior concerns
+- done_when: The repo either resolves or explicitly accepts the residual runner-review gaps before another governed validation or production use of the generated inbox runner
+- source: `HARDENED_PREVIEW_VALIDATION_REPORT.md` on 2026-03-24 recorded new review concerns after the regenerated same-origin validation execute
+- link: /Users/lingguozhong/openclaw-team/HARDENED_PREVIEW_VALIDATION_REPORT.md
+- issue: deferred:phase=next until scope is selected after BL-20260324-019 closeout
+- evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
