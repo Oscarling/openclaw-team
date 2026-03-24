@@ -1,0 +1,19 @@
+task_id: AUTO-20260324-215
+worker: automation
+attempt: 1
+container_name: local-test-mode
+worker_image: local-test-mode
+started_at: 2026-03-24T03:16:57.600418Z
+finished_at: 2026-03-24T03:16:57.601418Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-24T03:16:57.601113Z] [automation] [INFO] Test mode enabled (ARGUS_TEST_MODE=1, ARGUS_TEST_SCENARIO=success)
+[2026-03-24T03:16:57.601250Z] [automation] [INFO] Artifact written: artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py
+[2026-03-24T03:16:57.601302Z] [automation] [INFO] Task completed AUTO-20260324-215 with status success
+[2026-03-24T03:16:57.601402Z] [automation] [INFO] Worker exiting from /Users/lingguozhong/openclaw-team/workspaces/automation/AUTO-20260324-215
+
+=== stderr ===
+

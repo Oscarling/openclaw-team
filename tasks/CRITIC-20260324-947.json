@@ -1,0 +1,171 @@
+{
+  "task_id": "CRITIC-20260324-947",
+  "worker": "critic",
+  "status": "success",
+  "created_at": "2026-03-24T03:16:57.602200Z",
+  "updated_at": "2026-03-24T03:16:57.603712Z",
+  "retries": 0,
+  "max_retries": 0,
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "success",
+      "retryable": false,
+      "error": null,
+      "runtime_log": "/Users/lingguozhong/openclaw-team/workspaces/critic/CRITIC-20260324-947/runtime.attempt-1.log",
+      "exit_code": 0,
+      "timed_out": false,
+      "wait_error": null,
+      "output_path": "/Users/lingguozhong/openclaw-team/workspaces/critic/CRITIC-20260324-947/output.json",
+      "started_at": "2026-03-24T03:16:57.602835Z",
+      "finished_at": "2026-03-24T03:16:57.603242Z"
+    }
+  ],
+  "task_dir": "/Users/lingguozhong/openclaw-team/workspaces/critic/CRITIC-20260324-947",
+  "payload": {
+    "task_id": "CRITIC-20260324-947",
+    "worker": "critic",
+    "task_type": "review_artifact",
+    "objective": "Review automation artifact from local inbox pipeline and provide a structured verdict using one of: pass, fail, needs_revision. Always output a review markdown artifact and include verdict in metadata.",
+    "inputs": {
+      "artifacts": [
+        {
+          "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+          "type": "script"
+        }
+      ],
+      "params": {
+        "origin_id": "trello:69c1fff1b3339965c25783b7",
+        "title": "Formal finalization smoke 2026-03-24T03:07:28Z (best-effort reviewable attempt)",
+        "description": "Auto-created smoke card for openclaw-team formal finalization validation.\nExpected path: Trello readonly -> preview -> approval -> execute -> git push -> Trello Done.\nUse local pdf sample workflow; best-effort, reviewable, no unsupported OCR claims.\n\nExecution contract: treat this as a best-effort, evidence-backed PDF extraction/conversion attempt. Do not claim OCR success without evidence. If full OCR/Excel conversion is not honestly achievable, return reviewable intermediate artifacts, explicit limitations, and next-step guidance. Keep behavior deterministic and limited to declared local artifacts.",
+        "labels": [
+          "best_effort",
+          "evidence_backed",
+          "readonly",
+          "reviewable",
+          "trello"
+        ],
+        "artifact_snapshots": [
+          {
+            "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+            "available": true,
+            "content": "#!/usr/bin/env python3\nimport argparse\n\ndef main() -> int:\n    parser = argparse.ArgumentParser()\n    parser.add_argument('--source', required=False)\n    parser.add_argument('--target', required=False)\n    parser.add_argument('--dry-run', action='store_true')\n    args = parser.parse_args()\n    print(f'Test script for {task_id}: dry_run={args.dry_run}')\n    return 0\n\nif __name__ == '__main__':\n    raise SystemExit(main())\n",
+            "truncated": false
+          }
+        ],
+        "review_contract": {
+          "required_status": [
+            "success",
+            "partial",
+            "failed"
+          ],
+          "required_verdict_values": [
+            "fail",
+            "needs_revision",
+            "pass"
+          ],
+          "required_metadata_key": "verdict",
+          "must_write_review_artifact_to": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+          "artifact_policy": "Always include either `file_contents` for the review artifact path or `artifacts` referencing that exact path.",
+          "fallback_policy": "If evidence is insufficient, return `status=partial`, include explicit `errors`, still generate review artifact content, and set verdict=needs_revision."
+        },
+        "review_template": {
+          "title": "Review: <artifact name>",
+          "sections": [
+            "Scope",
+            "Findings",
+            "Verdict",
+            "Rationale"
+          ],
+          "verdict_required": true
+        }
+      }
+    },
+    "expected_outputs": [
+      {
+        "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+        "type": "review"
+      }
+    ],
+    "constraints": [
+      "Review must be grounded in produced automation artifact",
+      "Do not invent missing artifact content",
+      "Return a clear verdict: pass, fail, or needs_revision",
+      "Include metadata.verdict in output",
+      "Generate review artifact markdown for expected_outputs[0].path",
+      "Use artifact_snapshots when provided; avoid claiming access problems if snapshot content exists.",
+      "Return metadata.verdict with one of: pass, fail, needs_revision.",
+      "Always generate review artifact content for expected_outputs[0].path.",
+      "If evidence is insufficient, use partial + errors + verdict=needs_revision, but still output review artifact."
+    ],
+    "priority": "medium",
+    "source": {
+      "kind": "local_inbox",
+      "origin_id": "trello:69c1fff1b3339965c25783b7",
+      "inbox_file": "trello-readonly-69c1fff1b3339965c25783b7.json",
+      "received_at": "2026-03-24T03:07:54.988408Z",
+      "title": "Formal finalization smoke 2026-03-24T03:07:28Z (best-effort reviewable attempt)",
+      "labels": [
+        "best_effort",
+        "evidence_backed",
+        "readonly",
+        "reviewable",
+        "trello"
+      ],
+      "provider": "trello",
+      "mode": "readonly",
+      "card_id": "69c1fff1b3339965c25783b7",
+      "board_id": "69be462743bfa0038ca10f7a",
+      "list_id": "69be462743bfa0038ca10f8f"
+    },
+    "acceptance_criteria": [
+      "Produce a review artifact with explicit verdict (pass/fail/needs_revision)"
+    ],
+    "metadata": {
+      "integration_phase": "8B",
+      "pipeline": "inbox->adapter->manager->automation->critic",
+      "request_type": "pdf_to_excel_ocr",
+      "payload_hash": "cb69af50b8bad819a742b76ec4f93f08d9bad13637a2c951961152e44bb79255",
+      "labels": [
+        "best_effort",
+        "evidence_backed",
+        "readonly",
+        "reviewable",
+        "trello"
+      ],
+      "external_metadata": {
+        "source_system": "trello",
+        "card_id": "69c1fff1b3339965c25783b7",
+        "card_short_id": 6,
+        "board_id": "69be462743bfa0038ca10f7a",
+        "list_id": "69be462743bfa0038ca10f8f",
+        "date_last_activity": "2026-03-24T03:07:29.425Z",
+        "readonly_mapped_at": "2026-03-24T03:07:54.959551Z",
+        "contract_profile": "best_effort_evidence_backed",
+        "ocr_claim_policy": "do_not_claim_success_without_evidence",
+        "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable"
+      }
+    }
+  },
+  "result": {
+    "task_id": "CRITIC-20260324-947",
+    "worker": "critic",
+    "status": "success",
+    "summary": "Forced success output for CRITIC-20260324-947 in test mode.",
+    "artifacts": [
+      {
+        "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+        "type": "review"
+      }
+    ],
+    "timestamp": "2026-03-24T03:16:57.603132Z",
+    "duration_ms": 0,
+    "notes": [
+      "test mode scenario=success"
+    ],
+    "metadata": {
+      "test_mode": true,
+      "scenario": "success"
+    }
+  }
+}

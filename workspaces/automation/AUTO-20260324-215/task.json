@@ -1,0 +1,87 @@
+{
+  "task_id": "AUTO-20260324-215",
+  "worker": "automation",
+  "task_type": "generate_script",
+  "objective": "Formal finalization smoke 2026-03-24T03:07:28Z (best-effort reviewable attempt). Generate exactly one runnable local helper script artifact for a best-effort PDF extraction/conversion attempt using the provided parameters.",
+  "inputs": {
+    "params": {
+      "input_dir": "~/Desktop/pdf样本",
+      "output_xlsx": "artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx",
+      "ocr": "auto",
+      "dry_run": false,
+      "origin_id": "trello:69c1fff1b3339965c25783b7",
+      "title": "Formal finalization smoke 2026-03-24T03:07:28Z (best-effort reviewable attempt)",
+      "description": "Auto-created smoke card for openclaw-team formal finalization validation. Expected path: Trello readonly -> preview -> approval -> execute -> git push -> Trello Done. Use local...",
+      "labels": [
+        "best_effort",
+        "evidence_backed",
+        "readonly",
+        "reviewable",
+        "trello"
+      ]
+    }
+  },
+  "expected_outputs": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "constraints": [
+    "Follow the local inbox normalized request",
+    "Do not claim unsupported runtime dependencies",
+    "Keep output deterministic and executable",
+    "Produce only the expected script artifact",
+    "Prefer honest, reviewable intermediate behavior over unsupported OCR claims"
+  ],
+  "priority": "medium",
+  "source": {
+    "kind": "local_inbox",
+    "origin_id": "trello:69c1fff1b3339965c25783b7",
+    "inbox_file": "trello-readonly-69c1fff1b3339965c25783b7.json",
+    "received_at": "2026-03-24T03:07:54.988408Z",
+    "title": "Formal finalization smoke 2026-03-24T03:07:28Z (best-effort reviewable attempt)",
+    "labels": [
+      "best_effort",
+      "evidence_backed",
+      "readonly",
+      "reviewable",
+      "trello"
+    ],
+    "provider": "trello",
+    "mode": "readonly",
+    "card_id": "69c1fff1b3339965c25783b7",
+    "board_id": "69be462743bfa0038ca10f7a",
+    "list_id": "69be462743bfa0038ca10f8f"
+  },
+  "acceptance_criteria": [
+    "Produce the expected script artifact at expected_outputs[0].path",
+    "Script behavior remains runnable, deterministic, and reviewable"
+  ],
+  "metadata": {
+    "integration_phase": "8B",
+    "pipeline": "inbox->adapter->manager->automation->critic",
+    "request_type": "pdf_to_excel_ocr",
+    "payload_hash": "cb69af50b8bad819a742b76ec4f93f08d9bad13637a2c951961152e44bb79255",
+    "labels": [
+      "best_effort",
+      "evidence_backed",
+      "readonly",
+      "reviewable",
+      "trello"
+    ],
+    "external_metadata": {
+      "source_system": "trello",
+      "card_id": "69c1fff1b3339965c25783b7",
+      "card_short_id": 6,
+      "board_id": "69be462743bfa0038ca10f7a",
+      "list_id": "69be462743bfa0038ca10f8f",
+      "date_last_activity": "2026-03-24T03:07:29.425Z",
+      "readonly_mapped_at": "2026-03-24T03:07:54.959551Z",
+      "contract_profile": "best_effort_evidence_backed",
+      "ocr_claim_policy": "do_not_claim_success_without_evidence",
+      "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable"
+    },
+    "automation_contract_profile": "narrow_script_artifact"
+  }
+}

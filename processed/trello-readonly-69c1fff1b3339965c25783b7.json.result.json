@@ -1,0 +1,22 @@
+{
+  "ingested_at": "2026-03-24T03:07:54.989374Z",
+  "status": "processed",
+  "decision": "preview_created_pending_approval",
+  "decision_reason": "preview_created; waiting_for_explicit_approval",
+  "origin_id": "trello:69c1fff1b3339965c25783b7",
+  "payload_hash": "cb69af50b8bad819a742b76ec4f93f08d9bad13637a2c951961152e44bb79255",
+  "dedupe_keys": [
+    "origin:trello:69c1fff1b3339965c25783b7",
+    "hash:cb69af50b8bad819a742b76ec4f93f08d9bad13637a2c951961152e44bb79255"
+  ],
+  "title": "Formal finalization smoke 2026-03-24T03:07:28Z (best-effort reviewable attempt)",
+  "labels": [
+    "best_effort",
+    "evidence_backed",
+    "readonly",
+    "reviewable",
+    "trello"
+  ],
+  "preview_id": "preview-trello-69c1fff1b3339965c25783b7-cb69af50b8ba",
+  "preview_file": "/Users/lingguozhong/openclaw-team/preview/preview-trello-69c1fff1b3339965c25783b7-cb69af50b8ba.json"
+}

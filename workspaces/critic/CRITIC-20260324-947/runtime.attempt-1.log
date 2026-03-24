@@ -1,0 +1,19 @@
+task_id: CRITIC-20260324-947
+worker: critic
+attempt: 1
+container_name: local-test-mode
+worker_image: local-test-mode
+started_at: 2026-03-24T03:16:57.602835Z
+finished_at: 2026-03-24T03:16:57.603242Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-24T03:16:57.603016Z] [critic] [INFO] Test mode enabled (ARGUS_TEST_MODE=1, ARGUS_TEST_SCENARIO=success)
+[2026-03-24T03:16:57.603124Z] [critic] [INFO] Artifact written: artifacts/reviews/pdf_to_excel_ocr_inbox_review.md
+[2026-03-24T03:16:57.603145Z] [critic] [INFO] Task completed CRITIC-20260324-947 with status success
+[2026-03-24T03:16:57.603230Z] [critic] [INFO] Worker exiting from /Users/lingguozhong/openclaw-team/workspaces/critic/CRITIC-20260324-947
+
+=== stderr ===
+

@@ -1,0 +1,38 @@
+{
+  "origin_id": "trello:69c1fff1b3339965c25783b7",
+  "title": "Formal finalization smoke 2026-03-24T03:07:28Z (best-effort reviewable attempt)",
+  "description": "Auto-created smoke card for openclaw-team formal finalization validation.\nExpected path: Trello readonly -> preview -> approval -> execute -> git push -> Trello Done.\nUse local pdf sample workflow; best-effort, reviewable, no unsupported OCR claims.\n\nExecution contract: treat this as a best-effort, evidence-backed PDF extraction/conversion attempt. Do not claim OCR success without evidence. If full OCR/Excel conversion is not honestly achievable, return reviewable intermediate artifacts, explicit limitations, and next-step guidance. Keep behavior deterministic and limited to declared local artifacts.",
+  "labels": [
+    "best_effort",
+    "evidence_backed",
+    "readonly",
+    "reviewable",
+    "trello"
+  ],
+  "metadata": {
+    "source_system": "trello",
+    "card_id": "69c1fff1b3339965c25783b7",
+    "card_short_id": 6,
+    "board_id": "69be462743bfa0038ca10f7a",
+    "list_id": "69be462743bfa0038ca10f8f",
+    "date_last_activity": "2026-03-24T03:07:29.425Z",
+    "readonly_mapped_at": "2026-03-24T03:07:54.959551Z",
+    "contract_profile": "best_effort_evidence_backed",
+    "ocr_claim_policy": "do_not_claim_success_without_evidence",
+    "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable"
+  },
+  "source": {
+    "provider": "trello",
+    "mode": "readonly",
+    "card_id": "69c1fff1b3339965c25783b7",
+    "board_id": "69be462743bfa0038ca10f7a",
+    "list_id": "69be462743bfa0038ca10f8f"
+  },
+  "request_type": "pdf_to_excel_ocr",
+  "input": {
+    "input_dir": "~/Desktop/pdf样本",
+    "output_xlsx": "artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx",
+    "ocr": "auto",
+    "dry_run": false
+  }
+}

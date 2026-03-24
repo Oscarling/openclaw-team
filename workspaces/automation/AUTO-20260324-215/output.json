@@ -1,0 +1,21 @@
+{
+  "task_id": "AUTO-20260324-215",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Forced success output for AUTO-20260324-215 in test mode.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-24T03:16:57.601262Z",
+  "duration_ms": 0,
+  "notes": [
+    "test mode scenario=success"
+  ],
+  "metadata": {
+    "test_mode": true,
+    "scenario": "success"
+  }
+}
