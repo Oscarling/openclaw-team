@@ -261,3 +261,20 @@ Allowed enum values:
 - evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
+
+### BL-20260324-013
+- title: Document mandatory gstack checkpoint stages in the engineering workflow
+- type: debt
+- status: done
+- phase: now
+- priority: p2
+- owner: Oscarling
+- depends_on: BL-20260324-001
+- start_when: The repository owner wants gstack expert involvement to be institutionalized instead of remembered ad hoc
+- done_when: The engineering workflow explicitly states when gstack checkpoints should be used and this rule is recorded in the current-state ledger
+- source: User request on 2026-03-24 to clarify which project stages should involve gstack experts and to write that into backlog
+- link: /Users/lingguozhong/openclaw-team/docs/ENGINEERING_WORKFLOW.md
+- issue: -
+- evidence: `docs/ENGINEERING_WORKFLOW.md` now includes a `Gstack Checkpoints` section covering phase planning, UI work, investigations, pre-merge review, ship/deploy closeout, and safety-sensitive runs, plus a rule to record either usage or explicit skip rationale
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
