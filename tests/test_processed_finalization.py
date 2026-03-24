@@ -309,6 +309,44 @@ class ProcessedFinalizationTests(unittest.TestCase):
         self.assertEqual(commit_hash, remote_head)
         self.assertEqual(preview["finalization"]["trello"]["status"], "success")
 
+    def test_finalize_can_use_injected_request_callables_without_requests_dependency(self) -> None:
+        self._write_processed_preview(execution_status="processed", decision_reason="critic_verdict=pass")
+        remote = self.tmpdir / "remote-no-requests.git"
+        self._git(["init", "--bare", str(remote)], cwd=self.tmpdir)
+
+        def fake_get(*_args: Any, **_kwargs: Any) -> FakeResponse:
+            return FakeResponse(
+                200,
+                [
+                    {"id": self.todo_list_id, "name": "待办", "closed": False},
+                    {"id": self.done_list_id, "name": "完成", "closed": False},
+                ],
+            )
+
+        def fake_put(*_args: Any, **_kwargs: Any) -> FakeResponse:
+            return FakeResponse(200, {"id": self.card_id, "idList": self.done_list_id})
+
+        original_requests_module = finalizer.REQUESTS_MODULE
+        finalizer.REQUESTS_MODULE = None
+        try:
+            result = finalizer.process_preview(
+                self.preview_path,
+                repo_root=self.repo,
+                git_remote=str(remote),
+                git_branch="main",
+                trello_done_list_id=None,
+                trello_done_list_name="完成",
+                allow_replay_finalization=False,
+                requests_get=fake_get,
+                requests_put=fake_put,
+            )
+        finally:
+            finalizer.REQUESTS_MODULE = original_requests_module
+
+        self.assertEqual(result["status"], "completed")
+        preview = json.loads(self.preview_path.read_text())
+        self.assertEqual(preview["finalization"]["status"], "completed")
+
     def test_finalize_skips_non_processed_failure_branches(self) -> None:
         base_preview_id = self.preview_id
         cases = [
