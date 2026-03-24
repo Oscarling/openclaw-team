@@ -1098,6 +1098,95 @@ Verification snapshot on 2026-03-24:
 - `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`,
   including the newly-gated adapter suite plus all existing baseline suites
 - `git diff --check` passed with no patch-integrity issues
+
+### 33. Governed Validation Of The Propagated Runner Contract
+
+User objective:
+
+- continue after `BL-20260324-022`
+- generate one fresh same-origin preview candidate under the propagated runner
+  contract
+- prove whether the fresh candidate really inherits the new source-side rules
+  and whether that is enough to clear Critic
+
+Main work areas:
+
+- promoted `BL-20260324-023` into the active phase and mirrored it to GitHub
+  issue `#39`
+- confirmed real Trello read-only access still reaches origin
+  `trello:69c24cd3c1a2359ddd7a1bf8`
+- generated a new inbox payload with explicit token
+  `regen-20260324-bl023-001`
+- ingested that payload to create fresh preview
+  `preview-trello-69c24cd3c1a2359ddd7a1bf8-92872bb091b6`
+- verified before execution that the new preview carries:
+  - governed regeneration evidence in `source.regeneration_token`
+  - propagated runner contract hints
+  - propagated automation contract profile
+- wrote one explicit approval file for the fresh preview
+- ran one real execute in `test_mode=off` with injected OpenAI runtime env and
+  no Git finalization / Trello Done
+- compared the new critic result against what `BL-20260324-022` was supposed to
+  propagate
+- recorded a new follow-up debt item `BL-20260324-024` for the remaining
+  delegate-evidence and robustness concerns
+
+Primary output:
+
+- [PROPAGATED_RUNNER_CONTRACT_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/PROPAGATED_RUNNER_CONTRACT_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260324-023` is complete as a validation phase
+- the propagated source-side contract did reach the fresh preview candidate and
+  materially changed the generated runner:
+  - delegate resolution no longer depends on `Path.cwd()`
+  - readonly delegation is constrained to the reviewed base script
+  - dry-run and zero-PDF states are represented as `partial`
+- the fresh governed execute still finished with
+  `critic_verdict = needs_revision`, but now for a newer set of concerns around:
+  - delegate-script visibility in review evidence
+  - stronger success-evidence standards
+  - truncated default description fidelity
+  - missing subprocess timeout
+- that means `BL-20260324-022` worked as a propagation phase, and the remaining
+  work has moved forward into new debt instead of leaving this validation phase
+  ambiguous
+
+Verification snapshot on 2026-03-24:
+
+- real Trello read-only smoke passed for the target origin and did not perform
+  any write operation
+- `python3 skills/ingest_tasks.py --once` returned:
+  - `processed = 1`
+  - `duplicate_skipped = 0`
+  - `preview_created = 1`
+- fresh preview pre-run checks showed:
+  - `approved = false`
+  - `source.regeneration_token = regen-20260324-bl023-001`
+  - propagated `automation_contract_profile` present
+  - propagated `contract_hints` present
+- explicit approval file was written for the fresh preview
+- one real execute returned:
+  - `processed = 0`
+  - `rejected = 1`
+  - `critic_verdict = needs_revision`
+- final preview state:
+  - `approved = true`
+  - `execution.status = rejected`
+  - `execution.executed = true`
+  - `execution.attempts = 1`
+- automation worker output:
+  - `status = success`
+  - archived artifact: `runtime_archives/bl023/pdf_to_excel_ocr_inbox_runner.generated.py`
+- critic worker output:
+  - `status = success`
+  - verdict: `needs_revision`
+  - archived artifact: `runtime_archives/bl023/pdf_to_excel_ocr_inbox_review.generated.md`
+- the real execute overwrote the tracked baseline runner/review files under
+  `artifacts/`, so those generated versions were archived under
+  `runtime_archives/bl023/` and the tracked files were restored from `HEAD`
+  before merge-readiness gates were rerun
 - final preview state:
   - `approved = true`
   - `execution.status = rejected`
