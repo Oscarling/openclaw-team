@@ -416,3 +416,48 @@ Key result:
 - the repo no longer depends only on conversation memory for process discipline
 - merge/readiness checks now fail on real blockers instead of hidden assumptions
 - runtime residue handling now has a named registry instead of ad hoc exceptions
+
+### 14. Formal Upstream Smoke And Residue Archival
+
+User objective:
+
+- complete one real formal upstream smoke against the configured GitHub remote
+- close the old runtime residue without losing audit traceability
+- keep the cleanup aligned with the governance rules rather than ad hoc reset
+
+Main work areas:
+
+- created a fresh Trello smoke sample and pushed it through:
+  - Trello readonly
+  - preview
+  - approval
+  - execute
+  - `finalize_processed_previews`
+- fixed two real blockers discovered during formal smoke:
+  - Critic verdict parsing could misread embedded contract text as
+    `needs_revision`
+  - `test_mode` still depended on Docker client initialization
+- tightened preflight so it admits only the supplied preview's governed
+  candidate paths
+- archived the old failed replay mutation of the previously finalized preview
+  before restoring the source preview file to its committed state
+
+Key result:
+
+- formal upstream smoke now succeeded against real `origin` on
+  `ops/finalization/formal-smoke-20260324`
+- finalization commit:
+  - `001ac972b13bdd21e4fd39e585bb66a30210863b`
+- hardening commit:
+  - `bd4d75e` Harden formal preview smoke execution
+- Trello card `69c1fff1b3339965c25783b7` moved to Done list
+  `69be462743bfa0038ca10f91`
+- old runtime residue archive:
+  - [preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.failed-replay-2026-03-24.json](/Users/lingguozhong/openclaw-team/docs/archive/runtime_residue/preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.failed-replay-2026-03-24.json)
+  - [preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.failed-replay-2026-03-24.md](/Users/lingguozhong/openclaw-team/docs/archive/runtime_residue/preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.failed-replay-2026-03-24.md)
+
+Current state after this closeout:
+
+- no unclassified runtime residue remains in the working tree
+- the main remaining process step is to return the formal-smoke hardening
+  commit through the ordinary reviewed code path before merge to `main`

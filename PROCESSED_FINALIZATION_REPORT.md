@@ -42,6 +42,40 @@ Important evidence:
 - [approvals/preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.finalization.result.json](/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.finalization.result.json)
 - runtime-generated commit: `f07e35f4bcdf918c618ba7a7efc2009780d2418f`
 
+## Formal Upstream Smoke
+
+On `2026-03-24`, the repo completed a fresh formal smoke against the real
+configured GitHub remote:
+
+- remote: `origin`
+- branch: `ops/finalization/formal-smoke-20260324`
+- Trello card: `69c1fff1b3339965c25783b7`
+- preview used:
+  - [preview/preview-trello-69c1fff1b3339965c25783b7-cb69af50b8ba.json](/Users/lingguozhong/openclaw-team/preview/preview-trello-69c1fff1b3339965c25783b7-cb69af50b8ba.json)
+
+Formal result:
+
+- `execution.status = processed`
+- finalization completed successfully
+- git push succeeded to `origin/ops/finalization/formal-smoke-20260324`
+- Trello card moved to Done list `69be462743bfa0038ca10f91`
+- finalization commit: `001ac972b13bdd21e4fd39e585bb66a30210863b`
+
+Required hardening discovered and implemented during this formal smoke:
+
+- `bd4d75e` Harden formal preview smoke execution
+  - fix Critic verdict extraction so embedded contract text cannot override the
+    real review verdict line
+  - allow `test_mode` execution without requiring Docker client initialization
+  - allow preflight to admit only the supplied preview's governed candidate
+    paths instead of blanket failing on all non-runtime dirty files
+
+Formal smoke evidence:
+
+- [approvals/preview-trello-69c1fff1b3339965c25783b7-cb69af50b8ba.finalization.result.json](/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c1fff1b3339965c25783b7-cb69af50b8ba.finalization.result.json)
+- finalization commit: `001ac972b13bdd21e4fd39e585bb66a30210863b`
+- hardening commit: `bd4d75e`
+
 ## Failure Branch Coverage
 
 Validated by [tests/test_processed_finalization.py](/Users/lingguozhong/openclaw-team/tests/test_processed_finalization.py):
@@ -80,27 +114,24 @@ Current result:
 
 ## Remaining Gaps
 
-- The repository still has no configured upstream git remote:
-  - `git remote -v` is empty
-- Therefore, validated push semantics currently rely on an explicit temporary bare remote, not a production upstream remote.
-- Trello Done resolution can work via list-name lookup, but production usage is more stable with explicit `TRELLO_DONE_LIST_ID`.
+- `TRELLO_DONE_LIST_ID` is still optional in the active setup and current smoke
+  relied on board list-name resolution.
+- The formal-smoke hardening commit should still return through the ordinary
+  reviewed code path before merge to `main`.
 
 ## Known Risks
 
-- The repo currently has one dirty tracked preview file from the real smoke run:
-  - [preview/preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.json](/Users/lingguozhong/openclaw-team/preview/preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.json)
-- This is audit evidence, not a logic failure, but it means runtime state can still leave tracked preview files dirty in the working tree.
-- The helper fix committed in `bc93358` avoids adding preview files into future finalization commits, but it does not retroactively clean existing runtime residue.
+- The old failed replay mutation of the historical sample is now archived, not
+  left as working-tree residue:
+  - [preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.failed-replay-2026-03-24.json](/Users/lingguozhong/openclaw-team/docs/archive/runtime_residue/preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.failed-replay-2026-03-24.json)
+  - [preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.failed-replay-2026-03-24.md](/Users/lingguozhong/openclaw-team/docs/archive/runtime_residue/preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.failed-replay-2026-03-24.md)
+- The helper fix committed in `bc93358` avoids adding preview files into future
+  finalization commits, but archive discipline is still required if a human
+  replays old finalized samples locally.
 
 ## Next Step
 
-The next minimal step is to provide a real upstream push target and run one formal finalization smoke against that target:
-
-- configure `origin`, or
-- pass `--git-remote` and `--git-branch`
-
-After that, rerun one already-processed sample through:
-
-`processed -> finalize_processed_previews -> git push -> Trello Done`
-
-without changing execute or preview/approval semantics.
+The next minimal standard-process step is to move the formal-smoke hardening
+back through an ordinary reviewed code branch / PR and optionally pin
+`TRELLO_DONE_LIST_ID` in the execution environment so future formal runs do not
+depend on list-name lookup.
