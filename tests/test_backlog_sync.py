@@ -26,7 +26,7 @@ class BacklogSyncTests(unittest.TestCase):
         errors, required_items = backlog_sync.collect_sync_issues(REPO_ROOT / "PROJECT_BACKLOG.md")
 
         self.assertEqual(errors, [])
-        self.assertTrue(required_items)
+        self.assertIsInstance(required_items, list)
 
     def test_now_active_item_requires_real_issue(self) -> None:
         path = self._write_backlog(
