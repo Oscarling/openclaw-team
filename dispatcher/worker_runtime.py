@@ -63,11 +63,24 @@ def require_setting(label, secret_names, env_names):
     raise RuntimeError(f"Missing {label}. Checked: {joined}")
 
 
+def read_int_env(name, default, *, minimum=1):
+    raw = os.environ.get(name)
+    if raw is None or not str(raw).strip():
+        return default
+    try:
+        value = int(str(raw).strip())
+    except ValueError as exc:
+        raise RuntimeError(f"{name} must be an integer when set") from exc
+    if value < minimum:
+        raise RuntimeError(f"{name} must be >= {minimum}")
+    return value
+
+
 # ==========================================
 # Runtime guards
 # ==========================================
-LLM_TIMEOUT = 60
-LLM_MAX_RETRIES = 3
+DEFAULT_LLM_TIMEOUT_SECONDS = 120
+DEFAULT_LLM_MAX_RETRIES = 3
 MAX_ARTIFACT_SIZE = 2 * 1024 * 1024  # 2MB
 NO_PROXY_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 HTTP_USER_AGENT = "Mozilla/5.0"
@@ -113,6 +126,22 @@ def get_llm_settings():
         "chat_url": normalize_chat_endpoint(api_base),
         "model_name": model_name,
     }
+
+
+def llm_timeout_seconds():
+    return read_int_env(
+        "ARGUS_LLM_TIMEOUT_SECONDS",
+        DEFAULT_LLM_TIMEOUT_SECONDS,
+        minimum=1,
+    )
+
+
+def llm_max_retries():
+    return read_int_env(
+        "ARGUS_LLM_MAX_RETRIES",
+        DEFAULT_LLM_MAX_RETRIES,
+        minimum=1,
+    )
 
 
 # ==========================================
@@ -284,6 +313,8 @@ def load_test_mode_payload(task, worker):
 # LLM Call with retry
 # ==========================================
 def call_llm(system_prompt, user_prompt, worker, llm_settings):
+    timeout_seconds = llm_timeout_seconds()
+    max_attempts = llm_max_retries()
     payload = {
         "model": llm_settings["model_name"],
         "messages": [
@@ -297,7 +328,7 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
         "Authorization": f"Bearer {llm_settings['api_key']}",
         "User-Agent": HTTP_USER_AGENT,
     }
-    for attempt in range(LLM_MAX_RETRIES):
+    for attempt in range(max_attempts):
         try:
             req = urllib.request.Request(
                 llm_settings["chat_url"],
@@ -305,7 +336,7 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
                 headers=headers,
                 method="POST",
             )
-            with NO_PROXY_OPENER.open(req, timeout=LLM_TIMEOUT) as resp:
+            with NO_PROXY_OPENER.open(req, timeout=timeout_seconds) as resp:
                 raw = resp.read().decode("utf-8")
                 result = json.loads(raw)
             choices = result.get("choices", [])
@@ -315,7 +346,7 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
             return content
         except Exception as e:
             log(worker, "WARN", f"LLM call failed attempt {attempt + 1}: {e}")
-            if attempt == LLM_MAX_RETRIES - 1:
+            if attempt == max_attempts - 1:
                 raise
             time.sleep(2 ** attempt)
     return ""
@@ -709,7 +740,13 @@ def run_worker(task_dir=None, worker_override=None, base_dir=None, llm_override=
                 parsed = llm_override(task=task, worker=worker)
             else:
                 llm_settings = get_llm_settings()
-                log(worker, "INFO", f"Worker started using endpoint {llm_settings['chat_url']}")
+                log(
+                    worker,
+                    "INFO",
+                    "Worker started using endpoint "
+                    f"{llm_settings['chat_url']} "
+                    f"(timeout={llm_timeout_seconds()}s, attempts={llm_max_retries()})",
+                )
                 soul = load_soul(worker)
                 user_prompt = build_user_prompt(task)
                 llm_output = call_llm(soul, user_prompt, worker, llm_settings)
