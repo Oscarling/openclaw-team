@@ -43,8 +43,9 @@ This checklist is mandatory before:
 
 ## Additional Checks For Trello Done / Writeback Runs
 
-- [ ] `TRELLO_DONE_LIST_ID` is set, or I have documented why list-name resolution
-      is acceptable for this run
+- [ ] `TRELLO_DONE_LIST_ID` is set for the formal runtime environment
+- [ ] If it is missing, I have pinned it first with:
+      `python3 scripts/pin_trello_done_list.py --env-file /tmp/trello_env.sh --apply`
 
 ## Minimum Commands
 

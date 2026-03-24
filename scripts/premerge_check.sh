@@ -123,6 +123,12 @@ else
   fail "tests/test_backlog_sync.py failed."
 fi
 
+if python3 -m unittest -v tests/test_pin_trello_done_list.py; then
+  pass "tests/test_pin_trello_done_list.py passed."
+else
+  fail "tests/test_pin_trello_done_list.py failed."
+fi
+
 if python3 -m unittest -v tests/test_argus_hardening.py; then
   pass "tests/test_argus_hardening.py passed."
 else
