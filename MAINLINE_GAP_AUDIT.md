@@ -1,5 +1,12 @@
 # MAINLINE_GAP_AUDIT
 
+> Status note (2026-03-24): this file is the `Phase 8F` gap snapshot. It is not
+> the live current-state ledger. For the latest real state, use
+> `PROJECT_CHAT_AND_WORK_LOG.md` and the relevant capability evidence reports such
+> as `PROCESSED_FINALIZATION_REPORT.md`. The Git / Trello closure rows below
+> predate the later processed-finalization helper and should not be read as the
+> current capability map.
+
 ## A. 当前 stable baseline 摘要
 
 当前已稳定链路：

@@ -1,0 +1,2 @@
+# path	classification	owner	reason	references	disposition
+preview/preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.json	tracked_audit_evidence	openclaw-team	Real processed-finalization smoke updated preview.finalization from in_progress to completed and should remain traceable until a dedicated audit archive or state-source redesign exists	PROCESSED_FINALIZATION_REPORT.md;PROJECT_CHAT_AND_WORK_LOG.md	keep_out_of_merge_target

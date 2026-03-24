@@ -46,9 +46,6 @@ REQUIRED_MANAGER_MOUNTS = (
     "/app/agents",
 )
 
-DOCKER_CLIENT = docker.from_env() if docker is not None else None
-
-
 def resolve_base_dir():
     return Path(os.environ.get("ARGUS_BASE_DIR", str(DEFAULT_BASE_DIR))).resolve()
 
@@ -73,6 +70,22 @@ def to_container_path(path):
 
 def utc_now():
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def resolve_docker_client(provided_client=None):
+    if provided_client is not None:
+        return provided_client
+    if docker is None:
+        raise RuntimeError(
+            "docker SDK for Python is not available. Install `docker` or pass docker_client."
+        )
+    try:
+        return docker.from_env()
+    except Exception as exc:
+        raise RuntimeError(
+            "Failed to initialize docker client from environment. "
+            "Ensure Docker access is available or pass docker_client explicitly."
+        ) from exc
 
 
 def ensure_dirs():
@@ -595,11 +608,7 @@ def delegate_task(
     task_dir = task_workspace_dir(worker, task_id)
     container_name = one_shot_container_name(worker, task_id)
     image_name = worker_image or DEFAULT_WORKER_IMAGE
-    if docker_client is None and DOCKER_CLIENT is None:
-        raise RuntimeError(
-            "docker SDK for Python is not available. Install `docker` or pass docker_client."
-        )
-    client = docker_client or DOCKER_CLIENT
+    client = resolve_docker_client(docker_client)
 
     create_task_record(task_id, worker, payload, max_retries=retries)
     update_task_status(task_id, "running")
