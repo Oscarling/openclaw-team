@@ -1065,6 +1065,80 @@ Verification snapshot on 2026-03-24:
   - `Warnings: 0`
   - `Failures: 0`
 
+### 35. Governed Validation Of The Post-Propagation Hardening
+
+User objective:
+
+- activate `BL-20260324-025`
+- generate one fresh same-origin preview candidate after `BL-20260324-024`
+- prove whether the new description, review-scope, delegate-evidence, and
+  timeout rules actually reach a live-generated candidate
+
+Main work areas:
+
+- promoted `BL-20260324-025` into the active phase and mirrored it to GitHub
+  issue #43
+- confirmed real Trello read-only access still reaches origin
+  `trello:69c24cd3c1a2359ddd7a1bf8`
+- generated a new live mapped payload from the smoke result itself, then added
+  explicit token `regen-20260324-bl025-001`
+- ingested that payload to create fresh preview
+  `preview-trello-69c24cd3c1a2359ddd7a1bf8-19461fb0341a`
+- verified before execution that the new preview carries:
+  - governed regeneration evidence in `source.regeneration_token`
+  - richer, non-truncated automation description context
+  - new `delegate_success_evidence` and `delegate_timeout` hints
+  - critic-side paired review artifacts for wrapper plus reviewed delegate
+- wrote one explicit approval file for the fresh preview
+- ran one real execute in `test_mode=off` with injected OpenAI runtime env and
+  no Git finalization / Trello Done
+- traced the resulting rejection to the automation worker, which failed before
+  artifact generation because the configured LLM endpoint hit three consecutive
+  read timeouts
+- recorded a new blocker `BL-20260324-026` for automation runtime stability
+
+Primary output:
+
+- [POST_PROPAGATION_HARDENING_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_PROPAGATION_HARDENING_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260324-025` is complete as a validation phase
+- the fresh candidate clearly inherited the `BL-20260324-024` hardening before
+  execution
+- the governed execute did not reach the previous runner-review stage because
+  automation failed earlier with repeated `The read operation timed out`
+- the next correct step is a new blocker phase on automation runtime/provider
+  stability, not another blind replay in this validation phase
+
+Verification snapshot on 2026-03-24:
+
+- real Trello read-only smoke passed for the target origin and did not perform
+  any write operation
+- `python3 skills/ingest_tasks.py --once` returned:
+  - `processed = 1`
+  - `duplicate_skipped = 0`
+  - `preview_created = 1`
+- fresh preview pre-run checks showed:
+  - `approved = false`
+  - `source.regeneration_token = regen-20260324-bl025-001`
+  - richer automation description present
+  - `delegate_success_evidence` hint present
+  - `delegate_timeout` hint present
+  - critic artifacts include both wrapper and reviewed delegate script
+- explicit approval file was written for the fresh preview
+- one real execute returned:
+  - `processed = 0`
+  - `rejected = 1`
+  - `critic_verdict = needs_revision`
+- automation worker output:
+  - `status = failed`
+  - error: `The read operation timed out`
+  - three consecutive timeout warnings recorded against
+    `https://fast.vpsairobot.com/v1/chat/completions`
+- no critic workspace was created because automation never produced a reviewable
+  artifact
+
 ### 31. Close Residual Inbox Runner Contract Gaps Before Reuse
 
 User objective:

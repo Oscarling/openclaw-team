@@ -469,16 +469,33 @@ Allowed enum values:
 ### BL-20260324-025
 - title: Validate BL-20260324-024 hardening on a fresh same-origin preview candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260324-024
 - start_when: `BL-20260324-024` is merged so the tightened description-fidelity, delegate-evidence, review-scope, and timeout rules can be tested through the normal governed preview pipeline
 - done_when: One governed validation creates a fresh same-origin preview candidate after the BL-20260324-024 hardening, runs one explicit approval plus one real execute, and records whether the new live-generated runner clears the post-propagation residual review concerns or exposes a smaller new set
 - source: `POST_PROPAGATION_RUNNER_GAP_HARDENING_REPORT.md` on 2026-03-24 concludes the next correct step is another governed validation on a fresh same-origin candidate rather than mutating the hardening phase
-- link: /Users/lingguozhong/openclaw-team/POST_PROPAGATION_RUNNER_GAP_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260324-024 lands on main
+- link: /Users/lingguozhong/openclaw-team/POST_PROPAGATION_HARDENING_VALIDATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/43
+- evidence: `POST_PROPAGATION_HARDENING_VALIDATION_REPORT.md` records one real same-origin Trello regeneration using token `regen-20260324-bl025-001`, a fresh preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-19461fb0341a`, one explicit approval, and one real execute showing the BL-20260324-024 hardening did reach the fresh candidate even though automation then failed with repeated `The read operation timed out`
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-026
+- title: Stabilize automation LLM read timeouts blocking post-hardening live validation
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-025
+- start_when: `BL-20260324-025` has proved that the fresh preview candidate carries the BL-20260324-024 hardening, but the automation worker still fails real execute because the configured LLM endpoint times out before producing any script artifact
+- done_when: The repo either mitigates the automation LLM read-timeout failure path or explicitly changes runtime/provider policy enough to let the next governed live validation reach artifact generation and review
+- source: `POST_PROPAGATION_HARDENING_VALIDATION_REPORT.md` on 2026-03-24 records three consecutive automation LLM read timeouts at `https://fast.vpsairobot.com/v1/chat/completions`, which now block further governed validation
+- link: /Users/lingguozhong/openclaw-team/POST_PROPAGATION_HARDENING_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260324-025 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
