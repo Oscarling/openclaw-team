@@ -120,7 +120,7 @@ Allowed enum values:
 - start_when: The backlog format and lint gate are merged so issue mirroring has a stable source
 - done_when: Each phase=now actionable backlog item has a linked GitHub issue and mirror checks run in local gates plus CI
 - source: PROJECT_BACKLOG.md
-- link: origin/feat/backlog-issue-mirror
+- link: https://github.com/Oscarling/openclaw-team/pull/7
 - issue: https://github.com/Oscarling/openclaw-team/issues/6
 - evidence: -
 - last_reviewed_at: 2026-03-24
