@@ -14,12 +14,14 @@ snapshots with newer execution evidence.
 1. Constitutional constraints:
    - `BASELINE_FREEZE_NOTE.md`
    - `RUNTIME_CONTRACT.md`
-2. Current-state ledger:
+2. Open-work backlog:
+   - `PROJECT_BACKLOG.md`
+3. Current-state ledger:
    - `PROJECT_CHAT_AND_WORK_LOG.md`
-3. Capability evidence for implemented behavior:
+4. Capability evidence for implemented behavior:
    - phase reports under repo root
    - `PROCESSED_FINALIZATION_REPORT.md`
-4. Historical phase snapshot:
+5. Historical phase snapshot:
    - `MAINLINE_GAP_AUDIT.md` is a `Phase 8F` snapshot, not the live state ledger
 
 ## Non-Negotiable Runtime Rules
@@ -65,6 +67,8 @@ Run these commands as the minimum baseline when behavior changes touch the contr
 chain or processed finalization:
 
 ```bash
+python3 scripts/backlog_lint.py
+python3 -m unittest -v tests/test_backlog_lint.py
 python3 -m unittest -v tests/test_argus_hardening.py
 python3 -m unittest -v tests/test_processed_finalization.py
 scripts/premerge_check.sh
@@ -73,6 +77,8 @@ scripts/preflight_finalization_check.sh <preview_json_path>
 
 ## Current Status Notes
 
+- `PROJECT_BACKLOG.md` is the open-work source of truth. Review it before asking
+  for merge, ship, or freeze decisions.
 - `PROJECT_CHAT_AND_WORK_LOG.md` is the current-state ledger and should be tracked
   on the active branch before a formal phase closeout.
 - Runtime-generated residue under `preview/`, `approvals/`, or `processed/` is not

@@ -15,6 +15,11 @@ step complete.
       `python3 -m unittest -v tests/test_argus_hardening.py`
 - [ ] If this change touched real Git / Trello integration, the pre-run checklist
       was completed
+- [ ] `PROJECT_BACKLOG.md` was reviewed as part of this merge / ship decision
+- [ ] Relevant backlog items have updated `status`, `phase`, and `last_reviewed_at`
+- [ ] Any newly discovered sideline / blocker / debt / future item was recorded
+      before requesting review
+- [ ] GitHub issue mirroring was updated, or an explicit defer reason was recorded
 - [ ] `PROJECT_CHAT_AND_WORK_LOG.md` is updated or explicitly confirmed unchanged
 - [ ] The relevant evidence report is updated or explicitly confirmed unchanged
 - [ ] Any stale snapshot document is labeled as historical if newer evidence now
@@ -37,6 +42,7 @@ step complete.
 ## Minimum Commands
 
 ```bash
+python3 scripts/backlog_lint.py
 scripts/premerge_check.sh
 ```
 
