@@ -644,3 +644,40 @@ Verification snapshot on 2026-03-24:
   - stale review dismissal enabled
   - admin enforcement enabled
   - required conversation resolution enabled
+
+### 20. Trello Read-Only Ingress Hardening
+
+User objective:
+
+- continue under the standard workflow after governance stabilization
+- choose the next smallest real mainline step instead of starting another broad phase
+- harden the Trello read-only entry path before more real smoke work
+
+Main work areas:
+
+- ran a backlog sweep and registered the phase as `BL-20260324-010`
+- mirrored that backlog item to GitHub issue #15
+- removed the hard import-time `requests` dependency from:
+  - `skills/trello_readonly_prep.py`
+  - `skills/ingest_tasks.py`
+- added dedicated unit coverage for Trello read-only smoke and ingest behavior
+- wired the new test coverage into local `premerge_check` and CI
+- updated workflow docs so the enforced gate matches the documented baseline
+
+Primary output:
+
+- [TRELLO_READONLY_INGRESS_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/TRELLO_READONLY_INGRESS_HARDENING_REPORT.md)
+
+Key result:
+
+- the Trello read-only entry path is now testable without relying on an implicit
+  `requests` install at import time
+- the repo has a dedicated regression guard for Trello read-only ingress
+- this pass did not expand scope into execute, finalization, or Trello writeback
+
+Verification snapshot on 2026-03-24:
+
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed and confirmed issue mirror for `BL-20260324-010 -> #15`
+- `python3 -m unittest -v tests/test_trello_readonly_ingress.py` passed `6/6`
+- `python3 -m unittest -v tests/test_processed_finalization.py tests/test_pin_trello_done_list.py` passed `12/12`

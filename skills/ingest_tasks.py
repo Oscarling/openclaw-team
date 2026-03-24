@@ -8,9 +8,12 @@ import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
-import requests
+try:
+    import requests as REQUESTS_MODULE
+except ModuleNotFoundError:
+    REQUESTS_MODULE = None
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
@@ -26,6 +29,18 @@ PROCESSING_DIR = REPO_ROOT / "processing"
 PROCESSED_DIR = REPO_ROOT / "processed"
 REJECTED_DIR = REPO_ROOT / "rejected"
 PREVIEW_DIR = REPO_ROOT / "preview"
+
+
+def _missing_requests_dependency(*_args: Any, **_kwargs: Any) -> Any:
+    raise RuntimeError(
+        "Missing Python dependency 'requests'. Install it before using Trello read-only HTTP calls."
+    )
+
+
+def _default_requests_get(*args: Any, **kwargs: Any) -> Any:
+    if REQUESTS_MODULE is None:
+        return _missing_requests_dependency(*args, **kwargs)
+    return REQUESTS_MODULE.get(*args, **kwargs)
 
 
 def utc_now() -> str:
@@ -90,6 +105,7 @@ def ingest_trello_readonly_once(
     board_id_override: str | None,
     list_id_override: str | None,
     limit: int,
+    requests_get: Callable[..., Any] = _default_requests_get,
 ) -> dict[str, Any]:
     auth = _trello_auth_env()
     api_key = auth["api_key"]
@@ -120,8 +136,10 @@ def ingest_trello_readonly_once(
     }
 
     try:
-        response = requests.get(url, params=params, timeout=20)
-    except requests.RequestException as exc:
+        response = requests_get(url, params=params, timeout=20)
+    except RuntimeError as exc:
+        raise RuntimeError(str(exc)) from exc
+    except Exception as exc:
         raise RuntimeError(
             f"Trello read-only request failed before HTTP response: {exc.__class__.__name__}"
         ) from exc
