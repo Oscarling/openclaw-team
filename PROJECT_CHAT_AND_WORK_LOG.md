@@ -501,3 +501,38 @@ Current follow-up:
 
 - the repository still uses `codex/next-task` as the remote default branch
 - a later cleanup can normalize the default branch name to `main` after the active PR stack settles
+
+### 16. Default Branch Normalization To Main
+
+User objective:
+
+- align the repository with the standard `main` branch convention
+- preserve the active PR stack while removing `codex/next-task` as the default branch name
+
+Main work areas:
+
+- created remote `main` at the same commit as `codex/next-task`
+- switched the GitHub default branch from `codex/next-task` to `main`
+- applied the same branch-protection policy to `main`
+- retargeted the top-level open PRs from `codex/next-task` to `main`
+- aligned local `main` to track `origin/main`
+
+Key result:
+
+- the repository now uses `main` as the remote default branch
+- platform-enforced review and CI rules are attached to `main`
+- the stacked PR flow remains intact:
+  - PR #1 now targets `main`
+  - PR #2 now targets `main`
+  - PR #7 still targets `feat/backlog-governance-kit`
+
+Verification snapshot on 2026-03-24:
+
+- `gh repo view` reports `defaultBranchRef.name = main`
+- `gh api repos/Oscarling/openclaw-team/branches/main/protection` reports:
+  - required checks `baseline-tests` and `shell-checks`
+  - one approving review
+  - stale review dismissal
+  - admin enforcement
+  - required conversation resolution
+- `git ls-remote --heads origin main codex/next-task` shows both branch names at the same commit after normalization
