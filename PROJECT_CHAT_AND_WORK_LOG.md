@@ -536,3 +536,49 @@ Verification snapshot on 2026-03-24:
   - admin enforcement
   - required conversation resolution
 - `git ls-remote --heads origin main codex/next-task` shows both branch names at the same commit after normalization
+
+### 17. PR Stack Landing, CI Fix, And Solo-Maintainer Policy Calibration
+
+User objective:
+
+- actually land the prepared governance and hardening PRs instead of stopping at setup
+- keep the repo on a truthful, operable process rather than a theoretically strict but unusable one
+
+Main work areas:
+
+- read failing GitHub Actions logs for the blocked PRs
+- traced the repeated `baseline-tests` failure to an import-time `requests` dependency inside `skills/finalize_processed_previews.py`
+- changed finalization tests to work with injected fake HTTP callables even when `requests` is not installed
+- propagated that same CI fix to the affected open PR branches
+- merged PR #1, PR #2, PR #7, and PR #10 into `main`
+- updated `main` branch protection from admin-enforced review to the current solo-maintainer policy:
+  - required CI remains enforced
+  - required conversation resolution remains enforced
+  - required review remains configured for non-admin merges
+  - `enforce_admins` was turned off so the repository owner can complete merges in the current single-maintainer setup
+
+Merged PR results on 2026-03-24:
+
+- PR #1 merged as `9b1ed4c`
+- PR #2 merged as `5c7a31b`
+- PR #7 merged as `67b4246`
+- PR #10 merged after rebasing onto the latest `main`
+
+Key result:
+
+- the prepared governance stack is no longer just queued work; it is now actually landed on `main`
+- the repeated CI blocker was resolved at the root cause instead of being worked around in Actions only
+- the repo now has:
+  - public visibility
+  - default branch `main`
+  - required checks `baseline-tests` and `shell-checks`
+  - PR-based merge flow
+  - no currently open PRs
+
+Current governance note:
+
+- the review rule is no longer "admin-enforced one-review policy"
+- the truthful current policy is:
+  - one approving review is still configured
+  - admins are allowed to bypass that review gate
+  - this is a deliberate solo-maintainer exception and should be revisited when a second reviewer is available
