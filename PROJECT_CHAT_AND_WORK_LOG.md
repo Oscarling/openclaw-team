@@ -910,3 +910,38 @@ Verification snapshot on 2026-03-24:
 - `python3 scripts/backlog_sync.py` passed with no remaining `phase=now`
   actionable items requiring mirrored issues
 - `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`
+
+### 26. Preview Disposition Frozen At Smoke-Evidence Boundary
+
+User objective:
+
+- determine the standard-process default after the successful live preview smoke
+- avoid an unnecessary follow-up question if the safe default would not damage
+  later work
+
+Main work areas:
+
+- evaluated the two possible follow-ups already tracked in `BL-20260324-016`
+- chose the lower-risk default path because approval / execute would create a
+  new state transition beyond the completed smoke scope
+- formalized that decision in repo truth instead of leaving it only in chat
+
+Primary output:
+
+- [TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md](/Users/lingguozhong/openclaw-team/TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md)
+
+Key result:
+
+- the fresh preview remains intentionally unapproved as smoke evidence
+- no approval / execute phase was opened automatically
+- a later approval / execute attempt is still possible, but it must start as a
+  separate governed phase
+- `BL-20260324-016` is complete under the safer default disposition
+
+Verification snapshot on 2026-03-24:
+
+- preview
+  `preview-trello-69c24cd3c1a2359ddd7a1bf8-354139fc92de`
+  remains `approved = false`
+- backlog policy remains consistent:
+  - no phase=`now` actionable items require mirrored issues after this closeout

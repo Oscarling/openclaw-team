@@ -143,6 +143,11 @@ The prior blocker was not a hidden code failure. It was simply the absence of an
 unseen live Trello card in scope.
 
 `BL-20260324-015` is now resolved, and `BL-20260324-014` is complete.
-The next decision is product/process, not ingestion correctness:
-either leave the new preview unapproved as smoke evidence, or explicitly open a
-new governed phase if the user wants to approve and execute it.
+For the default closeout path, the repo intentionally stops here:
+
+- the new preview remains unapproved as smoke evidence
+- no approval / execute phase is opened automatically
+- any later approval / execute work must start as a separate governed phase
+
+This is the lower-risk default because it preserves the successful smoke result
+without advancing into a new state transition.
