@@ -248,16 +248,16 @@ Allowed enum values:
 ### BL-20260324-012
 - title: Stop trello_readonly_prep smoke output from polluting the live processing queue
 - type: debt
-- status: planned
-- phase: next
+- status: active
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260324-011
 - start_when: The real preview smoke has confirmed that `skills/trello_readonly_prep.py` still writes a recoverable sample file under `processing/`
-- done_when: Running `skills/trello_readonly_prep.py --smoke-read` no longer creates recoverable live-queue input under `processing/`, and the behavior is covered by tests and reflected in the phase evidence
+- done_when: Running `skills/trello_readonly_prep.py --smoke-read` no longer creates recoverable live-queue input under `processing/`, the behavior is covered by tests, and one rerun of the governed Trello preview smoke confirms `processing_recovered=0`
 - source: `TRELLO_READONLY_PREVIEW_SMOKE_REPORT.md` on 2026-03-24 showed `processing_recovered=1` because `trello_readonly_mapped_sample.json` was picked up during the real ingest run
 - link: /Users/lingguozhong/openclaw-team/skills/trello_readonly_prep.py
-- issue: deferred:promote-after-phase8h-closeout
+- issue: https://github.com/Oscarling/openclaw-team/issues/20
 - evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24

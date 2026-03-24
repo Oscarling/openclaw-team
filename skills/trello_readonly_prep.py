@@ -35,6 +35,10 @@ def _default_requests_get(*args: Any, **kwargs: Any) -> Any:
     return REQUESTS_MODULE.get(*args, **kwargs)
 
 
+def default_mapped_output_path() -> Path:
+    return REPO_ROOT / "artifacts" / "trello_readonly_prep" / "trello_readonly_mapped_sample.json"
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Trello read-only preparation helper.")
     parser.add_argument(
@@ -44,8 +48,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output",
-        default=str(REPO_ROOT / "processing" / "trello_readonly_mapped_sample.json"),
-        help="Where to write mapped local-inbox-compatible payload.",
+        default=str(default_mapped_output_path()),
+        help="Where to write mapped local-inbox-compatible payload. Defaults outside the live processing queue.",
     )
     parser.add_argument("--smoke-read", action="store_true", help="Run one read-only Trello API smoke check.")
     parser.add_argument("--board-id", default=None, help="Trello board id override for smoke check.")
