@@ -1053,3 +1053,62 @@ Verification snapshot on 2026-03-24:
 - `python3 scripts/backlog_sync.py` passed with no remaining `phase=now`
   actionable items requiring mirrored issues
 - `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`
+
+### 29. Explicit Same-Origin Preview Regeneration Path
+
+User objective:
+
+- make the next phase an explicit `regeneration path`
+- allow the same `origin_id` to regenerate a new preview only under controlled
+  conditions
+- avoid weakening the default dedupe freeze or confusing regeneration with
+  execute replay
+
+Main work areas:
+
+- promoted `BL-20260324-020` into the active phase and mirrored it to GitHub
+  issue #31
+- moved `BL-20260324-019` into a clear follow-up dependency on the regeneration
+  path instead of leaving the decision implicit
+- extended local inbox validation to accept an explicit `regeneration_token`
+  only when:
+  - the token is non-empty, well-formed, and consistent across repeated fields
+  - an explicit `origin_id` is provided
+- preserved the default same-origin freeze by keeping `origin:<origin_id>`
+  dedupe for normal inputs
+- introduced a separate governed dedupe key
+  `origin_regeneration:<origin_id>:<token>` for explicit regeneration requests
+- recorded the token in preview evidence and ingest result sidecars so same-origin
+  regeneration is audit-visible
+- updated the freeze note so current repo rules distinguish:
+  - automatic same-origin re-entry: still not supported
+  - explicit governed regeneration: now supported
+
+Primary output:
+
+- [PREVIEW_REGENERATION_PATH_REPORT.md](/Users/lingguozhong/openclaw-team/PREVIEW_REGENERATION_PATH_REPORT.md)
+
+Key result:
+
+- the repo now has a minimal, explicit regeneration path for same-origin preview
+  creation
+- default `origin`-based dedupe remains intact for ordinary inputs
+- regeneration is no longer an undocumented workaround; it is a governed,
+  auditable ingest mode
+- `BL-20260324-019` is now the next validation phase, not a vague branch of
+  options
+
+Verification snapshot on 2026-03-24:
+
+- phase-local smoke + regressions passed `4/4`:
+  - same-origin regeneration with explicit token creates a new preview
+  - reusing the same token is blocked
+  - same-origin duplicate without token is still blocked
+  - regeneration without explicit `origin_id` is rejected
+- `python3 -m unittest tests.test_local_inbox_adapter` passed `4/4`
+- `python3 -m unittest tests.test_trello_readonly_ingress` passed `10/10`
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed while `BL-20260324-020` was mirrored
+  to issue `#31`, and passed again after closeout with no remaining `phase=now`
+  actionable items requiring mirroring
+- `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`

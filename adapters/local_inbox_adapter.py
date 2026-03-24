@@ -14,6 +14,7 @@ class StandardizedInboxTask:
     origin_id: str
     payload_hash: str
     dedupe_keys: list[str]
+    regeneration_token: str | None
     source: dict[str, Any]
     title: str
     description: str
@@ -86,6 +87,42 @@ def _validate_labels(value: Any) -> list[str]:
     return labels
 
 
+def _extract_regeneration_token(
+    raw_payload: dict[str, Any],
+    *,
+    metadata: dict[str, Any],
+    source_input: dict[str, Any],
+) -> str | None:
+    raw_values = [
+        raw_payload.get("regeneration_token"),
+        metadata.get("regeneration_token"),
+        source_input.get("regeneration_token"),
+    ]
+    candidates: list[str] = []
+    for raw in raw_values:
+        if raw is None:
+            continue
+        if not isinstance(raw, str) or not raw.strip():
+            raise RuntimeError("regeneration_token must be a non-empty string when provided")
+        candidates.append(raw.strip())
+
+    if not candidates:
+        return None
+
+    distinct = set(candidates)
+    if len(distinct) != 1:
+        raise RuntimeError(
+            "regeneration_token must be consistent across top-level, metadata, and source when repeated"
+        )
+
+    token = candidates[0].lower()
+    if not re.fullmatch(r"[a-z0-9][a-z0-9._:-]{2,63}", token):
+        raise RuntimeError(
+            "regeneration_token must match ^[a-z0-9][a-z0-9._:-]{2,63}$"
+        )
+    return token
+
+
 def validate_external_payload(raw_payload: dict[str, Any], inbox_filename: str) -> dict[str, Any]:
     if not isinstance(raw_payload, dict):
         raise RuntimeError("Inbox payload must be a JSON object")
@@ -103,12 +140,14 @@ def validate_external_payload(raw_payload: dict[str, Any], inbox_filename: str) 
         metadata = {}
     if not isinstance(metadata, dict):
         raise RuntimeError("metadata must be an object when provided")
+    metadata = dict(metadata)
 
     source_input = raw_payload.get("source", {})
     if source_input is None:
         source_input = {}
     if not isinstance(source_input, dict):
         raise RuntimeError("source must be an object when provided")
+    source_input = dict(source_input)
 
     provided_origin_id = raw_payload.get("origin_id") or source_input.get("origin_id")
     if provided_origin_id is not None and not str(provided_origin_id).strip():
@@ -116,6 +155,14 @@ def validate_external_payload(raw_payload: dict[str, Any], inbox_filename: str) 
     origin_id = str(provided_origin_id).strip() if provided_origin_id else ""
     if not origin_id:
         origin_id = Path(inbox_filename).stem
+
+    regeneration_token = _extract_regeneration_token(
+        raw_payload,
+        metadata=metadata,
+        source_input=source_input,
+    )
+    if regeneration_token and not provided_origin_id:
+        raise RuntimeError("regeneration_token requires an explicit origin_id")
 
     request_type = str(raw_payload.get("request_type", "pdf_to_excel_ocr")).strip().lower()
     if request_type != "pdf_to_excel_ocr":
@@ -128,7 +175,14 @@ def validate_external_payload(raw_payload: dict[str, Any], inbox_filename: str) 
     payload_hash = _payload_hash(raw_payload)
     dedupe_keys = [f"hash:{payload_hash}"]
     if provided_origin_id:
-        dedupe_keys.insert(0, f"origin:{origin_id}")
+        if regeneration_token:
+            dedupe_keys.insert(0, f"origin_regeneration:{origin_id}:{regeneration_token}")
+        else:
+            dedupe_keys.insert(0, f"origin:{origin_id}")
+
+    if regeneration_token:
+        metadata["regeneration_token"] = regeneration_token
+        source_input["regeneration_token"] = regeneration_token
 
     return {
         "title": title.strip(),
@@ -137,6 +191,7 @@ def validate_external_payload(raw_payload: dict[str, Any], inbox_filename: str) 
         "metadata": metadata,
         "source_input": source_input,
         "origin_id": origin_id,
+        "regeneration_token": regeneration_token,
         "request_type": request_type,
         "inputs": inputs,
         "payload_hash": payload_hash,
@@ -173,6 +228,7 @@ def normalize_local_inbox_payload(
     inputs = validated["inputs"]
     payload_hash = validated["payload_hash"]
     dedupe_keys = validated["dedupe_keys"]
+    regeneration_token = validated["regeneration_token"]
     title = validated["title"]
     description = validated["description"]
     labels = validated["labels"]
@@ -199,6 +255,8 @@ def normalize_local_inbox_payload(
         "labels": labels,
     }
     source.update({k: v for k, v in source_input.items() if k not in {"kind"}})
+    if regeneration_token:
+        source["regeneration_token"] = regeneration_token
     priority = _normalize_priority(raw_payload.get("priority"))
 
     auto_task = {
@@ -282,6 +340,7 @@ def normalize_local_inbox_payload(
             "pipeline": "inbox->adapter->manager->automation->critic",
             "request_type": request_type,
             "payload_hash": payload_hash,
+            "regeneration_token": regeneration_token,
             "labels": labels,
             "external_metadata": metadata,
             "automation_contract_profile": "narrow_script_artifact_with_repo_reuse_and_format_fidelity",
@@ -326,6 +385,7 @@ def normalize_local_inbox_payload(
             "pipeline": "inbox->adapter->manager->automation->critic",
             "request_type": request_type,
             "payload_hash": payload_hash,
+            "regeneration_token": regeneration_token,
             "labels": labels,
             "external_metadata": metadata,
         },
@@ -335,6 +395,7 @@ def normalize_local_inbox_payload(
         origin_id=origin_id,
         payload_hash=payload_hash,
         dedupe_keys=dedupe_keys,
+        regeneration_token=regeneration_token,
         source=source,
         title=title,
         description=description,
