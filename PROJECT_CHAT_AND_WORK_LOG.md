@@ -1002,6 +1002,53 @@ Verification snapshot on 2026-03-24:
   - `status = success`
   - verdict: `needs_revision`
   - artifact: `artifacts/reviews/pdf_to_excel_ocr_inbox_review.md`
+
+### 31. Close Residual Inbox Runner Contract Gaps Before Reuse
+
+User objective:
+
+- activate `BL-20260324-021`
+- close the residual inbox-runner contract gaps exposed by `BL-20260324-019`
+- keep the phase limited to runner hardening, regression tests, and merge gates
+
+Main work areas:
+
+- promoted `BL-20260324-021` into the active phase and mirrored it to GitHub
+  issue `#35`
+- hardened `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` so:
+  - dry-run returns a reviewable `partial` outcome instead of `success`
+  - zero-PDF discovery short-circuits to `partial` without delegation
+  - relative delegate paths resolve from repo root instead of `Path.cwd()`
+  - delegation is restricted to the reviewed repository base script
+  - delegate JSON status is parsed so `partial` can propagate honestly
+- added one dedicated regression suite for the runner contract gaps
+- wired the new suite into local premerge checks, CI, and the PR template
+- completed pre-merge diff and gate checks before phase closeout
+
+Primary output:
+
+- [INBOX_RUNNER_CONTRACT_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/INBOX_RUNNER_CONTRACT_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260324-021` is complete as a runner-contract hardening phase
+- the known residual concerns from the regenerated validation candidate are now
+  addressed in the runner artifact itself
+- future review now sees dry-run, zero-input, and delegate-partial outcomes as
+  explicit reviewable states rather than ambiguous success/failure signals
+- repo-root path resolution and delegate allowlisting make the wrapper less
+  environment-sensitive and more constrained
+
+Verification snapshot on 2026-03-24:
+
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_inbox_runner.py` passed
+  `5/5`
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed while `BL-20260324-021` was mirrored
+  to issue `#35`
+- `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`,
+  including the new runner suite and all existing baseline suites
+- `git diff --check` passed with no patch-integrity issues
 - final preview state:
   - `approved = true`
   - `execution.status = rejected`

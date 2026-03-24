@@ -3,12 +3,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 DEFAULT_INPUT_DIR = "~/Desktop/pdf样本"
 DEFAULT_OUTPUT_XLSX = "artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx"
@@ -27,6 +26,10 @@ DEFAULT_REFERENCE_DOCS = [
     "artifacts/docs/pdf_to_excel_ocr_usage.md",
     "artifacts/reviews/pdf_to_excel_ocr_review.md",
 ]
+RUNNER_PATH = Path(__file__).resolve()
+REPO_ROOT = RUNNER_PATH.parents[2]
+REVIEWED_BASE_SCRIPT = (REPO_ROOT / DEFAULT_PREFERRED_BASE_SCRIPT).resolve()
+ALLOWED_SUMMARY_STATUSES = {"success", "partial", "failed"}
 
 
 def utc_now() -> str:
@@ -35,6 +38,26 @@ def utc_now() -> str:
 
 def expand_path(path_str: str) -> Path:
     return Path(path_str).expanduser()
+
+
+def resolve_repo_relative_path(path_str: str) -> Path:
+    path = expand_path(path_str)
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    return path.resolve()
+
+
+def resolve_delegate_script(path_str: str) -> Path:
+    return resolve_repo_relative_path(path_str)
+
+
+def validate_delegate_script(base_script: Path) -> str | None:
+    if base_script != REVIEWED_BASE_SCRIPT:
+        return (
+            "Preferred base script must resolve to the reviewed repository script "
+            f"{REVIEWED_BASE_SCRIPT} to preserve the readonly preview contract."
+        )
+    return None
 
 
 def bool_flag(value: str) -> bool:
@@ -46,10 +69,23 @@ def bool_flag(value: str) -> bool:
     raise argparse.ArgumentTypeError(f"invalid boolean value: {value}")
 
 
-def discover_pdfs(input_dir: Path) -> List[str]:
+def discover_pdfs(input_dir: Path) -> list[str]:
     if not input_dir.exists() or not input_dir.is_dir():
         return []
     return sorted(str(p) for p in input_dir.rglob("*.pdf") if p.is_file())
+
+
+def parse_delegate_report(stdout_text: str) -> dict[str, Any] | None:
+    stripped = stdout_text.strip()
+    if not stripped:
+        return None
+    try:
+        payload = json.loads(stripped)
+    except json.JSONDecodeError:
+        return None
+    if isinstance(payload, dict):
+        return payload
+    return None
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -70,7 +106,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def emit_summary(summary: Dict[str, Any], summary_json: str) -> None:
+def emit_summary(summary: dict[str, Any], summary_json: str) -> None:
     rendered = json.dumps(summary, ensure_ascii=False, indent=2)
     print(rendered)
     if summary_json:
@@ -84,13 +120,12 @@ def main() -> int:
 
     input_dir = expand_path(args.input_dir)
     output_xlsx = expand_path(args.output_xlsx)
-    base_script = Path(args.preferred_base_script)
-    if not base_script.is_absolute():
-        base_script = Path.cwd() / base_script
-
+    base_script = resolve_delegate_script(args.preferred_base_script)
     pdfs = discover_pdfs(input_dir)
+    readonly_labels_present = any(str(label).strip().lower() == "readonly" for label in args.labels)
+    delegate_contract_error = validate_delegate_script(base_script)
 
-    summary: Dict[str, Any] = {
+    summary: dict[str, Any] = {
         "status": "failed",
         "runner": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
         "requested_at": utc_now(),
@@ -108,6 +143,12 @@ def main() -> int:
             "preferred_base_script": str(base_script),
             "reference_docs": args.reference_docs,
         },
+        "contract": {
+            "repo_root": str(REPO_ROOT),
+            "reviewed_base_script": str(REVIEWED_BASE_SCRIPT),
+            "readonly_labels_present": readonly_labels_present,
+            "readonly_delegate_verified": delegate_contract_error is None,
+        },
         "discovery": {
             "input_dir_exists": input_dir.exists(),
             "pdf_count": len(pdfs),
@@ -119,6 +160,7 @@ def main() -> int:
             "returncode": None,
             "stdout": "",
             "stderr": "",
+            "delegate_report": None,
         },
         "output": {
             "exists": False,
@@ -132,19 +174,28 @@ def main() -> int:
     }
 
     if output_xlsx.suffix.lower() != ".xlsx":
-        summary["status"] = "failed"
         summary["notes"].append("Requested output path does not end with .xlsx; refusing mismatched workbook contract.")
         emit_summary(summary, args.summary_json)
         return 2
 
+    if delegate_contract_error:
+        summary["notes"].append(delegate_contract_error)
+        emit_summary(summary, args.summary_json)
+        return 5
+
+    if not pdfs:
+        summary["status"] = "partial"
+        summary["notes"].append("No PDF files were discovered; skipping delegate execution with a reviewable partial outcome.")
+        emit_summary(summary, args.summary_json)
+        return 0
+
     if args.dry_run:
-        summary["status"] = "success"
-        summary["notes"].append("Dry run requested; no conversion attempted.")
+        summary["status"] = "partial"
+        summary["notes"].append("Dry run requested; no conversion attempted and no XLSX output is claimed.")
         emit_summary(summary, args.summary_json)
         return 0
 
     if not base_script.exists():
-        summary["status"] = "failed"
         summary["notes"].append("Preferred base script was not found; no unsupported fallback conversion was attempted.")
         emit_summary(summary, args.summary_json)
         return 3
@@ -159,7 +210,6 @@ def main() -> int:
         "--output-xlsx",
         str(output_xlsx),
     ]
-
     if args.ocr:
         cmd.extend(["--ocr", args.ocr])
 
@@ -169,7 +219,6 @@ def main() -> int:
     try:
         completed = subprocess.run(cmd, capture_output=True, text=True, check=False)
     except Exception as exc:
-        summary["status"] = "failed"
         summary["execution"]["stderr"] = f"delegate invocation error: {exc}"
         emit_summary(summary, args.summary_json)
         return 4
@@ -178,22 +227,39 @@ def main() -> int:
     summary["execution"]["stdout"] = completed.stdout
     summary["execution"]["stderr"] = completed.stderr
 
+    delegate_report = parse_delegate_report(completed.stdout)
+    summary["execution"]["delegate_report"] = delegate_report
+
     output_exists = output_xlsx.exists() and output_xlsx.is_file()
     summary["output"]["exists"] = output_exists
     if output_exists:
         summary["output"]["size_bytes"] = output_xlsx.stat().st_size
 
+    delegate_status = ""
+    if isinstance(delegate_report, dict):
+        candidate = str(delegate_report.get("status", "")).strip().lower()
+        if candidate in ALLOWED_SUMMARY_STATUSES:
+            delegate_status = candidate
+
     if completed.returncode == 0 and output_exists:
-        summary["status"] = "success"
+        if delegate_status == "partial":
+            summary["status"] = "partial"
+            summary["notes"].append("Delegate reported a reviewable partial outcome; preserving partial status.")
+        elif delegate_status == "failed":
+            summary["notes"].append("Delegate reported failed status despite producing an XLSX artifact.")
+        elif delegate_status == "success":
+            summary["status"] = "success"
+        else:
+            summary["status"] = "partial"
+            summary["notes"].append("Delegate produced XLSX output but did not provide a recognized summary status.")
     else:
-        summary["status"] = "failed"
         if completed.returncode == 0 and not output_exists:
             summary["notes"].append("Delegate exited successfully but expected XLSX output was not found.")
         elif completed.returncode != 0:
             summary["notes"].append("Delegate script returned a non-zero exit code.")
 
     emit_summary(summary, args.summary_json)
-    return 0 if summary["status"] == "success" else 1
+    return 0 if summary["status"] in {"success", "partial"} else 1
 
 
 if __name__ == "__main__":
