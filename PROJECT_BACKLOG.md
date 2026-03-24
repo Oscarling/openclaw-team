@@ -316,16 +316,16 @@ Allowed enum values:
 ### BL-20260324-016
 - title: Decide the disposition of the fresh Trello preview created by the governed smoke
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p2
 - owner: Oscarling
 - depends_on: BL-20260324-014
-- start_when: A fresh live Trello preview has been created in pending-approval state and the user wants to decide whether to keep it as smoke evidence or continue into an explicit approval/execution phase
+- start_when: A fresh live Trello preview has been created in pending-approval state and the repo needs a standard-process decision on whether to stop at smoke evidence or open a new approval/execution phase
 - done_when: The repo truthfully records one of two outcomes for preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-354139fc92de`: it either remains intentionally unapproved as smoke evidence, or a new governed phase is opened to review, approve, and execute it
-- source: `TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md` on 2026-03-24 created a fresh pending-approval preview from live Trello card `69c24cd3c1a2359ddd7a1bf8`
+- source: User asked on 2026-03-24 which standard-process path should be taken next if the order does not materially affect later work
 - link: /Users/lingguozhong/openclaw-team/TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md
-- issue: deferred:phase=next until the user chooses whether to continue beyond preview smoke
-- evidence: -
+- issue: -
+- evidence: `TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md` now records the default closeout path: preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-354139fc92de` is intentionally left unapproved as smoke evidence, and no approval/execute phase is opened automatically
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
