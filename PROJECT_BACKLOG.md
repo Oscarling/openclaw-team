@@ -329,3 +329,37 @@ Allowed enum values:
 - evidence: `TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md` now records the default closeout path: preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-354139fc92de` is intentionally left unapproved as smoke evidence, and no approval/execute phase is opened automatically
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
+
+### BL-20260324-017
+- title: Review, explicitly approve, and run one governed execution of the fresh Trello preview
+- type: mainline
+- status: done
+- phase: now
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-014, BL-20260324-016
+- start_when: The user has explicitly chosen to continue beyond the smoke-evidence boundary and preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-354139fc92de` is still pending approval
+- done_when: The repo truthfully records one explicit approval decision and one governed execution result for preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-354139fc92de`, without expanding scope into Git finalization or Trello Done
+- source: User request on 2026-03-24 to continue after the smoke phase closeout
+- link: /Users/lingguozhong/openclaw-team/TRELLO_LIVE_PREVIEW_EXECUTION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/27
+- evidence: `TRELLO_LIVE_PREVIEW_EXECUTION_REPORT.md` records one explicit approval decision, one initial sandboxed execute failure before worker launch, one elevated replay in real mode, and the final governed result `rejected` with `critic_verdict=needs_revision`
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-018
+- title: Address the artifact-quality findings exposed by the governed fresh-preview execution
+- type: debt
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-017
+- start_when: The governed execution report has confirmed the control chain works, but the Critic still returned `needs_revision` for artifact-quality reasons
+- done_when: The repo either fixes or intentionally accepts the fresh-review findings around output format fidelity, path portability, traceability, and runtime evidence expectations before another approval/execute attempt
+- source: `TRELLO_LIVE_PREVIEW_EXECUTION_REPORT.md` on 2026-03-24 captured Critic findings about fake `.xlsx` output semantics, hardcoded input path, truncated description context, and missing runtime output evidence
+- link: /Users/lingguozhong/openclaw-team/TRELLO_LIVE_PREVIEW_EXECUTION_REPORT.md
+- issue: deferred:phase=next until the user chooses to address the review findings
+- evidence: -
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24

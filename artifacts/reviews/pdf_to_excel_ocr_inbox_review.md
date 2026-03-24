@@ -1,21 +1,21 @@
 # Review: pdf_to_excel_ocr_inbox_runner.py
 
 ## Scope
-Reviewed the provided automation artifact `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` using the embedded snapshot content only. The review assessed whether the script delivers a deterministic, reviewable local-only result consistent with the request for a best-effort PDF inventory manifest, without unsupported OCR or extraction claims.
+Review of the automation artifact `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` against the stated best-effort, evidence-backed, readonly Trello smoke objective for PDF extraction/conversion preview output.
 
 ## Findings
-- The script is runnable Python and uses standard library modules for core behavior.
-- It scans the configured local directory `~/Desktop/pdf样本` recursively for `.pdf` files.
-- It builds a deterministic manifest ordered by normalized relative path.
-- For each PDF, it records reviewable inventory metadata including relative path, file name, size, UTC modified time, first-1MB SHA-256 hash, and header bytes.
-- It explicitly marks `text_extraction_performed=false` and `ocr_performed=false`, which is aligned with the evidence-backed/no-overclaim requirement.
-- It attempts to write a true XLSX only if `openpyxl` is locally available; otherwise it writes a clearly labeled CSV fallback at the requested output path and discloses that limitation.
-- The script prints a run summary and limitations, making the result reviewable.
-- The implementation remains local-only and does not introduce network or external service behavior.
-- One caveat: the fallback writes CSV text to a `.xlsx` path, which is disclosed in-file but may still confuse downstream consumers expecting a true XLSX binary.
+- The script is grounded in local-only behavior and does not perform Trello writeback. It uses fixed metadata fields and reads PDFs from a local desktop directory.
+- It detects local tools (`pdftotext`, `pdfinfo`, `pdftoppm`, `tesseract`) and records tool paths in output, which supports evidence-backed reviewability.
+- It avoids claiming OCR success without extracted text evidence. OCR success is only marked when text is actually recovered.
+- It emits a spreadsheet-like output containing extraction status, method, notes, and text preview, which aligns with the requirement for reviewable intermediate artifacts.
+- If no PDFs are present, it still writes a header-only workbook and warns accordingly, which is consistent with best-effort behavior.
+- However, the declared output path is `artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx`, but the writer generates SpreadsheetML XML text directly via `write_text`. This is not a real XLSX container and may mislead downstream consumers expecting a true `.xlsx` file.
+- The script hardcodes `INPUT_DIR` to `~/Desktop/pdf样本`, which reduces determinism/portability in managed automation contexts and may not match declared local artifacts unless the environment is prepared exactly.
+- The description field from input metadata is truncated to `"Purpose:"` rather than preserving the fuller task context, weakening traceability.
+- No execution evidence or produced output workbook artifact was provided alongside the script, so review is limited to code inspection rather than validation of runtime behavior.
 
 ## Verdict
-**pass**
+**needs_revision**
 
 ## Rationale
-The artifact satisfies the stated best-effort contract as a deterministic local PDF inventory manifest generator. It does not falsely claim OCR or PDF text extraction success, and it provides explicit limitations and a reviewable fallback path when XLSX generation is unavailable. The noted fallback-extension mismatch is a usability concern, but it is transparently documented and does not invalidate the core objective as described.
+The script shows good-faith alignment with the readonly, best-effort, evidence-backed extraction objective and includes review-oriented status reporting. But it has material issues that prevent a full pass: the `.xlsx` extension does not match the actual file format produced, the local input path is overly environment-specific, and there is no runtime evidence demonstrating that the artifact successfully produced the intended reviewable output in this pipeline run. These are revision-level issues rather than a complete failure because the core extraction/review logic is present and generally honest about limitations.
