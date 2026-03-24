@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from skills import ingest_tasks
 from skills import trello_readonly_prep
@@ -51,6 +53,19 @@ class TrelloReadonlyIngressTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "blocked")
         self.assertIn("Missing Trello credentials", result["reason"])
+
+    def test_prep_default_output_path_stays_out_of_processing_queue(self) -> None:
+        output_path = trello_readonly_prep.default_mapped_output_path()
+
+        self.assertIn("/artifacts/", output_path.as_posix())
+        self.assertNotIn("/processing/", output_path.as_posix())
+        self.assertEqual(output_path.name, "trello_readonly_mapped_sample.json")
+
+    def test_parse_args_uses_safe_default_output_path(self) -> None:
+        with mock.patch.object(sys, "argv", ["trello_readonly_prep.py"]):
+            args = trello_readonly_prep.parse_args()
+
+        self.assertEqual(Path(args.output), trello_readonly_prep.default_mapped_output_path())
 
     def test_smoke_read_passes_with_injected_http_and_maps_first_card(self) -> None:
         os.environ["TRELLO_API_KEY"] = "key-123"

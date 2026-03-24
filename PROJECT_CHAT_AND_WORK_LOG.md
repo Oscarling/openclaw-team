@@ -764,3 +764,44 @@ Verification snapshot on 2026-03-24:
 - [docs/ENGINEERING_WORKFLOW.md](/Users/lingguozhong/openclaw-team/docs/ENGINEERING_WORKFLOW.md)
   now includes the `Gstack Checkpoints` section
 - `BL-20260324-012` remains the next real implementation item
+
+### 23. Trello Prep Queue Pollution Hardening
+
+User objective:
+
+- continue with the actual next implementation item after the governed preview
+  smoke
+- remove the prep-helper side effect before any more live preview smokes
+- prove the fix with one clean rerun instead of assuming it worked
+
+Main work areas:
+
+- promoted `BL-20260324-012` into the active phase and mirrored it to GitHub issue #20
+- changed the default output path in `skills/trello_readonly_prep.py` so smoke
+  prep output now lands under `artifacts/trello_readonly_prep/`
+- added regression coverage for the safe default output path
+- reran the same governed Trello read-only smoke after the fix
+
+Primary output:
+
+- [TRELLO_READONLY_PREP_QUEUE_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/TRELLO_READONLY_PREP_QUEUE_HARDENING_REPORT.md)
+
+Key result:
+
+- the prep-helper queue-pollution bug is fixed
+- the rerun no longer recovered a sample file from `processing/`
+- the remaining blocker is now sample freshness, not local queue contamination
+
+Verification snapshot on 2026-03-24:
+
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed and confirmed issue mirror for `BL-20260324-012 -> #20`
+- `python3 -m unittest -v tests/test_trello_readonly_ingress.py` passed `8/8`
+- `source /tmp/trello_env.sh && python3 skills/trello_readonly_prep.py --smoke-read --limit 1`
+  reported `mapped_output` under `artifacts/trello_readonly_prep/`
+- `source /tmp/trello_env.sh && python3 skills/ingest_tasks.py --once --trello-readonly-once --trello-limit 3`
+  completed with:
+  - `processed = 0`
+  - `duplicate_skipped = 3`
+  - `preview_created = 0`
+  - `processing_recovered = 0`
