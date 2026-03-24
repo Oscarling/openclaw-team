@@ -416,3 +416,51 @@ Key result:
 - the repo no longer depends only on conversation memory for process discipline
 - merge/readiness checks now fail on real blockers instead of hidden assumptions
 - runtime residue handling now has a named registry instead of ad hoc exceptions
+
+### 14. GitHub Workflow Hardening And Mirror Governance
+
+User objective:
+
+- move the repo from local-only process discipline to reviewable GitHub workflow discipline
+- reduce omission risk by mirroring actionable backlog items into GitHub issues
+- expose platform blockers explicitly instead of assuming branch protection can be enabled later
+
+Main work areas:
+
+- created and connected a real GitHub remote for the repository
+- opened normal-review PRs for governance baseline, formal preview smoke hardening, and backlog issue mirror gating
+- added backlog-to-issue mirroring checks so `phase=now` actionable items must carry real GitHub issue references
+- created mirrored issues for active backlog items instead of leaving them in shell history only
+- performed a direct branch protection capability check against the GitHub API
+
+Key result:
+
+- process governance is now represented in both repo docs and GitHub workflow objects
+- the branch protection step is no longer implicit:
+  - GitHub returned `HTTP 403`
+  - private-repo branch protection is blocked on current plan or repository visibility
+- the blocker was converted into a first-class tracked item instead of being left as tribal knowledge
+
+Current GitHub workflow snapshot on 2026-03-24:
+
+- remote repository:
+  - `https://github.com/Oscarling/openclaw-team`
+- open PR stack:
+  - PR #1: backlog governance baseline
+  - PR #2: formal preview smoke hardening
+  - PR #7: backlog issue mirror gate
+- mirrored backlog issues:
+  - #3 through #6 for the initial actionable items
+  - #8 for the private-repo branch-protection plan blocker
+
+Current decision blocker:
+
+- GitHub branch protection for `main` cannot be enabled on the current private-repo plan without either:
+  - upgrading the GitHub plan
+  - making the repository public
+  - or recording and adopting an explicit alternative enforcement policy
+
+Next best step:
+
+- decide the branch-protection enforcement route first
+- then merge the stacked governance PRs through normal review once the enforcement decision is clear

@@ -95,13 +95,13 @@ Allowed enum values:
 ### BL-20260324-003
 - title: Enable branch protection for main with required CI and review
 - type: blocker
-- status: planned
+- status: blocked
 - phase: now
 - priority: p1
 - owner: Oscarling
-- depends_on: BL-20260324-001, BL-20260324-002
-- start_when: Governance and smoke-hardening PR branches are ready to enter normal merge flow
-- done_when: main rejects direct push and requires passing CI plus at least one review
+- depends_on: BL-20260324-001, BL-20260324-002, BL-20260324-006
+- start_when: Governance and smoke-hardening PR branches are ready to enter normal merge flow and GitHub plan/public-visibility limits no longer block branch protection
+- done_when: main rejects direct push and requires passing CI plus at least one review, or an approved alternative enforcement policy is explicitly recorded
 - source: PROJECT_CHAT_AND_WORK_LOG.md
 - link: https://github.com/Oscarling/openclaw-team/settings/branches
 - issue: https://github.com/Oscarling/openclaw-team/issues/5
@@ -140,5 +140,22 @@ Allowed enum values:
 - link: /tmp/trello_env.sh
 - issue: deferred:after-formal-preview-hardening-merges
 - evidence: -
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-006
+- title: Resolve GitHub plan limitation blocking private-repo branch protection
+- type: blocker
+- status: active
+- phase: now
+- priority: p1
+- owner: Oscarling
+- depends_on: -
+- start_when: Main branch policy must move from convention to enforced platform settings
+- done_when: The repo either supports GitHub branch protection or rulesets on the current plan, becomes public, upgrades plan, or an explicit alternative enforcement decision is recorded
+- source: GitHub API branch protection check on 2026-03-24 returned HTTP 403 upgrade/public requirement
+- link: https://github.com/Oscarling/openclaw-team/settings/branches
+- issue: https://github.com/Oscarling/openclaw-team/issues/8
+- evidence: `gh api repos/Oscarling/openclaw-team/branches/main/protection` returned `HTTP 403: Upgrade to GitHub Pro or make this repository public to enable this feature.`
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
