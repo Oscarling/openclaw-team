@@ -401,16 +401,16 @@ Allowed enum values:
 ### BL-20260324-021
 - title: Address residual inbox-runner contract gaps exposed by BL-20260324-019 validation
 - type: debt
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260324-019
 - start_when: The BL-20260324-019 validation report has confirmed the original four findings are cleared, but the regenerated runner still returns `needs_revision` for status-model, path-resolution, readonly-enforcement, and zero-input-behavior concerns
-- done_when: The repo either resolves or explicitly accepts the residual runner-review gaps before another governed validation or production use of the generated inbox runner
+- done_when: `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` emits reviewable `partial` outcomes for dry-run and zero-input conditions, resolves its delegate relative to the repo instead of `Path.cwd()`, enforces the intended readonly delegate contract, and is covered by focused regression tests plus a new hardening report before another governed validation or production use
 - source: `HARDENED_PREVIEW_VALIDATION_REPORT.md` on 2026-03-24 recorded new review concerns after the regenerated same-origin validation execute
-- link: /Users/lingguozhong/openclaw-team/HARDENED_PREVIEW_VALIDATION_REPORT.md
-- issue: deferred:phase=next until scope is selected after BL-20260324-019 closeout
-- evidence: -
+- link: /Users/lingguozhong/openclaw-team/INBOX_RUNNER_CONTRACT_HARDENING_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/35
+- evidence: `INBOX_RUNNER_CONTRACT_HARDENING_REPORT.md` records the runner hardening that adds reviewable `partial` outcomes, repo-root delegate resolution, reviewed-script enforcement, focused regression coverage, and passing local gates through `bash scripts/premerge_check.sh`
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
