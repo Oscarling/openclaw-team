@@ -93,7 +93,7 @@ Allowed enum values:
 - opened_at: 2026-03-24
 
 ### BL-20260324-003
-- title: Enable branch protection for the primary branch with required CI and review
+- title: Enable branch protection for the primary branch with required CI and PR gating
 - type: blocker
 - status: done
 - phase: now
@@ -101,11 +101,11 @@ Allowed enum values:
 - owner: Oscarling
 - depends_on: BL-20260324-001, BL-20260324-002, BL-20260324-006
 - start_when: Governance and smoke-hardening PR branches are ready to enter normal merge flow and GitHub plan/public-visibility limits no longer block branch protection
-- done_when: The primary branch rejects direct push and requires passing CI plus at least one review for non-admin merges, with the current solo-maintainer exception explicitly recorded
+- done_when: The primary branch rejects direct push and requires pull-request based changes, up-to-date CI, and conversation resolution under the chosen single-maintainer policy
 - source: PROJECT_CHAT_AND_WORK_LOG.md
 - link: https://github.com/Oscarling/openclaw-team/settings/branches
 - issue: https://github.com/Oscarling/openclaw-team/issues/5
-- evidence: Branch protection is enabled on `main` with required checks `baseline-tests` and `shell-checks`, one approving review, stale review dismissal, required conversation resolution, and `enforce_admins=false` so the repo owner can merge in the current solo-maintainer workflow
+- evidence: Branch protection is enabled on `main` with strict required checks `baseline-tests` and `shell-checks`, stale review dismissal, required conversation resolution, `required_approving_review_count=0`, `enforce_admins=true`, and force-push/deletion blocked under the final single-maintainer policy
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
 
@@ -178,18 +178,35 @@ Allowed enum values:
 - opened_at: 2026-03-24
 
 ### BL-20260324-008
-- title: Formalize the solo-maintainer review-bypass policy or restore full reviewer enforcement
+- title: Finalize the long-term single-maintainer branch protection policy
 - type: debt
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p2
 - owner: Oscarling
 - depends_on: BL-20260324-003
-- start_when: The repository owner wants to harden review governance beyond the current solo-maintainer operating mode
-- done_when: The branch-protection policy is explicitly settled as either true second-party review enforcement or a documented long-term solo-maintainer exception
-- source: GitHub merge attempt for PR #1 on 2026-03-24 failed because one approving review from a writer was required; `main` protection was then changed to `enforce_admins=false`
+- start_when: The repository owner confirms there is only one human maintainer and wants GitHub policy to match the actual operating model
+- done_when: `main` enforces PR-based changes, strict CI, conversation resolution, and admin enforcement with `required_approving_review_count=0` until a second human maintainer actually joins
+- source: User clarification on 2026-03-24 that the project currently has one human maintainer only and AI assistance does not count as a second reviewer
 - link: https://github.com/Oscarling/openclaw-team/settings/branches
-- issue: deferred:after-review-policy-decision
+- issue: -
+- evidence: `gh api repos/Oscarling/openclaw-team/branches/main/protection` now reports `required_approving_review_count=0`, `enforce_admins.enabled=true`, required checks `baseline-tests`/`shell-checks`, and required conversation resolution enabled
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-009
+- title: Revisit reviewer-count enforcement if a second human maintainer joins
+- type: future
+- status: planned
+- phase: later
+- priority: p3
+- owner: Oscarling
+- depends_on: BL-20260324-008
+- start_when: A second human maintainer is actively landing changes and can perform independent code review
+- done_when: Branch protection is recalibrated to require non-zero human approvals and the governance docs are updated to match
+- source: Single-maintainer policy finalization on 2026-03-24
+- link: https://github.com/Oscarling/openclaw-team/settings/branches
+- issue: deferred:activate-when-second-human-maintainer-joins
 - evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24

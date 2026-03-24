@@ -551,11 +551,11 @@ Main work areas:
 - changed finalization tests to work with injected fake HTTP callables even when `requests` is not installed
 - propagated that same CI fix to the affected open PR branches
 - merged PR #1, PR #2, PR #7, and PR #10 into `main`
-- updated `main` branch protection from admin-enforced review to the current solo-maintainer policy:
-  - required CI remains enforced
-  - required conversation resolution remains enforced
-  - required review remains configured for non-admin merges
-  - `enforce_admins` was turned off so the repository owner can complete merges in the current single-maintainer setup
+- updated `main` branch protection from admin-enforced review to an interim solo-maintainer merge policy needed to land the blocked stack:
+  - required CI remained enforced
+  - required conversation resolution remained enforced
+  - one approving review remained configured
+  - `enforce_admins` was turned off temporarily so the repository owner could complete the pending merges
 
 Merged PR results on 2026-03-24:
 
@@ -577,11 +577,8 @@ Key result:
 
 Current governance note:
 
-- the review rule is no longer "admin-enforced one-review policy"
-- the truthful current policy is:
-  - one approving review is still configured
-  - admins are allowed to bypass that review gate
-  - this is a deliberate solo-maintainer exception and should be revisited when a second reviewer is available
+- that interim admin-bypass policy was later retired
+- the truthful current policy is recorded in section 19
 
 ### 18. Trello Done List Pinning For Formal Runtime
 
@@ -610,3 +607,40 @@ Verification snapshot on 2026-03-24:
 - `python3 scripts/pin_trello_done_list.py --env-file /tmp/trello_env.sh` resolved the Done list successfully
 - `python3 scripts/pin_trello_done_list.py --env-file /tmp/trello_env.sh --apply` updated the env file and created `/private/tmp/trello_env.sh.bak-20260324T064207Z`
 - `/tmp/trello_env.sh` now contains an explicit `export TRELLO_DONE_LIST_ID=...` line
+
+### 19. Single-Maintainer Policy Finalization And Post-PR-13 State Sync
+
+User objective:
+
+- align the GitHub governance policy with the actual one-human-maintainer operating model
+- keep a standard PR-based workflow without inventing a fake second reviewer
+- preserve the latest merged runtime-hardening state in the repo ledger
+
+Main work areas:
+
+- confirmed with the repository owner that there is only one human maintainer and AI assistance does not count as a second reviewer
+- verified that PR #13 for formal runtime Trello Done-list pinning had merged into `main`
+- re-queried live GitHub branch protection for `main`
+- replaced the temporary admin-bypass configuration with the final single-maintainer policy:
+  - pull-request based changes remain required
+  - strict required checks remain `baseline-tests` and `shell-checks`
+  - required conversation resolution remains enabled
+  - required approving review count was set to `0`
+  - `enforce_admins` was turned back on
+  - force-push and branch deletion remain blocked
+
+Key result:
+
+- the repo policy now matches the real staffing model: one human maintainer, PR-based changes, and mandatory CI
+- the previous "one approval with admin bypass" stopgap no longer exists
+- future reviewer enforcement only needs to be revisited if a second human maintainer actually joins
+
+Verification snapshot on 2026-03-24:
+
+- `gh pr view 13 --json number,state,mergeCommit,headRefName,baseRefName,title` reports PR #13 `feat/pin-trello-done-list-id -> main` as `MERGED` with merge commit `fa6263d787baee793736407b2e2178da8991dd1b`
+- `gh api repos/Oscarling/openclaw-team/branches/main/protection` reports:
+  - strict required checks `baseline-tests` and `shell-checks`
+  - `required_approving_review_count = 0`
+  - stale review dismissal enabled
+  - admin enforcement enabled
+  - required conversation resolution enabled
