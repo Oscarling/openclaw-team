@@ -267,16 +267,20 @@ def build_preview_payload(
     if bool(inputs.get("dry_run", False)):
         warnings.append("This request asks for dry-run mode.")
 
+    source_payload = {
+        "kind": standardized.source.get("kind"),
+        "origin_id": standardized.origin_id,
+        "received_at": standardized.source.get("received_at") or utc_now(),
+        "inbox_file": inbox_filename,
+    }
+    if standardized.regeneration_token:
+        source_payload["regeneration_token"] = standardized.regeneration_token
+
     return {
         "preview_id": preview_id,
         "created_at": utc_now(),
         "approved": False,
-        "source": {
-            "kind": standardized.source.get("kind"),
-            "origin_id": standardized.origin_id,
-            "received_at": standardized.source.get("received_at") or utc_now(),
-            "inbox_file": inbox_filename,
-        },
+        "source": source_payload,
         "external_input": {
             "title": standardized.title,
             "description": standardized.description,
@@ -371,22 +375,22 @@ def process_one(processing_file: Path, seen_dedupe_keys: set[str]) -> dict[str, 
             for key in standardized.dedupe_keys:
                 seen_dedupe_keys.add(key)
 
-        sidecar = write_result_sidecar(
-            moved,
-            {
-                "ingested_at": utc_now(),
-                "status": "processed",
-                "decision": "preview_created_pending_approval",
-                "decision_reason": "preview_created; waiting_for_explicit_approval",
-                "origin_id": None if standardized is None else standardized.origin_id,
-                "payload_hash": None if standardized is None else standardized.payload_hash,
-                "dedupe_keys": [] if standardized is None else standardized.dedupe_keys,
-                "title": None if standardized is None else standardized.title,
-                "labels": [] if standardized is None else standardized.labels,
-                "preview_id": preview_payload["preview_id"],
-                "preview_file": str(preview_path),
-            },
-        )
+        sidecar_payload = {
+            "ingested_at": utc_now(),
+            "status": "processed",
+            "decision": "preview_created_pending_approval",
+            "decision_reason": "preview_created; waiting_for_explicit_approval",
+            "origin_id": None if standardized is None else standardized.origin_id,
+            "payload_hash": None if standardized is None else standardized.payload_hash,
+            "dedupe_keys": [] if standardized is None else standardized.dedupe_keys,
+            "title": None if standardized is None else standardized.title,
+            "labels": [] if standardized is None else standardized.labels,
+            "preview_id": preview_payload["preview_id"],
+            "preview_file": str(preview_path),
+        }
+        if standardized and standardized.regeneration_token:
+            sidecar_payload["regeneration_token"] = standardized.regeneration_token
+        sidecar = write_result_sidecar(moved, sidecar_payload)
         return {
             "status": "processed",
             "decision": "preview_created_pending_approval",
@@ -402,21 +406,21 @@ def process_one(processing_file: Path, seen_dedupe_keys: set[str]) -> dict[str, 
         reason_text = str(exc)
         if "duplicate inbox input detected" in reason_text:
             decision = "duplicate_skipped"
-        sidecar = write_result_sidecar(
-            moved,
-            {
-                "ingested_at": utc_now(),
-                "status": "rejected",
-                "decision": decision,
-                "decision_reason": reason_text,
-                "error": reason_text,
-                "origin_id": None if standardized is None else standardized.origin_id,
-                "payload_hash": None if standardized is None else standardized.payload_hash,
-                "dedupe_keys": [] if standardized is None else standardized.dedupe_keys,
-                "title": None if standardized is None else standardized.title,
-                "preview_file": None if preview_path is None else str(preview_path),
-            },
-        )
+        sidecar_payload = {
+            "ingested_at": utc_now(),
+            "status": "rejected",
+            "decision": decision,
+            "decision_reason": reason_text,
+            "error": reason_text,
+            "origin_id": None if standardized is None else standardized.origin_id,
+            "payload_hash": None if standardized is None else standardized.payload_hash,
+            "dedupe_keys": [] if standardized is None else standardized.dedupe_keys,
+            "title": None if standardized is None else standardized.title,
+            "preview_file": None if preview_path is None else str(preview_path),
+        }
+        if standardized and standardized.regeneration_token:
+            sidecar_payload["regeneration_token"] = standardized.regeneration_token
+        sidecar = write_result_sidecar(moved, sidecar_payload)
         if standardized:
             for key in standardized.dedupe_keys:
                 seen_dedupe_keys.add(key)

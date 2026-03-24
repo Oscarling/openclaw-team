@@ -39,20 +39,23 @@
 
 当前冻结规则（方案 A）：
 - 同一 `origin_id` 只允许一次 preview；后续同卡内容变更，不自动重新生成 preview。
+- 默认仍按现有 `origin`-based dedupe 冻结；未显式声明 regeneration 时，命中 `origin:<origin_id>` 即去重。
+- 当前新增的受控例外：外部输入若显式携带 `regeneration_token`，可按 `origin_regeneration:<origin_id>:<token>` 在同一 `origin_id` 下重新生成一个新的 preview；该 token 必须进入 preview / sidecar 证据链。
 
 适用范围：
 - 仅适用于当前 phase 的 `manager-side Trello read-only -> preview` 链路。
 
 当前不支持：
 - 同一张 Trello 卡片在内容更新后自动重进 preview。
+- 未显式提供 `regeneration_token` 的同源重进 preview。
 
 冻结原因：
 - 保持最小改动。
 - 与现有 `origin`-based dedupe 机制一致（即命中 `origin:<origin_id>` 即去重）。
+- 在需要同源重生成时，仍然要求显式、可审计、非自动的重新入链。
 
 未来可选升级（本阶段不做）：
 - 按内容 `hash/version` 允许同卡变更后再入链。
-- 引入显式标记（rerun/replay token）后再入链。
 
 明确不在本次冻结范围：
 - execute / Git / Trello writeback。

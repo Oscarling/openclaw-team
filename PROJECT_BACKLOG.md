@@ -371,12 +371,29 @@ Allowed enum values:
 - phase: next
 - priority: p1
 - owner: Oscarling
-- depends_on: BL-20260324-018
-- start_when: The source-side contract hardening is merged and a fresh preview candidate or explicit regeneration path is available
+- depends_on: BL-20260324-018, BL-20260324-020
+- start_when: The explicit same-origin regeneration path is merged and can produce a fresh governed preview candidate under the hardened source-side contract
 - done_when: A governed validation phase proves whether the hardened contract clears the prior review findings on a fresh preview candidate, without guessing around dedupe-frozen runtime state
 - source: `PREVIEW_ARTIFACT_CONTRACT_HARDENING_REPORT.md` on 2026-03-24 noted that the already-executed preview cannot inherit the new adapter contract and the current dedupe freeze blocks a simple same-origin re-preview
 - link: /Users/lingguozhong/openclaw-team/PREVIEW_ARTIFACT_CONTRACT_HARDENING_REPORT.md
-- issue: deferred:phase=next until a fresh preview candidate or explicit regeneration path is chosen
+- issue: deferred:phase=next until BL-20260324-020 lands and a regenerated preview candidate exists
 - evidence: -
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-020
+- title: Add an explicit controlled regeneration path for same-origin preview creation
+- type: blocker
+- status: done
+- phase: now
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-018
+- start_when: The hardened source-side contract is merged and the next governed step is to regenerate a preview for the same Trello origin instead of relying on a fresh-card path
+- done_when: The ingest path preserves the default origin-based freeze, but a caller can intentionally provide an explicit regeneration token that creates one new auditable preview for the same origin under controlled conditions
+- source: User request on 2026-03-24 to make an explicit `regeneration path` phase first, plus the future-upgrade clause in `BASELINE_FREEZE_NOTE.md` allowing `rerun/replay token` based re-entry
+- link: /Users/lingguozhong/openclaw-team/PREVIEW_REGENERATION_PATH_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/31
+- evidence: `PREVIEW_REGENERATION_PATH_REPORT.md` records the explicit `regeneration_token` path that preserves default `origin` freeze, adds governed `origin_regeneration:<origin_id>:<token>` dedupe for same-origin re-preview, updates `BASELINE_FREEZE_NOTE.md`, and passes phase-local smoke/regressions plus `backlog_lint`, `backlog_sync`, and `premerge_check`
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
