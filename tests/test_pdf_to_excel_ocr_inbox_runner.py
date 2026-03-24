@@ -5,6 +5,7 @@ import importlib.util
 import io
 import json
 import os
+import subprocess
 import sys
 import tempfile
 import textwrap
@@ -176,6 +177,69 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
         self.assertTrue(summary["execution"]["delegated"])
         self.assertEqual(summary["execution"]["delegate_report"]["status"], "partial")
         self.assertTrue(summary["output"]["exists"])
+
+    def test_success_requires_strong_delegate_evidence(self) -> None:
+        input_dir = self._make_input_dir(with_pdf=True)
+        fake_base = self.tmpdir / "fake_pdf_to_excel_ocr_success.py"
+        fake_base.write_text(
+            textwrap.dedent(
+                """\
+                #!/usr/bin/env python3
+                import argparse
+                import json
+                from pathlib import Path
+
+                parser = argparse.ArgumentParser()
+                parser.add_argument("--input-dir", required=True)
+                parser.add_argument("--output-xlsx", required=True)
+                parser.add_argument("--ocr", default="auto")
+                args = parser.parse_args()
+
+                output = Path(args.output_xlsx)
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_bytes(b"fake-xlsx")
+                print(json.dumps({"status": "success"}))
+                """
+            ),
+            encoding="utf-8",
+        )
+
+        exit_code, summary, _ = self._invoke_main(
+            input_dir=input_dir,
+            extra_args=["--preferred-base-script", str(fake_base)],
+            reviewed_base_script=fake_base,
+        )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(summary["status"], "partial")
+        self.assertTrue(summary["output"]["exists"])
+        self.assertTrue(any("at least one processed PDF file" in note for note in summary["notes"]))
+
+    def test_timeout_returns_failed_with_explicit_note(self) -> None:
+        input_dir = self._make_input_dir(with_pdf=True)
+        fake_base = self.tmpdir / "fake_pdf_to_excel_ocr_timeout.py"
+        fake_base.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+
+        with mock.patch.object(
+            self.runner.subprocess,
+            "run",
+            side_effect=subprocess.TimeoutExpired(cmd=["python3", str(fake_base)], timeout=7),
+        ):
+            exit_code, summary, _ = self._invoke_main(
+                input_dir=input_dir,
+                extra_args=["--preferred-base-script", str(fake_base), "--delegate-timeout-seconds", "7"],
+                reviewed_base_script=fake_base,
+            )
+
+        self.assertEqual(exit_code, 124)
+        self.assertEqual(summary["status"], "failed")
+        self.assertEqual(summary["execution"]["timeout_seconds"], 7)
+        self.assertTrue(any("timed out after 7 seconds" in note for note in summary["notes"]))
+
+    def test_default_description_preserves_traceability_context(self) -> None:
+        self.assertIn("Traceability:", self.runner.DEFAULT_DESCRIPTION)
+        self.assertIn("BL-20260324-014", self.runner.DEFAULT_DESCRIPTION)
+        self.assertNotIn("...", self.runner.DEFAULT_DESCRIPTION)
 
 
 if __name__ == "__main__":

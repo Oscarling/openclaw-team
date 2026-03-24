@@ -59,6 +59,9 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         self.assertNotEqual(condensed, "Purpose:")
         self.assertIn("Controlled Trello live preview smoke", condensed)
         self.assertIn("Expected behavior:", condensed)
+        self.assertIn("Traceability:", condensed)
+        self.assertIn("BL-20260324-014", condensed)
+        self.assertNotIn("...", condensed)
         self.assertNotIn("Execution contract:", condensed)
 
     def test_normalize_local_inbox_payload_adds_contract_hints_for_pdf_to_excel(self) -> None:
@@ -92,6 +95,8 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         self.assertIn("success/partial/failed", contract_hints["outcome_status_model"])
         self.assertIn("Path.cwd()", contract_hints["delegate_resolution"])
         self.assertIn("delegate only to the reviewed repository script", contract_hints["reviewed_delegate_contract"])
+        self.assertIn("zero exit code plus output-file existence", contract_hints["delegate_success_evidence"])
+        self.assertIn("explicit timeout", contract_hints["delegate_timeout"])
         self.assertTrue(
             any(
                 "Preserve meaningful traceability from the incoming description" in item
@@ -112,10 +117,26 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
             "Dry-run or zero-input behavior is represented as a reviewable partial outcome instead of artifact-production success.",
             auto_task["acceptance_criteria"],
         )
+        self.assertIn(
+            "Wrapper success requires stronger delegate evidence than zero exit code plus a non-empty output file alone.",
+            auto_task["acceptance_criteria"],
+        )
+        self.assertIn(
+            "Delegate execution is bounded by an explicit timeout and reports timeout honestly.",
+            auto_task["acceptance_criteria"],
+        )
         self.assertEqual(
             auto_task["metadata"]["automation_contract_profile"],
             "narrow_script_artifact_with_repo_reuse_and_reviewable_runner_contract",
         )
+        self.assertEqual(
+            task.critic_task["inputs"]["artifacts"],
+            [
+                {"path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py", "type": "script"},
+                {"path": "artifacts/scripts/pdf_to_excel_ocr.py", "type": "script"},
+            ],
+        )
+        self.assertIn("reviewed delegate script", task.critic_task["objective"])
         self.assertEqual(validate_task(auto_task), [])
 
     def test_normalize_local_inbox_payload_uses_explicit_regeneration_token_for_dedupe(self) -> None:

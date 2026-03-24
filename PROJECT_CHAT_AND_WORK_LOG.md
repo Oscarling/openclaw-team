@@ -1003,6 +1003,68 @@ Verification snapshot on 2026-03-24:
   - verdict: `needs_revision`
   - artifact: `artifacts/reviews/pdf_to_excel_ocr_inbox_review.md`
 
+### 34. Post-Propagation Runner Gap Hardening
+
+User objective:
+
+- continue after `BL-20260324-023` without mixing a new live validation into the
+  same phase
+- fix the root contract gaps behind the new `needs_revision` result
+- keep the next step explicit, governed, and backlog-tracked
+
+Main work areas:
+
+- promoted `BL-20260324-024` into the active phase and mirrored it to GitHub
+  issue #41
+- traced the truncated generated default description back to
+  `_condense_automation_description(...)`, which still applied a 180-character
+  ceiling at the source adapter layer
+- traced the missing delegate review evidence back to
+  `build_critic_from_automation(...)`, which overwrote predeclared critic
+  artifacts with automation output artifacts and silently dropped the reviewed
+  delegate script from the actual critic snapshot set
+- tightened the source-side local inbox contract so future generated runners are
+  explicitly asked to:
+  - preserve fuller description context
+  - require stronger delegate success evidence
+  - use an explicit delegate timeout
+- tightened the critic review scope so execute-time review keeps both:
+  - `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`
+  - `artifacts/scripts/pdf_to_excel_ocr.py`
+- hardened the tracked baseline runner so it now:
+  - preserves traceability context in its default description
+  - requires stronger structured delegate evidence before claiming success
+  - reports delegate timeout explicitly instead of hanging
+- expanded regression coverage for:
+  - local inbox adapter contract propagation
+  - execute-time critic artifact preservation
+  - runner success-evidence and timeout behavior
+- recorded the follow-up governed validation need as `BL-20260324-025`
+
+Primary output:
+
+- [POST_PROPAGATION_RUNNER_GAP_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/POST_PROPAGATION_RUNNER_GAP_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260324-024` is complete as a hardening phase
+- the residual `BL-20260324-023` concerns were addressed at their actual layers
+  instead of being patched into one runtime artifact by hand
+- the next correct step is now explicit:
+  - merge this hardening through normal review
+  - then run a fresh governed validation phase as `BL-20260324-025`
+
+Verification snapshot on 2026-03-24:
+
+- `python3 -m unittest -v tests/test_local_inbox_adapter.py` passed `4/4`
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_inbox_runner.py` passed
+  `8/8`
+- `python3 -m unittest -v tests/test_execute_approved_previews.py` passed `3/3`
+- `python3 -m unittest -v tests/test_argus_hardening.py` passed `4/4`
+- `bash scripts/premerge_check.sh` passed with:
+  - `Warnings: 0`
+  - `Failures: 0`
+
 ### 31. Close Residual Inbox Runner Contract Gaps Before Reuse
 
 User objective:
