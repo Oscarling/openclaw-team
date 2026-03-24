@@ -1010,3 +1010,46 @@ Verification snapshot on 2026-03-24:
 - `python3 scripts/backlog_sync.py` passed with no remaining `phase=now`
   actionable items requiring mirrored issues
 - `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`
+
+### 28. Source-Side Hardening For Future Preview Artifacts
+
+User objective:
+
+- continue after the governed execute exposed `needs_revision` findings
+- address the root contract causes instead of patching one runtime artifact by
+  hand
+- avoid immediately rerunning a live preview before the source contract is
+  hardened
+
+Main work areas:
+
+- promoted `BL-20260324-018` into the active phase and mirrored it to GitHub issue #29
+- identified `_condense_automation_description(...)` as the root cause for the
+  collapsed `Purpose:` description
+- tightened the local inbox adapter contract so PDF-to-Excel automation now:
+  - preserves richer description context
+  - prefers the existing repo script `artifacts/scripts/pdf_to_excel_ocr.py`
+  - encodes true `.xlsx` fidelity and no-hardcoded-input-path rules
+  - asks for structured runtime summary output
+- added dedicated regression coverage for the hardened adapter contract
+- recorded the follow-up validation need as `BL-20260324-019`
+
+Primary output:
+
+- [PREVIEW_ARTIFACT_CONTRACT_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/PREVIEW_ARTIFACT_CONTRACT_HARDENING_REPORT.md)
+
+Key result:
+
+- the source-side contract is stronger before any future preview generation
+- this phase does not mutate the already-executed preview in place
+- the next meaningful step is a new governed validation phase on a fresh preview
+  candidate, not another blind replay on the same origin
+
+Verification snapshot on 2026-03-24:
+
+- `python3 -m unittest -v tests/test_local_inbox_adapter.py` passed `2/2`
+- `python3 -m unittest -v tests/test_trello_readonly_ingress.py` passed `8/8`
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with no remaining `phase=now`
+  actionable items requiring mirrored issues
+- `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`
