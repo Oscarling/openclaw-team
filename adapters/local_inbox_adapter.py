@@ -306,6 +306,21 @@ def normalize_local_inbox_payload(
                         "when compatible so workbook semantics and OCR behavior stay aligned "
                         "with existing repo evidence."
                     ),
+                    "outcome_status_model": (
+                        "Use the reviewable status model success/partial/failed. Dry-run "
+                        "requests or zero-PDF discovery should resolve to partial rather than "
+                        "claiming success without an output artifact."
+                    ),
+                    "delegate_resolution": (
+                        "If preferred_base_script is relative, resolve it from the repository "
+                        "or script location instead of Path.cwd() so behavior stays portable "
+                        "across shells and CI."
+                    ),
+                    "reviewed_delegate_contract": (
+                        "For readonly reviewable preview flows, delegate only to the reviewed "
+                        "repository script artifacts/scripts/pdf_to_excel_ocr.py or fail "
+                        "honestly instead of broadening behavior through an arbitrary helper."
+                    ),
                     "runtime_summary": (
                         "The generated script should emit a structured summary of what it "
                         "produced so later review can inspect behavior without guessing."
@@ -326,6 +341,9 @@ def normalize_local_inbox_payload(
             "Do not hardcode an input directory when the task params already provide input_dir.",
             "Preserve meaningful traceability from the incoming description instead of collapsing it to a heading fragment.",
             "Prefer wrapping or adapting artifacts/scripts/pdf_to_excel_ocr.py when that existing repo script already matches the requested behavior.",
+            "If dry_run is true or no PDFs are discovered, report a reviewable partial outcome instead of claiming success without an XLSX artifact.",
+            "Resolve relative delegate script paths from the repository or script location, not from Path.cwd().",
+            "For readonly reviewable preview flows, only delegate to the reviewed repository script artifacts/scripts/pdf_to_excel_ocr.py unless failing honestly.",
         ],
         "priority": priority,
         "source": source,
@@ -334,6 +352,8 @@ def normalize_local_inbox_payload(
             "Script behavior remains runnable, deterministic, and reviewable",
             "If output_xlsx ends with .xlsx, the artifact must preserve true XLSX output semantics or fail honestly before writing a mismatched format.",
             "Artifact behavior remains parameter-driven for input_dir and output_xlsx rather than hardcoding unrelated local defaults.",
+            "Dry-run or zero-input behavior is represented as a reviewable partial outcome instead of artifact-production success.",
+            "Relative preferred_base_script resolution remains portable and does not depend on Path.cwd().",
         ],
         "metadata": {
             "integration_phase": "8B",
@@ -343,7 +363,7 @@ def normalize_local_inbox_payload(
             "regeneration_token": regeneration_token,
             "labels": labels,
             "external_metadata": metadata,
-            "automation_contract_profile": "narrow_script_artifact_with_repo_reuse_and_format_fidelity",
+            "automation_contract_profile": "narrow_script_artifact_with_repo_reuse_and_reviewable_runner_contract",
         },
     }
 

@@ -1049,6 +1049,55 @@ Verification snapshot on 2026-03-24:
 - `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`,
   including the new runner suite and all existing baseline suites
 - `git diff --check` passed with no patch-integrity issues
+
+### 32. Propagate Runner Hardening Back Into The Source-Side Preview Contract
+
+User objective:
+
+- continue after `BL-20260324-021`
+- avoid another validation run that depends on manual artifact edits only
+- push the new runner rules back into the source-side preview contract first
+
+Main work areas:
+
+- promoted `BL-20260324-022` into the active phase and mirrored it to GitHub
+  issue `#37`
+- updated `adapters/local_inbox_adapter.py` so future preview-generation tasks
+  now encode:
+  - reviewable `success/partial/failed` outcome expectations
+  - repo-root rather than `Path.cwd()` delegate resolution expectations
+  - reviewed-script-only delegation for readonly preview flows
+- tightened automation constraints and acceptance criteria so dry-run and
+  zero-input states are described as `partial`, not artifact-production success
+- bumped the automation contract profile to
+  `narrow_script_artifact_with_repo_reuse_and_reviewable_runner_contract`
+- expanded `tests/test_local_inbox_adapter.py` to assert the new source-side
+  contract fields
+- promoted `tests/test_local_inbox_adapter.py` into baseline local and CI gates
+
+Primary output:
+
+- [INBOX_RUNNER_CONTRACT_PROPAGATION_REPORT.md](/Users/lingguozhong/openclaw-team/INBOX_RUNNER_CONTRACT_PROPAGATION_REPORT.md)
+
+Key result:
+
+- `BL-20260324-022` is complete as a source-side contract propagation phase
+- future regenerated previews are no longer limited to the older
+  `format_fidelity` contract profile
+- the next governed validation can now test whether a fresh preview candidate
+  actually inherits the runner-honesty rules rather than relying on one manually
+  hardened artifact snapshot
+
+Verification snapshot on 2026-03-24:
+
+- `python3 -m unittest -v tests/test_local_inbox_adapter.py` passed `4/4`
+- `python3 -m unittest -v tests/test_trello_readonly_ingress.py` passed `10/10`
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed while `BL-20260324-022` was mirrored
+  to issue `#37`
+- `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`,
+  including the newly-gated adapter suite plus all existing baseline suites
+- `git diff --check` passed with no patch-integrity issues
 - final preview state:
   - `approved = true`
   - `execution.status = rejected`

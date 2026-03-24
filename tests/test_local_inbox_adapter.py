@@ -89,9 +89,18 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         self.assertIn("real XLSX workbook container", contract_hints["output_format_fidelity"])
         self.assertIn("Do not hardcode", contract_hints["path_portability"])
         self.assertIn("artifacts/scripts/pdf_to_excel_ocr.py", contract_hints["reuse_preference"])
+        self.assertIn("success/partial/failed", contract_hints["outcome_status_model"])
+        self.assertIn("Path.cwd()", contract_hints["delegate_resolution"])
+        self.assertIn("delegate only to the reviewed repository script", contract_hints["reviewed_delegate_contract"])
         self.assertTrue(
             any(
                 "Preserve meaningful traceability from the incoming description" in item
+                for item in auto_task["constraints"]
+            )
+        )
+        self.assertTrue(
+            any(
+                "report a reviewable partial outcome" in item
                 for item in auto_task["constraints"]
             )
         )
@@ -99,9 +108,13 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
             "If output_xlsx ends with .xlsx, the artifact must preserve true XLSX output semantics or fail honestly before writing a mismatched format.",
             auto_task["acceptance_criteria"],
         )
+        self.assertIn(
+            "Dry-run or zero-input behavior is represented as a reviewable partial outcome instead of artifact-production success.",
+            auto_task["acceptance_criteria"],
+        )
         self.assertEqual(
             auto_task["metadata"]["automation_contract_profile"],
-            "narrow_script_artifact_with_repo_reuse_and_format_fidelity",
+            "narrow_script_artifact_with_repo_reuse_and_reviewable_runner_contract",
         )
         self.assertEqual(validate_task(auto_task), [])
 

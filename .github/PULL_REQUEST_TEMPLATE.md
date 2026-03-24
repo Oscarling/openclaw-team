@@ -16,6 +16,7 @@ What is intentionally not changed here?
 - [ ] `python3 scripts/backlog_sync.py`
 - [ ] `python3 -m unittest -v tests/test_backlog_lint.py`
 - [ ] `python3 -m unittest -v tests/test_backlog_sync.py`
+- [ ] `python3 -m unittest -v tests/test_local_inbox_adapter.py`
 - [ ] `python3 -m unittest -v tests/test_argus_hardening.py`
 - [ ] `python3 -m unittest -v tests/test_processed_finalization.py`
 - [ ] `python3 -m unittest -v tests/test_pdf_to_excel_ocr_inbox_runner.py`
