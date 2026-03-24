@@ -188,6 +188,7 @@ The current repo-level minimum command set is:
 
 ```bash
 python3 scripts/backlog_lint.py
+python3 -m unittest -v tests/test_trello_readonly_ingress.py
 python3 -m unittest -v tests/test_backlog_lint.py
 python3 -m unittest -v tests/test_argus_hardening.py
 python3 -m unittest -v tests/test_processed_finalization.py
@@ -205,6 +206,7 @@ scripts/preflight_finalization_check.sh <preview_json_path>
 The repository should keep a minimal CI job that runs:
 
 - `python3 scripts/backlog_lint.py`
+- `python3 -m unittest -v tests/test_trello_readonly_ingress.py`
 - `python3 -m unittest -v tests/test_backlog_lint.py`
 - `python3 -m unittest -v tests/test_argus_hardening.py`
 - `python3 -m unittest -v tests/test_processed_finalization.py`

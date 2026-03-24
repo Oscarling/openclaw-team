@@ -11,6 +11,8 @@ step complete.
 - [ ] Phase-specific smoke and regression runs passed
 - [ ] If this change touched finalization behavior, I ran:
       `python3 -m unittest -v tests/test_processed_finalization.py`
+- [ ] If this change touched Trello read-only ingress behavior, I ran:
+      `python3 -m unittest -v tests/test_trello_readonly_ingress.py`
 - [ ] If this change touched the control chain, I ran:
       `python3 -m unittest -v tests/test_argus_hardening.py`
 - [ ] If this change touched real Git / Trello integration, the pre-run checklist

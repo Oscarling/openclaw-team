@@ -6,9 +6,12 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
-import requests
+try:
+    import requests as REQUESTS_MODULE
+except ModuleNotFoundError:
+    REQUESTS_MODULE = None
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
@@ -18,6 +21,18 @@ from adapters.trello_readonly_adapter import (  # noqa: E402
     map_trello_card_to_external_input,
     required_readonly_env,
 )
+
+
+def _missing_requests_dependency(*_args: Any, **_kwargs: Any) -> Any:
+    raise RuntimeError(
+        "Missing Python dependency 'requests'. Install it before using Trello read-only HTTP calls."
+    )
+
+
+def _default_requests_get(*args: Any, **kwargs: Any) -> Any:
+    if REQUESTS_MODULE is None:
+        return _missing_requests_dependency(*args, **kwargs)
+    return REQUESTS_MODULE.get(*args, **kwargs)
 
 
 def parse_args() -> argparse.Namespace:
@@ -105,7 +120,13 @@ def _redact_sensitive(text: str, api_key: str | None, api_token: str | None) -> 
     return out
 
 
-def smoke_read_trello(list_id: str | None, board_id: str | None, limit: int) -> dict[str, Any]:
+def smoke_read_trello(
+    list_id: str | None,
+    board_id: str | None,
+    limit: int,
+    *,
+    requests_get: Callable[..., Any] = _default_requests_get,
+) -> dict[str, Any]:
     api_key, key_source = _pick_env("TRELLO_API_KEY", "TRELLO_KEY")
     api_token, token_source = _pick_env("TRELLO_API_TOKEN", "TRELLO_TOKEN")
     env_presence = _presence_map(
@@ -156,12 +177,19 @@ def smoke_read_trello(list_id: str | None, board_id: str | None, limit: int) -> 
         url = f"https://api.trello.com/1/boards/{board_id}/cards"
 
     try:
-        resp = requests.get(url, params=params, timeout=20)
-    except requests.RequestException as exc:
+        resp = requests_get(url, params=params, timeout=20)
+    except RuntimeError as exc:
+        return {
+            "status": "blocked",
+            "reason": f"Read-only Trello request dependency unavailable: {exc}",
+            "error_type": "missing_dependency",
+            "auth_env": auth_env,
+        }
+    except Exception as exc:
         return {
             "status": "blocked",
             "reason": f"Read-only Trello request failed before HTTP response: {exc.__class__.__name__}",
-            "error_type": "request_exception",
+            "error_type": exc.__class__.__name__,
             "response_preview": _redact_sensitive(str(exc), api_key, api_token)[:300],
             "auth_env": auth_env,
         }

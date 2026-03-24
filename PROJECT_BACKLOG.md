@@ -210,3 +210,20 @@ Allowed enum values:
 - evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
+
+### BL-20260324-010
+- title: Harden Trello read-only ingress with dependency-safe tests
+- type: mainline
+- status: done
+- phase: now
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-005
+- start_when: Governance gates are live on `main` and the next mainline step needs a safer, testable Trello read-only entry before more real smokes
+- done_when: `skills/trello_readonly_prep.py` and the Trello read-only ingestion path can be tested without a hard `requests` import dependency, new unit coverage is enforced in local premerge and CI, and the current-state ledger reflects the hardened path
+- source: Post-governance backlog sweep on 2026-03-24 identified that the Trello read-only entry path has no dedicated unit coverage and still relies on a hard `requests` import
+- link: /Users/lingguozhong/openclaw-team/TRELLO_READONLY_INGRESS_HARDENING_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/15
+- evidence: `TRELLO_READONLY_INGRESS_HARDENING_REPORT.md` records the hardening pass; `tests/test_trello_readonly_ingress.py` was added; `scripts/premerge_check.sh` and `.github/workflows/ci.yml` now enforce that coverage; local validation passed for backlog lint/sync plus the new Trello and existing finalization tests
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
