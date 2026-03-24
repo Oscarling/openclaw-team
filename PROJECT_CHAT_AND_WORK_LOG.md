@@ -1112,3 +1112,90 @@ Verification snapshot on 2026-03-24:
   to issue `#31`, and passed again after closeout with no remaining `phase=now`
   actionable items requiring mirroring
 - `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`
+
+### 30. Governed Validation Of The Hardened Same-Origin Preview Candidate
+
+User objective:
+
+- activate `BL-20260324-019`
+- generate one fresh same-origin preview candidate through the new explicit
+  regeneration path
+- prove whether the hardened contract from `BL-20260324-018` actually clears the
+  prior review findings
+
+Main work areas:
+
+- promoted `BL-20260324-019` into the active phase and mirrored it to GitHub
+  issue #33
+- confirmed real Trello read-only access still reaches origin
+  `trello:69c24cd3c1a2359ddd7a1bf8`
+- generated a new inbox payload with explicit token
+  `regen-20260324-bl019-001`
+- ingested that payload to create regenerated preview
+  `preview-trello-69c24cd3c1a2359ddd7a1bf8-18b3caaace36`
+- verified before execution that the new preview carries:
+  - governed regeneration evidence in `source.regeneration_token`
+  - hardened automation contract profile
+  - preferred reuse of `artifacts/scripts/pdf_to_excel_ocr.py`
+  - explicit format-fidelity, path-portability, and runtime-summary guidance
+- wrote one explicit approval file for the regenerated preview
+- ran one real execute in `test_mode=off` with injected OpenAI runtime env and no
+  git finalization / Trello Done
+- compared the new critic result against the four prior `BL-20260324-017`
+  findings
+- recorded a new follow-up debt item `BL-20260324-021` for the residual
+  runner-review concerns exposed by this validation
+
+Primary output:
+
+- [HARDENED_PREVIEW_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/HARDENED_PREVIEW_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260324-019` is complete as a validation phase
+- the prior four review findings from the earlier governed execute were cleared
+  on the regenerated candidate:
+  - fake `.xlsx` semantics
+  - hardcoded input path
+  - collapsed description context
+  - missing runtime-evidence expectations
+- the regenerated candidate still finished with
+  `critic_verdict = needs_revision`, but for a new set of concerns around:
+  - dry-run success semantics
+  - lack of `partial` runner status
+  - brittle base-script path resolution
+  - indirect readonly guarantee
+  - zero-input handling
+- that means the hardened contract worked for its intended target, and the
+  remaining work moved forward into new debt instead of leaving `BL-019`
+  ambiguous
+
+Verification snapshot on 2026-03-24:
+
+- real Trello read-only smoke passed for the target origin and did not perform
+  any write operation
+- `python3 skills/ingest_tasks.py --once` returned:
+  - `processed = 1`
+  - `duplicate_skipped = 0`
+  - `preview_created = 1`
+- regenerated preview pre-run checks showed:
+  - `approved = false`
+  - `source.regeneration_token = regen-20260324-bl019-001`
+  - hardened automation contract profile present
+- explicit approval file was written for the regenerated preview
+- one real execute returned:
+  - `processed = 0`
+  - `rejected = 1`
+  - `critic_verdict = needs_revision`
+- final preview state:
+  - `approved = true`
+  - `execution.status = rejected`
+  - `execution.executed = true`
+  - `execution.attempts = 1`
+- automation worker output:
+  - `status = success`
+  - artifact: `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`
+- critic worker output:
+  - `status = success`
+  - verdict: `needs_revision`
+  - artifact: `artifacts/reviews/pdf_to_excel_ocr_inbox_review.md`

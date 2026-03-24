@@ -1,21 +1,59 @@
 # Review: pdf_to_excel_ocr_inbox_runner.py
 
 ## Scope
-Review of the automation artifact `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` against the stated best-effort, evidence-backed, readonly Trello smoke objective for PDF extraction/conversion preview output.
+
+Reviewed `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` using the provided artifact snapshot. The review covers whether the script aligns with the stated best-effort, evidence-backed, read-only preview smoke intent and whether its behavior is appropriately constrained and reviewable.
 
 ## Findings
-- The script is grounded in local-only behavior and does not perform Trello writeback. It uses fixed metadata fields and reads PDFs from a local desktop directory.
-- It detects local tools (`pdftotext`, `pdfinfo`, `pdftoppm`, `tesseract`) and records tool paths in output, which supports evidence-backed reviewability.
-- It avoids claiming OCR success without extracted text evidence. OCR success is only marked when text is actually recovered.
-- It emits a spreadsheet-like output containing extraction status, method, notes, and text preview, which aligns with the requirement for reviewable intermediate artifacts.
-- If no PDFs are present, it still writes a header-only workbook and warns accordingly, which is consistent with best-effort behavior.
-- However, the declared output path is `artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx`, but the writer generates SpreadsheetML XML text directly via `write_text`. This is not a real XLSX container and may mislead downstream consumers expecting a true `.xlsx` file.
-- The script hardcodes `INPUT_DIR` to `~/Desktop/pdf样本`, which reduces determinism/portability in managed automation contexts and may not match declared local artifacts unless the environment is prepared exactly.
-- The description field from input metadata is truncated to `"Purpose:"` rather than preserving the fuller task context, weakening traceability.
-- No execution evidence or produced output workbook artifact was provided alongside the script, so review is limited to code inspection rather than validation of runtime behavior.
+
+1. **Positive: constrained wrapper design**
+   - The script acts as a wrapper around a preferred base script instead of re-implementing OCR/conversion logic.
+   - It emits a structured JSON summary with discovery, execution, output, and notes fields.
+   - It avoids claiming success unless both the delegate exits with code `0` and the expected `.xlsx` file exists.
+   - It explicitly refuses mismatched output extensions and avoids unsupported fallback conversion when the base script is missing.
+
+2. **Positive: evidence-oriented reporting**
+   - The summary records discovered PDFs, command execution details, delegate stdout/stderr, and output file presence.
+   - Dry-run mode is clearly represented and documented in notes.
+   - This is consistent with the instruction not to claim OCR success without evidence.
+
+3. **Issue: success on dry-run may be misleading for automation contracts**
+   - When `--dry-run` is used, the script returns `status = "success"` without producing an XLSX output.
+   - While the note says no conversion was attempted, some pipelines may interpret `success` as artifact production success.
+   - A more contract-safe approach would be a distinct partial/reviewable status in the summary model, or clearer separation between runner success and conversion success.
+
+4. **Issue: runner status model is narrower than review contract expectations**
+   - Internally the script only emits `success` or `failed`.
+   - The surrounding review contract explicitly recognizes `success`, `partial`, and `failed`.
+   - Because this wrapper is for best-effort evidence-backed execution, lack of a `partial` state reduces fidelity for reviewable intermediate outcomes.
+
+5. **Issue: delegate path resolution may be brittle**
+   - `preferred_base_script` is resolved relative to `Path.cwd()` when not absolute.
+   - That can work in repository-root execution, but is fragile if invoked from another working directory.
+   - A more robust implementation would resolve relative to the runner file or repository root explicitly.
+
+6. **Issue: no explicit readonly guarantee beyond metadata intent**
+   - The script carries readonly/source metadata in the summary but does not enforce or validate that the delegated base script itself is readonly.
+   - Since it shells out to another script, the readonly guarantee is only indirect unless the base script is also reviewed/controlled.
+
+7. **Issue: limited validation of discovered-input edge cases**
+   - If zero PDFs are discovered, the script still delegates rather than failing fast or marking a reviewable partial condition.
+   - That may be acceptable if the base script handles it, but the wrapper could provide clearer evidence-backed behavior by short-circuiting with an explicit note.
 
 ## Verdict
+
 **needs_revision**
 
 ## Rationale
-The script shows good-faith alignment with the readonly, best-effort, evidence-backed extraction objective and includes review-oriented status reporting. But it has material issues that prevent a full pass: the `.xlsx` extension does not match the actual file format produced, the local input path is overly environment-specific, and there is no runtime evidence demonstrating that the artifact successfully produced the intended reviewable output in this pipeline run. These are revision-level issues rather than a complete failure because the core extraction/review logic is present and generally honest about limitations.
+
+The artifact is credible and mostly aligned with a best-effort, evidence-backed wrapper pattern. It shows good discipline in summary generation, refusal to fabricate success, and reuse of an existing repository script.
+
+However, it does not fully meet a strong review pass because:
+
+- dry-run returns `success` without output creation,
+- there is no `partial` status for honest reviewable intermediate outcomes,
+- base script resolution is environment-sensitive,
+- readonly behavior is not enforced beyond intent metadata,
+- zero-input handling could be clearer and more deterministic.
+
+These are revision-level concerns rather than total failure because the script is functional, reviewable, and cautious about unsupported claims.

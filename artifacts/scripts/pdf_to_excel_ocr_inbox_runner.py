@@ -1,277 +1,200 @@
 #!/usr/bin/env python3
-import datetime
+from __future__ import annotations
+
+import argparse
+import json
 import os
-import shutil
 import subprocess
 import sys
-import tempfile
-import xml.sax.saxutils as saxutils
-import zipfile
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any, Dict, List
 
-INPUT_DIR = os.path.expanduser("~/Desktop/pdf样本")
-OUTPUT_XLSX = "artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx"
-OCR_MODE = "auto"
-DRY_RUN = False
-ORIGIN_ID = "trello:69c24cd3c1a2359ddd7a1bf8"
-TITLE = "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)"
-DESCRIPTION = "Purpose:"
-LABELS = ["best_effort", "evidence_backed", "readonly", "reviewable", "trello"]
-
-
-def xml_escape(value):
-    return saxutils.escape(str(value), {'"': '&quot;'})
-
-
-def run_capture(cmd):
-    try:
-        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False)
-        return proc.returncode, proc.stdout, proc.stderr
-    except Exception as exc:
-        return 1, "", f"exception: {exc}"
+DEFAULT_INPUT_DIR = "~/Desktop/pdf样本"
+DEFAULT_OUTPUT_XLSX = "artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx"
+DEFAULT_OCR = "auto"
+DEFAULT_DRY_RUN = False
+DEFAULT_ORIGIN_ID = "trello:69c24cd3c1a2359ddd7a1bf8"
+DEFAULT_TITLE = "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)"
+DEFAULT_DESCRIPTION = (
+    "Purpose: | Controlled Trello live preview smoke for openclaw-team. | "
+    "Expected behavior: | - read-only Trello ingest | - preview creation smoke only | "
+    "- no business execution cla..."
+)
+DEFAULT_LABELS = ["best_effort", "evidence_backed", "readonly", "reviewable", "trello"]
+DEFAULT_PREFERRED_BASE_SCRIPT = "artifacts/scripts/pdf_to_excel_ocr.py"
+DEFAULT_REFERENCE_DOCS = [
+    "artifacts/docs/pdf_to_excel_ocr_usage.md",
+    "artifacts/reviews/pdf_to_excel_ocr_review.md",
+]
 
 
-def detect_tools():
-    names = [
-        "pdftotext",
-        "pdfinfo",
-        "pdftoppm",
-        "tesseract",
-    ]
-    return {name: shutil.which(name) for name in names}
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
-def list_pdfs(input_dir):
-    root = Path(input_dir)
-    if not root.exists() or not root.is_dir():
+def expand_path(path_str: str) -> Path:
+    return Path(path_str).expanduser()
+
+
+def bool_flag(value: str) -> bool:
+    lowered = value.strip().lower()
+    if lowered in {"1", "true", "yes", "y", "on"}:
+        return True
+    if lowered in {"0", "false", "no", "n", "off"}:
+        return False
+    raise argparse.ArgumentTypeError(f"invalid boolean value: {value}")
+
+
+def discover_pdfs(input_dir: Path) -> List[str]:
+    if not input_dir.exists() or not input_dir.is_dir():
         return []
-    return sorted([p for p in root.iterdir() if p.is_file() and p.suffix.lower() == ".pdf"], key=lambda p: p.name.lower())
+    return sorted(str(p) for p in input_dir.rglob("*.pdf") if p.is_file())
 
 
-def get_pdfinfo(pdf_path, tools):
-    info = {"pages": "", "title": "", "author": "", "producer": "", "raw": ""}
-    if not tools.get("pdfinfo"):
-        return info
-    code, out, err = run_capture([tools["pdfinfo"], str(pdf_path)])
-    raw = (out or "") + ("\n" + err if err else "")
-    info["raw"] = raw.strip()
-    if code != 0:
-        return info
-    for line in out.splitlines():
-        if ":" not in line:
-            continue
-        k, v = line.split(":", 1)
-        key = k.strip().lower()
-        val = v.strip()
-        if key == "pages":
-            info["pages"] = val
-        elif key == "title":
-            info["title"] = val
-        elif key == "author":
-            info["author"] = val
-        elif key == "producer":
-            info["producer"] = val
-    return info
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Best-effort inbox runner that reuses the repository PDF-to-Excel OCR script."
+    )
+    parser.add_argument("--input-dir", default=DEFAULT_INPUT_DIR)
+    parser.add_argument("--output-xlsx", default=DEFAULT_OUTPUT_XLSX)
+    parser.add_argument("--ocr", default=DEFAULT_OCR)
+    parser.add_argument("--dry-run", type=bool_flag, default=DEFAULT_DRY_RUN)
+    parser.add_argument("--origin-id", default=DEFAULT_ORIGIN_ID)
+    parser.add_argument("--title", default=DEFAULT_TITLE)
+    parser.add_argument("--description", default=DEFAULT_DESCRIPTION)
+    parser.add_argument("--labels", nargs="*", default=DEFAULT_LABELS)
+    parser.add_argument("--preferred-base-script", default=DEFAULT_PREFERRED_BASE_SCRIPT)
+    parser.add_argument("--reference-docs", nargs="*", default=DEFAULT_REFERENCE_DOCS)
+    parser.add_argument("--summary-json", default="")
+    return parser
 
 
-def extract_with_pdftotext(pdf_path, tools):
-    if not tools.get("pdftotext"):
-        return False, "", "pdftotext not available"
-    with tempfile.TemporaryDirectory() as tmpdir:
-        out_txt = Path(tmpdir) / "out.txt"
-        code, out, err = run_capture([tools["pdftotext"], "-layout", str(pdf_path), str(out_txt)])
-        text = ""
-        if out_txt.exists():
-            try:
-                text = out_txt.read_text(encoding="utf-8", errors="replace")
-            except Exception:
-                text = out_txt.read_text(errors="replace")
-        if code == 0 and text.strip():
-            return True, text, "pdftotext -layout"
-        return False, text, (err or out or "pdftotext produced no usable text").strip()
+def emit_summary(summary: Dict[str, Any], summary_json: str) -> None:
+    rendered = json.dumps(summary, ensure_ascii=False, indent=2)
+    print(rendered)
+    if summary_json:
+        out_path = expand_path(summary_json)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(rendered + "\n", encoding="utf-8")
 
 
-def extract_with_ocr(pdf_path, tools):
-    if not tools.get("pdftoppm") or not tools.get("tesseract"):
-        return False, "", "OCR tools not fully available (need pdftoppm and tesseract)"
-    combined = []
-    details = []
-    with tempfile.TemporaryDirectory() as tmpdir:
-        prefix = str(Path(tmpdir) / "page")
-        code, out, err = run_capture([tools["pdftoppm"], "-r", "150", "-png", str(pdf_path), prefix])
-        if code != 0:
-            return False, "", (err or out or "pdftoppm failed").strip()
-        images = sorted(Path(tmpdir).glob("page-*.png"))
-        if not images:
-            return False, "", "pdftoppm created no images"
-        for img in images:
-            base = img.with_suffix("")
-            code, out, err = run_capture([tools["tesseract"], str(img), str(base), "txt"])
-            txt_path = Path(str(base) + ".txt")
-            page_text = ""
-            if txt_path.exists():
-                try:
-                    page_text = txt_path.read_text(encoding="utf-8", errors="replace")
-                except Exception:
-                    page_text = txt_path.read_text(errors="replace")
-            details.append(f"{img.name}: rc={code}")
-            if page_text.strip():
-                combined.append(f"===== {img.name} =====\n{page_text}")
-        final = "\n\n".join(combined).strip()
-        if final:
-            return True, final, "ocr via pdftoppm+tesseract"
-        return False, "", "; ".join(details) if details else "OCR yielded no text"
+def main() -> int:
+    args = build_parser().parse_args()
 
+    input_dir = expand_path(args.input_dir)
+    output_xlsx = expand_path(args.output_xlsx)
+    base_script = Path(args.preferred_base_script)
+    if not base_script.is_absolute():
+        base_script = Path.cwd() / base_script
 
-def summarize_text(text, limit=2000):
-    cleaned = text.replace("\r\n", "\n").replace("\r", "\n").strip()
-    if len(cleaned) <= limit:
-        return cleaned
-    return cleaned[:limit] + "\n...[truncated]"
+    pdfs = discover_pdfs(input_dir)
 
+    summary: Dict[str, Any] = {
+        "status": "failed",
+        "runner": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+        "requested_at": utc_now(),
+        "origin": {
+            "origin_id": args.origin_id,
+            "title": args.title,
+            "description": args.description,
+            "labels": args.labels,
+        },
+        "parameters": {
+            "input_dir": str(input_dir),
+            "output_xlsx": str(output_xlsx),
+            "ocr": args.ocr,
+            "dry_run": args.dry_run,
+            "preferred_base_script": str(base_script),
+            "reference_docs": args.reference_docs,
+        },
+        "discovery": {
+            "input_dir_exists": input_dir.exists(),
+            "pdf_count": len(pdfs),
+            "pdf_samples": pdfs[:10],
+        },
+        "execution": {
+            "delegated": False,
+            "command": [],
+            "returncode": None,
+            "stdout": "",
+            "stderr": "",
+        },
+        "output": {
+            "exists": False,
+            "path": str(output_xlsx),
+            "size_bytes": None,
+        },
+        "notes": [
+            "Best-effort wrapper prefers repository reuse over re-implementation.",
+            "If XLSX output cannot be produced honestly, the runner reports failure instead of writing mismatched content.",
+        ],
+    }
 
-def make_rows(pdfs, tools):
-    rows = []
-    now = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
-    for pdf in pdfs:
-        info = get_pdfinfo(pdf, tools)
-        method = "none"
-        status = "no_text"
-        text = ""
-        notes = []
+    if output_xlsx.suffix.lower() != ".xlsx":
+        summary["status"] = "failed"
+        summary["notes"].append("Requested output path does not end with .xlsx; refusing mismatched workbook contract.")
+        emit_summary(summary, args.summary_json)
+        return 2
 
-        ok, extracted, detail = extract_with_pdftotext(pdf, tools)
-        if ok:
-            method = "pdftotext"
-            status = "text_extracted"
-            text = extracted
-            notes.append(detail)
-        else:
-            notes.append(detail)
-            if OCR_MODE in ("auto", "on"):
-                ok2, extracted2, detail2 = extract_with_ocr(pdf, tools)
-                notes.append(detail2)
-                if ok2:
-                    method = "ocr"
-                    status = "ocr_text_extracted"
-                    text = extracted2
-                else:
-                    status = "review_needed"
-
-        row = {
-            "origin_id": ORIGIN_ID,
-            "title": TITLE,
-            "labels": ",".join(LABELS),
-            "generated_at_utc": now,
-            "input_dir": str(Path(INPUT_DIR)),
-            "pdf_file": pdf.name,
-            "pdf_path": str(pdf),
-            "pdf_size_bytes": str(pdf.stat().st_size),
-            "pdf_pages": info.get("pages", ""),
-            "pdf_title": info.get("title", ""),
-            "pdf_author": info.get("author", ""),
-            "pdf_producer": info.get("producer", ""),
-            "extraction_status": status,
-            "extraction_method": method,
-            "ocr_mode": OCR_MODE,
-            "tool_pdftotext": tools.get("pdftotext") or "",
-            "tool_pdfinfo": tools.get("pdfinfo") or "",
-            "tool_pdftoppm": tools.get("pdftoppm") or "",
-            "tool_tesseract": tools.get("tesseract") or "",
-            "notes": " | ".join(n for n in notes if n),
-            "text_preview": summarize_text(text, limit=4000),
-        }
-        rows.append(row)
-    return rows
-
-
-def write_spreadsheetml(output_path, rows):
-    headers = [
-        "origin_id",
-        "title",
-        "labels",
-        "generated_at_utc",
-        "input_dir",
-        "pdf_file",
-        "pdf_path",
-        "pdf_size_bytes",
-        "pdf_pages",
-        "pdf_title",
-        "pdf_author",
-        "pdf_producer",
-        "extraction_status",
-        "extraction_method",
-        "ocr_mode",
-        "tool_pdftotext",
-        "tool_pdfinfo",
-        "tool_pdftoppm",
-        "tool_tesseract",
-        "notes",
-        "text_preview",
-    ]
-
-    lines = []
-    lines.append('<?xml version="1.0"?>')
-    lines.append('<?mso-application progid="Excel.Sheet"?>')
-    lines.append('<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"')
-    lines.append(' xmlns:o="urn:schemas-microsoft-com:office:office"')
-    lines.append(' xmlns:x="urn:schemas-microsoft-com:office:excel"')
-    lines.append(' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"')
-    lines.append(' xmlns:html="http://www.w3.org/TR/REC-html40">')
-    lines.append(' <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">')
-    lines.append(f'  <Author>{xml_escape("automation")}</Author>')
-    lines.append(f'  <Title>{xml_escape(TITLE)}</Title>')
-    lines.append(' </DocumentProperties>')
-    lines.append(' <Worksheet ss:Name="pdf_extract">')
-    lines.append('  <Table>')
-    lines.append('   <Row>')
-    for h in headers:
-        lines.append(f'    <Cell><Data ss:Type="String">{xml_escape(h)}</Data></Cell>')
-    lines.append('   </Row>')
-    for row in rows:
-        lines.append('   <Row>')
-        for h in headers:
-            value = row.get(h, "")
-            lines.append(f'    <Cell><Data ss:Type="String">{xml_escape(value)}</Data></Cell>')
-        lines.append('   </Row>')
-    lines.append('  </Table>')
-    lines.append(' </Worksheet>')
-    lines.append('</Workbook>')
-    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-    Path(output_path).write_text("\n".join(lines), encoding="utf-8")
-
-
-def main():
-    print(f"[info] title: {TITLE}")
-    print(f"[info] origin_id: {ORIGIN_ID}")
-    print(f"[info] input_dir: {INPUT_DIR}")
-    print(f"[info] output_xlsx: {OUTPUT_XLSX}")
-    print(f"[info] dry_run: {DRY_RUN}")
-
-    tools = detect_tools()
-    print("[info] detected tools:")
-    for name, path in tools.items():
-        print(f"  - {name}: {path or 'not found'}")
-
-    pdfs = list_pdfs(INPUT_DIR)
-    print(f"[info] found {len(pdfs)} pdf(s)")
-    for pdf in pdfs:
-        print(f"  - {pdf}")
-
-    if DRY_RUN:
-        print("[info] dry_run enabled; no output written")
+    if args.dry_run:
+        summary["status"] = "success"
+        summary["notes"].append("Dry run requested; no conversion attempted.")
+        emit_summary(summary, args.summary_json)
         return 0
 
-    rows = make_rows(pdfs, tools)
-    write_spreadsheetml(OUTPUT_XLSX, rows)
-    print(f"[info] wrote reviewable workbook data to {OUTPUT_XLSX}")
-    if not pdfs:
-        print("[warn] no PDFs found; output contains headers only")
-    unresolved = [r for r in rows if r.get("extraction_status") in ("review_needed", "no_text")]
-    if unresolved:
-        print(f"[warn] {len(unresolved)} file(s) need review or had no text extracted")
-    return 0
+    if not base_script.exists():
+        summary["status"] = "failed"
+        summary["notes"].append("Preferred base script was not found; no unsupported fallback conversion was attempted.")
+        emit_summary(summary, args.summary_json)
+        return 3
+
+    output_xlsx.parent.mkdir(parents=True, exist_ok=True)
+
+    cmd = [
+        sys.executable,
+        str(base_script),
+        "--input-dir",
+        str(input_dir),
+        "--output-xlsx",
+        str(output_xlsx),
+    ]
+
+    if args.ocr:
+        cmd.extend(["--ocr", args.ocr])
+
+    summary["execution"]["delegated"] = True
+    summary["execution"]["command"] = cmd
+
+    try:
+        completed = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    except Exception as exc:
+        summary["status"] = "failed"
+        summary["execution"]["stderr"] = f"delegate invocation error: {exc}"
+        emit_summary(summary, args.summary_json)
+        return 4
+
+    summary["execution"]["returncode"] = completed.returncode
+    summary["execution"]["stdout"] = completed.stdout
+    summary["execution"]["stderr"] = completed.stderr
+
+    output_exists = output_xlsx.exists() and output_xlsx.is_file()
+    summary["output"]["exists"] = output_exists
+    if output_exists:
+        summary["output"]["size_bytes"] = output_xlsx.stat().st_size
+
+    if completed.returncode == 0 and output_exists:
+        summary["status"] = "success"
+    else:
+        summary["status"] = "failed"
+        if completed.returncode == 0 and not output_exists:
+            summary["notes"].append("Delegate exited successfully but expected XLSX output was not found.")
+        elif completed.returncode != 0:
+            summary["notes"].append("Delegate script returned a non-zero exit code.")
+
+    emit_summary(summary, args.summary_json)
+    return 0 if summary["status"] == "success" else 1
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
