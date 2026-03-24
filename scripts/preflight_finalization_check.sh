@@ -98,7 +98,7 @@ fi
 if [[ -n "${TRELLO_DONE_LIST_ID:-}" ]]; then
   pass "TRELLO_DONE_LIST_ID is set."
 else
-  warn "TRELLO_DONE_LIST_ID is not set. List-name resolution may be acceptable for smoke, but explicit ID is preferred."
+  fail "TRELLO_DONE_LIST_ID is not set. Pin it before formal finalization runs."
 fi
 
 if [[ -n "$preview_path" && -f "$preview_path" ]]; then

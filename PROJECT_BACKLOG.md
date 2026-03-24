@@ -129,8 +129,8 @@ Allowed enum values:
 ### BL-20260324-005
 - title: Pin TRELLO_DONE_LIST_ID in the formal runtime environment
 - type: debt
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p2
 - owner: Oscarling
 - depends_on: BL-20260324-002
@@ -138,8 +138,8 @@ Allowed enum values:
 - done_when: Formal finalization no longer depends on list-name lookup for the Done list
 - source: PROCESSED_FINALIZATION_REPORT.md
 - link: /tmp/trello_env.sh
-- issue: deferred:after-formal-preview-hardening-merges
-- evidence: -
+- issue: https://github.com/Oscarling/openclaw-team/issues/12
+- evidence: `scripts/pin_trello_done_list.py` was added, `/tmp/trello_env.sh` now exports `TRELLO_DONE_LIST_ID`, and `/private/tmp/trello_env.sh.bak-20260324T064207Z` preserves the prior runtime env file
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
 

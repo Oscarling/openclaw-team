@@ -582,3 +582,31 @@ Current governance note:
   - one approving review is still configured
   - admins are allowed to bypass that review gate
   - this is a deliberate solo-maintainer exception and should be revisited when a second reviewer is available
+
+### 18. Trello Done List Pinning For Formal Runtime
+
+User objective:
+
+- remove the remaining dependence on Trello Done list name lookup during formal finalization
+- turn the preferred runtime convention into an explicit, repeatable, repo-supported step
+
+Main work areas:
+
+- confirmed that `/tmp/trello_env.sh` had Trello credentials and board id but no `TRELLO_DONE_LIST_ID`
+- added `scripts/pin_trello_done_list.py` to resolve the Done list id from the board and pin it into a shell env file
+- designed the tool to archive the previous env file before writing changes
+- added `tests/test_pin_trello_done_list.py`
+- tightened `scripts/preflight_finalization_check.sh` so missing `TRELLO_DONE_LIST_ID` is now a failure for formal runs
+- updated `docs/PRE_RUN_CHECKLIST.md` and baseline CI/premerge coverage for the new pinning tool
+- ran the tool against the active runtime env file and wrote the pinned `TRELLO_DONE_LIST_ID` into `/tmp/trello_env.sh`
+
+Key result:
+
+- formal finalization no longer depends on Done-list name lookup in the active runtime environment
+- the runtime env change is archived, reproducible, and backed by a repo-side tool plus tests
+
+Verification snapshot on 2026-03-24:
+
+- `python3 scripts/pin_trello_done_list.py --env-file /tmp/trello_env.sh` resolved the Done list successfully
+- `python3 scripts/pin_trello_done_list.py --env-file /tmp/trello_env.sh --apply` updated the env file and created `/private/tmp/trello_env.sh.bak-20260324T064207Z`
+- `/tmp/trello_env.sh` now contains an explicit `export TRELLO_DONE_LIST_ID=...` line
