@@ -350,16 +350,33 @@ Allowed enum values:
 ### BL-20260324-018
 - title: Address the artifact-quality findings exposed by the governed fresh-preview execution
 - type: debt
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260324-017
 - start_when: The governed execution report has confirmed the control chain works, but the Critic still returned `needs_revision` for artifact-quality reasons
 - done_when: The repo either fixes or intentionally accepts the fresh-review findings around output format fidelity, path portability, traceability, and runtime evidence expectations before another approval/execute attempt
 - source: `TRELLO_LIVE_PREVIEW_EXECUTION_REPORT.md` on 2026-03-24 captured Critic findings about fake `.xlsx` output semantics, hardcoded input path, truncated description context, and missing runtime output evidence
-- link: /Users/lingguozhong/openclaw-team/TRELLO_LIVE_PREVIEW_EXECUTION_REPORT.md
-- issue: deferred:phase=next until the user chooses to address the review findings
+- link: /Users/lingguozhong/openclaw-team/PREVIEW_ARTIFACT_CONTRACT_HARDENING_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/29
+- evidence: `PREVIEW_ARTIFACT_CONTRACT_HARDENING_REPORT.md` records the adapter-side hardening that preserves richer description context, steers automation toward `artifacts/scripts/pdf_to_excel_ocr.py`, and encodes explicit `.xlsx` fidelity plus no-hardcoded-input-path rules with regression tests
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-019
+- title: Validate the hardened preview artifact contract on a fresh preview candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-018
+- start_when: The source-side contract hardening is merged and a fresh preview candidate or explicit regeneration path is available
+- done_when: A governed validation phase proves whether the hardened contract clears the prior review findings on a fresh preview candidate, without guessing around dedupe-frozen runtime state
+- source: `PREVIEW_ARTIFACT_CONTRACT_HARDENING_REPORT.md` on 2026-03-24 noted that the already-executed preview cannot inherit the new adapter contract and the current dedupe freeze blocks a simple same-origin re-preview
+- link: /Users/lingguozhong/openclaw-team/PREVIEW_ARTIFACT_CONTRACT_HARDENING_REPORT.md
+- issue: deferred:phase=next until a fresh preview candidate or explicit regeneration path is chosen
 - evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24

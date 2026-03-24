@@ -40,8 +40,16 @@ def _condense_automation_description(description: str, max_chars: int = 180) -> 
         return "Best-effort local extraction/conversion request."
 
     primary = text.split("\n\nExecution contract:", 1)[0]
-    primary = re.split(r"\n\s*\n", primary, maxsplit=1)[0]
-    primary = re.sub(r"\s+", " ", primary).strip()
+    primary = re.sub(r"[\u00a0\u200b\u200c\u200d\ufeff]", " ", primary)
+
+    segments: list[str] = []
+    for raw_line in primary.splitlines():
+        line = re.sub(r"\s+", " ", raw_line).strip()
+        if not line:
+            continue
+        segments.append(line)
+
+    primary = " | ".join(segments).strip()
 
     if not primary:
         primary = re.sub(r"\s+", " ", text).strip()
@@ -200,7 +208,10 @@ def normalize_local_inbox_payload(
         "objective": (
             f"{title}. "
             "Generate exactly one runnable local helper script artifact for a best-effort "
-            "PDF extraction/conversion attempt using the provided parameters."
+            "PDF extraction/conversion attempt using the provided parameters. "
+            "Prefer reusing the repository's existing PDF-to-Excel implementation "
+            "when it already satisfies the request instead of re-implementing the "
+            "pipeline from scratch."
         ),
         "inputs": {
             "params": {
@@ -212,6 +223,36 @@ def normalize_local_inbox_payload(
                 "title": title,
                 "description": automation_description,
                 "labels": labels,
+                "preferred_base_script": "artifacts/scripts/pdf_to_excel_ocr.py",
+                "reference_docs": [
+                    "artifacts/docs/pdf_to_excel_ocr_usage.md",
+                    "artifacts/reviews/pdf_to_excel_ocr_review.md",
+                ],
+                "contract_hints": {
+                    "output_format_fidelity": (
+                        "If output_xlsx ends with .xlsx, produce a real XLSX workbook "
+                        "container or fail honestly before writing mismatched text/XML/CSV "
+                        "content to a .xlsx path."
+                    ),
+                    "path_portability": (
+                        "Use the provided input_dir parameter as runtime input. Do not "
+                        "hardcode a user-home or absolute input path when params already "
+                        "declare the path."
+                    ),
+                    "traceability": (
+                        "Preserve meaningful description context from the external input; "
+                        "do not collapse it to a heading fragment such as Purpose:."
+                    ),
+                    "reuse_preference": (
+                        "Prefer a thin wrapper around artifacts/scripts/pdf_to_excel_ocr.py "
+                        "when compatible so workbook semantics and OCR behavior stay aligned "
+                        "with existing repo evidence."
+                    ),
+                    "runtime_summary": (
+                        "The generated script should emit a structured summary of what it "
+                        "produced so later review can inspect behavior without guessing."
+                    ),
+                },
             }
         },
         "expected_outputs": [
@@ -223,12 +264,18 @@ def normalize_local_inbox_payload(
             "Keep output deterministic and executable",
             "Produce only the expected script artifact",
             "Prefer honest, reviewable intermediate behavior over unsupported OCR claims",
+            "If the requested output path ends with .xlsx, do not write non-XLSX text/XML/CSV content to that path.",
+            "Do not hardcode an input directory when the task params already provide input_dir.",
+            "Preserve meaningful traceability from the incoming description instead of collapsing it to a heading fragment.",
+            "Prefer wrapping or adapting artifacts/scripts/pdf_to_excel_ocr.py when that existing repo script already matches the requested behavior.",
         ],
         "priority": priority,
         "source": source,
         "acceptance_criteria": [
             "Produce the expected script artifact at expected_outputs[0].path",
             "Script behavior remains runnable, deterministic, and reviewable",
+            "If output_xlsx ends with .xlsx, the artifact must preserve true XLSX output semantics or fail honestly before writing a mismatched format.",
+            "Artifact behavior remains parameter-driven for input_dir and output_xlsx rather than hardcoding unrelated local defaults.",
         ],
         "metadata": {
             "integration_phase": "8B",
@@ -237,7 +284,7 @@ def normalize_local_inbox_payload(
             "payload_hash": payload_hash,
             "labels": labels,
             "external_metadata": metadata,
-            "automation_contract_profile": "narrow_script_artifact",
+            "automation_contract_profile": "narrow_script_artifact_with_repo_reuse_and_format_fidelity",
         },
     }
 
