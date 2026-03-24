@@ -1,6 +1,8 @@
+import io
 import json
 import os
 import re
+from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -86,6 +88,39 @@ def resolve_docker_client(provided_client=None):
             "Failed to initialize docker client from environment. "
             "Ensure Docker access is available or pass docker_client explicitly."
         ) from exc
+
+
+def run_worker_locally_in_test_mode(worker, task_dir, attempt, test_mode):
+    from dispatcher import worker_runtime
+
+    env_updates = resolve_test_mode_for_attempt(test_mode, attempt)
+    previous_env = {key: os.environ.get(key) for key in env_updates}
+    stdout_buffer = io.StringIO()
+    stderr_buffer = io.StringIO()
+
+    try:
+        for key, value in env_updates.items():
+            os.environ[key] = value
+        with redirect_stdout(stdout_buffer), redirect_stderr(stderr_buffer):
+            worker_runtime.run_worker(
+                task_dir=task_dir,
+                worker_override=worker,
+                base_dir=resolve_base_dir(),
+            )
+    finally:
+        for key, previous in previous_env.items():
+            if previous is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = previous
+
+    wait_info = {
+        "exit_code": 0,
+        "timed_out": False,
+        "wait_error": None,
+        "finished_at": utc_now(),
+    }
+    return wait_info, stdout_buffer.getvalue(), stderr_buffer.getvalue()
 
 
 def ensure_dirs():
@@ -606,9 +641,10 @@ def delegate_task(
     max_attempts = 1 + retries
     payload = {**payload, "worker": worker}
     task_dir = task_workspace_dir(worker, task_id)
-    container_name = one_shot_container_name(worker, task_id)
-    image_name = worker_image or DEFAULT_WORKER_IMAGE
-    client = resolve_docker_client(docker_client)
+    use_local_test_mode = bool(test_mode) and docker_client is None
+    container_name = "local-test-mode" if use_local_test_mode else one_shot_container_name(worker, task_id)
+    image_name = "local-test-mode" if use_local_test_mode else (worker_image or DEFAULT_WORKER_IMAGE)
+    client = None if use_local_test_mode else resolve_docker_client(docker_client)
 
     create_task_record(task_id, worker, payload, max_retries=retries)
     update_task_status(task_id, "running")
@@ -629,19 +665,27 @@ def delegate_task(
         runtime_attempt_log = runtime_attempt_log_path(worker, task_id, attempt)
 
         try:
-            worker_container = start_worker_oneshot(
-                client,
-                worker,
-                task_dir,
-                task_id,
-                attempt,
-                test_mode=test_mode,
-                mounts_override=mounts_override,
-                worker_image=image_name,
-            )
-            wait_info = wait_container_exit(worker_container, timeout=timeout)
-            stdout_text = container_text_logs(worker_container, stdout=True, stderr=False)
-            stderr_text = container_text_logs(worker_container, stdout=False, stderr=True)
+            if use_local_test_mode:
+                wait_info, stdout_text, stderr_text = run_worker_locally_in_test_mode(
+                    worker,
+                    task_dir,
+                    attempt,
+                    test_mode,
+                )
+            else:
+                worker_container = start_worker_oneshot(
+                    client,
+                    worker,
+                    task_dir,
+                    task_id,
+                    attempt,
+                    test_mode=test_mode,
+                    mounts_override=mounts_override,
+                    worker_image=image_name,
+                )
+                wait_info = wait_container_exit(worker_container, timeout=timeout)
+                stdout_text = container_text_logs(worker_container, stdout=True, stderr=False)
+                stderr_text = container_text_logs(worker_container, stdout=False, stderr=True)
         except Exception as e:
             wait_info["wait_error"] = wait_info["wait_error"] or f"Container start failure: {e}"
         finally:

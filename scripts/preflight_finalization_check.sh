@@ -33,12 +33,19 @@ preview_path="${1:-}"
 current_branch="$(git branch --show-current 2>/dev/null || true)"
 remote_names="$(git remote 2>/dev/null || true)"
 status_output="$(git status --short)"
+allowed_candidate_paths=""
 
 is_classified_residue() {
   local path="$1"
   [[ -f "$residue_registry" ]] || return 1
   awk -F '\t' 'NF >= 1 && $1 !~ /^#/ && $1 == target { found = 1 } END { exit(found ? 0 : 1) }' \
     target="$path" "$residue_registry"
+}
+
+is_allowed_candidate_path() {
+  local path="$1"
+  [[ -n "$allowed_candidate_paths" ]] || return 1
+  printf '%s\n' "$allowed_candidate_paths" | grep -Fxq "$path"
 }
 
 echo "Repo root: $repo_root"
@@ -94,6 +101,23 @@ else
   warn "TRELLO_DONE_LIST_ID is not set. List-name resolution may be acceptable for smoke, but explicit ID is preferred."
 fi
 
+if [[ -n "$preview_path" && -f "$preview_path" ]]; then
+  allowed_candidate_paths="$(python3 - "$preview_path" <<'PY'
+import sys
+from pathlib import Path
+
+from skills.finalize_processed_previews import REPO_ROOT, _collect_commit_paths, load_json
+
+raw = Path(sys.argv[1])
+preview_path = raw if raw.is_absolute() else (REPO_ROOT / raw)
+preview_path = preview_path.resolve()
+payload = load_json(preview_path)
+paths = _collect_commit_paths(preview_path, payload, REPO_ROOT)
+print("\n".join(paths))
+PY
+)"
+fi
+
 if [[ -z "$status_output" ]]; then
   pass "Working tree is clean."
 else
@@ -125,8 +149,27 @@ else
   fi
 
   if [[ -n "$non_runtime_dirty" ]]; then
-    fail "Working tree contains non-runtime changes. Formal finalization requires a governed tree."
-    printf '%s\n' "$non_runtime_dirty"
+    allowed_candidate_dirty=""
+    unexpected_non_runtime_dirty=""
+    while IFS= read -r line; do
+      [[ -n "$line" ]] || continue
+      path="$(printf '%s\n' "$line" | awk '{print $NF}')"
+      if is_allowed_candidate_path "$path"; then
+        allowed_candidate_dirty+="$line"$'\n'
+      else
+        unexpected_non_runtime_dirty+="$line"$'\n'
+      fi
+    done <<< "$non_runtime_dirty"
+
+    if [[ -n "$allowed_candidate_dirty" ]]; then
+      pass "Dirty non-runtime files match the supplied preview candidate set."
+      printf '%s' "$allowed_candidate_dirty"
+    fi
+
+    if [[ -n "$unexpected_non_runtime_dirty" ]]; then
+      fail "Working tree contains non-runtime changes outside the supplied preview candidate set."
+      printf '%s' "$unexpected_non_runtime_dirty"
+    fi
   elif [[ -z "$runtime_residue" ]]; then
     fail "Working tree is dirty."
     printf '%s\n' "$status_output"

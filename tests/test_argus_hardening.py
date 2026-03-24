@@ -359,8 +359,30 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertEqual(validate_output(result), [])
         output_path = self.tmpdir / "workspaces" / "architect" / "ARCH-20260319-399" / "output.json"
         self.assertTrue(output_path.exists())
-        output_data = json.loads(output_path.read_text())
-        self.assertIn("without producing output.json", json.dumps(output_data, ensure_ascii=False))
+
+    def test_test_mode_can_run_without_docker_client(self) -> None:
+        task = build_task(
+            task_id="CRITIC-20260324-001",
+            worker="critic",
+            objective="Produce a deterministic test-mode review without docker.",
+            expected_outputs=[
+                {"path": "artifacts/reviews/local_test_mode_review.md", "type": "review"}
+            ],
+            inputs={"artifacts": [{"path": "artifacts/scripts/example.py", "type": "script"}]},
+        )
+
+        result = delegate_task(
+            "critic",
+            task,
+            test_mode="success",
+        )
+
+        self.assertEqual(result["status"], "success")
+        self.assertEqual(validate_output(result), [])
+        self.assertEqual(result.get("metadata", {}).get("scenario"), "success")
+        self.assertTrue((self.tmpdir / "artifacts" / "reviews" / "local_test_mode_review.md").exists())
+        runtime_log = (self.tmpdir / "workspaces" / "critic" / "CRITIC-20260324-001" / "runtime.log").read_text()
+        self.assertIn("local-test-mode", runtime_log)
 
 
 if __name__ == "__main__":

@@ -65,6 +65,42 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _normalize_review_line(line: str) -> str:
+    normalized = line.strip()
+    normalized = re.sub(r"^[-*+]\s*", "", normalized)
+    normalized = normalized.replace("**", "").replace("__", "")
+    return normalized.strip()
+
+
+def _extract_verdict_from_review_text(text: str) -> str | None:
+    explicit_matches: list[str] = []
+    lines = text.splitlines()
+    for raw_line in lines:
+        normalized = _normalize_review_line(raw_line)
+        match = re.match(r"^verdict\s*[:=]\s*(pass|fail|needs_revision)\b", normalized, re.I)
+        if match:
+            explicit_matches.append(match.group(1).lower())
+    if explicit_matches:
+        # Prefer the final explicit verdict line from the rendered review, not
+        # earlier prompt/contract fragments embedded in the artifact body.
+        return explicit_matches[-1]
+
+    for idx, raw_line in enumerate(lines):
+        normalized = _normalize_review_line(raw_line)
+        if not re.match(r"^(?:#+\s*)?verdict\b", normalized, re.I):
+            continue
+        for candidate in lines[idx + 1 :]:
+            candidate_normalized = _normalize_review_line(candidate)
+            if not candidate_normalized:
+                continue
+            match = re.match(r"^(pass|fail|needs_revision)\b", candidate_normalized, re.I)
+            if match:
+                return match.group(1).lower()
+            break
+
+    return None
+
+
 def extract_critic_verdict(critic_result: dict[str, Any], review_artifact_path: str | None) -> str:
     metadata = critic_result.get("metadata")
     if isinstance(metadata, dict):
@@ -85,12 +121,9 @@ def extract_critic_verdict(critic_result: dict[str, Any], review_artifact_path: 
         review_path = (REPO_ROOT / review_artifact_path).resolve()
         if review_path.exists():
             text = review_path.read_text(encoding="utf-8", errors="ignore")
-            explicit = re.search(r"verdict\s*[:=]\s*(pass|fail|needs_revision)", text, re.I)
-            if explicit:
-                return explicit.group(1).lower()
-            fallback = re.search(r"\b(pass|fail|needs_revision)\b", text.lower())
-            if fallback:
-                return fallback.group(1)
+            review_verdict = _extract_verdict_from_review_text(text)
+            if review_verdict:
+                return review_verdict
 
     status = str(critic_result.get("status", "")).strip().lower()
     if status == "failed":
