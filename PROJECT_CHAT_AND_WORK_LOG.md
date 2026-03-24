@@ -945,3 +945,68 @@ Verification snapshot on 2026-03-24:
   remains `approved = false`
 - backlog policy remains consistent:
   - no phase=`now` actionable items require mirrored issues after this closeout
+
+### 27. Governed Approval And Real Execute Of The Fresh Trello Preview
+
+User objective:
+
+- continue beyond the smoke-only boundary
+- review the fresh preview, explicitly approve it, and run one governed execute
+- stop before git finalization or Trello writeback
+
+Main work areas:
+
+- opened `BL-20260324-017` and mirrored it to GitHub issue #27
+- reviewed the pending preview state and validated both internal tasks before
+  approval
+- wrote one explicit approval file for the target preview
+- ran the first real execute attempt with explicit host-path and OpenAI env
+  injection
+- detected that the sandboxed attempt failed before worker launch because Python
+  Docker client initialization was blocked
+- reran the same execute once with elevated Docker access and explicit
+  `--allow-replay`
+- captured the final real outcome and converted the exposed Critic findings into
+  backlog debt item `BL-20260324-018`
+
+Primary output:
+
+- [TRELLO_LIVE_PREVIEW_EXECUTION_REPORT.md](/Users/lingguozhong/openclaw-team/TRELLO_LIVE_PREVIEW_EXECUTION_REPORT.md)
+
+Key result:
+
+- the approval gate and execute path both worked
+- the final outcome for the fresh preview is `rejected`, but for a truthful
+  business-review reason:
+  `critic_verdict = needs_revision`
+- this is not a control-chain failure
+- no git finalization or Trello writeback was entered
+
+Verification snapshot on 2026-03-24:
+
+- preview pre-run state:
+  - `approved = false`
+  - `execution.status = pending_approval`
+  - `attempts = 0`
+- initial sandboxed real execute returned:
+  - `rejected = 1`
+  - `decision_reason = Failed to initialize docker client from environment. Ensure Docker access is available or pass docker_client explicitly.`
+- elevated replay with `--allow-replay` returned:
+  - `processed = 0`
+  - `rejected = 1`
+  - `critic_verdict = needs_revision`
+- automation worker output:
+  - `status = success`
+  - artifact: `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`
+- critic worker output:
+  - `status = success`
+  - verdict: `needs_revision`
+  - artifact: `artifacts/reviews/pdf_to_excel_ocr_inbox_review.md`
+- final preview state:
+  - `approved = true`
+  - `execution.status = rejected`
+  - `execution.attempts = 2`
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with no remaining `phase=now`
+  actionable items requiring mirrored issues
+- `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`
