@@ -282,33 +282,50 @@ Allowed enum values:
 ### BL-20260324-014
 - title: Run a clean Trello preview-creation smoke against an unseen live card or scope
 - type: mainline
-- status: blocked
+- status: done
 - phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260324-012, BL-20260324-015
 - start_when: Prep-helper queue pollution is fixed and at least one approved live Trello card or scope is outside local dedupe history
 - done_when: A governed real Trello preview smoke targets an unseen live card or narrower live scope and truthfully records whether a new preview is created
-- source: `TRELLO_LIVE_TARGET_DISCOVERY_REPORT.md` on 2026-03-24 confirmed the current board scope still has `unseen_cards=0`
-- link: /Users/lingguozhong/openclaw-team/TRELLO_LIVE_TARGET_DISCOVERY_REPORT.md
+- source: `TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md` on 2026-03-24 recorded a list-scoped rerun against a fresh unseen card
+- link: /Users/lingguozhong/openclaw-team/TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md
 - issue: https://github.com/Oscarling/openclaw-team/issues/22
-- evidence: `TRELLO_LIVE_TARGET_DISCOVERY_REPORT.md` records a read-only discovery rerun with `open_board_cards=6`, `unseen_cards=0`, and no list containing unseen cards, so the smoke is currently blocked by live sample freshness
+- evidence: `TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md` records a governed list-scoped rerun with `preview_created=1`, `processing_recovered=0`, and preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-354139fc92de` created in pending-approval state
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
 
 ### BL-20260324-015
 - title: Provide an unseen live Trello card or alternate live scope for the preview smoke
 - type: blocker
-- status: blocked
+- status: done
 - phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: -
 - start_when: `BL-20260324-014` discovery has confirmed that the current configured board scope contains no unseen open cards outside local dedupe history
 - done_when: At least one approved live Trello card or alternate board/list scope exists whose mapped origin id is not already present in local dedupe history and can be used for a governed rerun of `BL-20260324-014`
-- source: `TRELLO_LIVE_TARGET_DISCOVERY_REPORT.md` on 2026-03-24 recorded `seen_trello_origin_ids=8`, `open_board_cards=6`, and `unseen_cards=0` for the current board scope
-- link: /Users/lingguozhong/openclaw-team/TRELLO_LIVE_TARGET_DISCOVERY_REPORT.md
+- source: User created a fresh live card on 2026-03-24 and `TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md` confirmed it was reachable in list `待办`
+- link: /Users/lingguozhong/openclaw-team/TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md
 - issue: https://github.com/Oscarling/openclaw-team/issues/23
-- evidence: `TRELLO_LIVE_TARGET_DISCOVERY_REPORT.md` shows the current scope has no unseen live card and no list with unseen cards, so a fresh card or alternate scope must be provided before the mainline smoke can continue
+- evidence: `TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md` records the new card `trello:69c24cd3c1a2359ddd7a1bf8` in list `待办` with `open_list_cards=5`, `unseen_cards=1`, and a successful governed rerun that used that card to create a new preview
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-016
+- title: Decide the disposition of the fresh Trello preview created by the governed smoke
+- type: mainline
+- status: planned
+- phase: next
+- priority: p2
+- owner: Oscarling
+- depends_on: BL-20260324-014
+- start_when: A fresh live Trello preview has been created in pending-approval state and the user wants to decide whether to keep it as smoke evidence or continue into an explicit approval/execution phase
+- done_when: The repo truthfully records one of two outcomes for preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-354139fc92de`: it either remains intentionally unapproved as smoke evidence, or a new governed phase is opened to review, approve, and execute it
+- source: `TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md` on 2026-03-24 created a fresh pending-approval preview from live Trello card `69c24cd3c1a2359ddd7a1bf8`
+- link: /Users/lingguozhong/openclaw-team/TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md
+- issue: deferred:phase=next until the user chooses whether to continue beyond preview smoke
+- evidence: -
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24

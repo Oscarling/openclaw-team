@@ -856,3 +856,57 @@ Verification snapshot on 2026-03-24:
 - `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`
 - `BL-20260324-014` remains mirrored to GitHub issue #22
 - `BL-20260324-015` is mirrored to GitHub issue #23
+
+### 25. Fresh Live Trello Preview Smoke Success
+
+User objective:
+
+- continue after creating a fresh live Trello sample card
+- identify the exact Trello list containing that card
+- rerun the clean preview-creation smoke against a scope that now includes one
+  unseen live card
+
+Main work areas:
+
+- opened a new branch for the rerun phase
+- performed a read-only title lookup and identified the new card in list `待办`
+- confirmed the narrower list scope had exactly one unseen card outside local
+  dedupe history
+- ran the governed list-scoped Trello read-only ingest smoke
+- converted the successful rerun into report, backlog, and next-step governance
+
+Primary output:
+
+- [TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md](/Users/lingguozhong/openclaw-team/TRELLO_LIVE_PREVIEW_CREATION_SMOKE_REPORT.md)
+
+Key result:
+
+- the fresh live card created a new preview successfully
+- the preview-control invariant held:
+  the new preview is pending approval and did not auto-execute
+- `BL-20260324-015` is resolved and `BL-20260324-014` is complete
+- the next decision is whether to leave the preview as smoke evidence or open a
+  new governed approval/execution phase, which is now tracked as `BL-20260324-016`
+
+Verification snapshot on 2026-03-24:
+
+- read-only card lookup matched:
+  - `card_id = 69c24cd3c1a2359ddd7a1bf8`
+  - `list_name = 待办`
+  - `list_id = 69be462743bfa0038ca10f8f`
+- list-scope confirmation returned:
+  - `open_list_cards = 5`
+  - `unseen_cards = 1`
+- `source /tmp/trello_env.sh && python3 skills/ingest_tasks.py --once --trello-readonly-once --trello-list-id 69be462743bfa0038ca10f8f --trello-limit 10`
+  completed with:
+  - `processed = 1`
+  - `duplicate_skipped = 4`
+  - `preview_created = 1`
+  - `processing_recovered = 0`
+- created preview:
+  - `preview_id = preview-trello-69c24cd3c1a2359ddd7a1bf8-354139fc92de`
+  - `approved = false`
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with no remaining `phase=now`
+  actionable items requiring mirrored issues
+- `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`
