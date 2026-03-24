@@ -681,3 +681,52 @@ Verification snapshot on 2026-03-24:
 - `python3 scripts/backlog_sync.py` passed and confirmed issue mirror for `BL-20260324-010 -> #15`
 - `python3 -m unittest -v tests/test_trello_readonly_ingress.py` passed `6/6`
 - `python3 -m unittest -v tests/test_processed_finalization.py tests/test_pin_trello_done_list.py` passed `12/12`
+
+### 21. Governed Real Trello Read-Only Preview Smoke
+
+User objective:
+
+- continue from the newly hardened Trello read-only ingress under the standard
+  workflow
+- run one real Trello read-only smoke under the pre-run gate
+- stop at preview generation and record the live result truthfully
+
+Main work areas:
+
+- opened `BL-20260324-011` and mirrored it to GitHub issue #17
+- reviewed the current-state ledger and baseline freeze note before the run
+- confirmed the runtime worktree was clean and `/tmp/trello_env.sh` still exposed
+  Trello read-only credentials plus board scope
+- ran one real GET-only Trello smoke
+- ran one real preview-only ingest against live Trello cards
+
+Primary output:
+
+- [TRELLO_READONLY_PREVIEW_SMOKE_REPORT.md](/Users/lingguozhong/openclaw-team/TRELLO_READONLY_PREVIEW_SMOKE_REPORT.md)
+
+Key result:
+
+- live Trello read-only GET access is currently working
+- this exact preview smoke produced no new preview because the fetched live cards
+  all matched existing local dedupe history
+- no approval, execute, git finalization, or Trello writeback behavior was entered
+
+Newly exposed follow-up:
+
+- `skills/trello_readonly_prep.py --smoke-read` still writes a sample-mapped file
+  under `processing/`
+- the subsequent real ingest run recovered that file and rejected it as another
+  duplicate
+- this was converted into backlog item `BL-20260324-012` instead of being left as
+  shell-only knowledge
+
+Verification snapshot on 2026-03-24:
+
+- `source /tmp/trello_env.sh && python3 skills/trello_readonly_prep.py --smoke-read --limit 1`
+  passed with live board GET access
+- `source /tmp/trello_env.sh && python3 skills/ingest_tasks.py --once --trello-readonly-once --trello-limit 3`
+  completed with:
+  - `processed = 0`
+  - `duplicate_skipped = 4`
+  - `preview_created = 0`
+  - `processing_recovered = 1`

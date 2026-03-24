@@ -227,3 +227,37 @@ Allowed enum values:
 - evidence: `TRELLO_READONLY_INGRESS_HARDENING_REPORT.md` records the hardening pass; `tests/test_trello_readonly_ingress.py` was added; `scripts/premerge_check.sh` and `.github/workflows/ci.yml` now enforce that coverage; local validation passed for backlog lint/sync plus the new Trello and existing finalization tests
 - last_reviewed_at: 2026-03-24
 - opened_at: 2026-03-24
+
+### BL-20260324-011
+- title: Run a governed real Trello read-only smoke through preview generation
+- type: mainline
+- status: done
+- phase: now
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-010
+- start_when: Trello read-only ingress hardening is merged and the runtime environment still exposes valid read-only credentials
+- done_when: A real Trello read-only run is executed under the pre-run gate, the outcome is captured in a repo evidence report, and the current-state ledger truthfully records whether the live run created a new preview or was blocked by dedupe/runtime state
+- source: Standard post-merge flow on 2026-03-24 after BL-20260324-010 landed identified the next smallest mainline step as one real Trello read-only smoke to preview
+- link: /Users/lingguozhong/openclaw-team/TRELLO_READONLY_PREVIEW_SMOKE_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/17
+- evidence: `TRELLO_READONLY_PREVIEW_SMOKE_REPORT.md` records a real GET-only Trello smoke pass plus a preview-only ingest run with `processed=0`, `duplicate_skipped=4`, and `preview_created=0`; the live fetched cards were all already present in local dedupe history and one extra duplicate came from `trello_readonly_mapped_sample.json` being recovered from `processing/`
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
+
+### BL-20260324-012
+- title: Stop trello_readonly_prep smoke output from polluting the live processing queue
+- type: debt
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-011
+- start_when: The real preview smoke has confirmed that `skills/trello_readonly_prep.py` still writes a recoverable sample file under `processing/`
+- done_when: Running `skills/trello_readonly_prep.py --smoke-read` no longer creates recoverable live-queue input under `processing/`, and the behavior is covered by tests and reflected in the phase evidence
+- source: `TRELLO_READONLY_PREVIEW_SMOKE_REPORT.md` on 2026-03-24 showed `processing_recovered=1` because `trello_readonly_mapped_sample.json` was picked up during the real ingest run
+- link: /Users/lingguozhong/openclaw-team/skills/trello_readonly_prep.py
+- issue: deferred:promote-after-phase8h-closeout
+- evidence: -
+- last_reviewed_at: 2026-03-24
+- opened_at: 2026-03-24
