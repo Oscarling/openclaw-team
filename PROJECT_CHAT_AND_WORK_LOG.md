@@ -4177,3 +4177,58 @@ Verification snapshot on 2026-03-25:
 - `python3 scripts/backlog_lint.py` passed
 - `python3 scripts/backlog_sync.py` passed with BL-071 mirror to `#135`
 - `bash scripts/premerge_check.sh` passed (`Failures: 0`)
+
+### 82. BL-072 Provider-Profile Governed Replay Validation
+
+User objective:
+
+- continue strict global process without drift
+- validate BL-071 profile-selection execute path in a real governed replay
+
+Main work areas:
+
+- activated `BL-20260325-072` and mirrored it to issue `#137`
+- ran provider probe matrix (responses API) using current runtime key:
+  - `aixj.vip` endpoints returned `502`
+  - `fast.vpsairobot.com` endpoints returned `401`
+- built runtime profile config at `/tmp/bl072_provider_profiles.json`:
+  - profile `bl072_fast_override`
+  - `api_base=https://fast.vpsairobot.com/v1`
+  - `wire_api=responses`
+  - `api_key_env=OPENAI_API_KEY`
+- executed elevated governed replay (real mode):
+  - `python3 skills/execute_approved_previews.py --once --preview-id preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153 --test-mode off --allow-replay`
+- archived evidence under `runtime_archives/bl072/`
+- produced BL-072 validation report and updated backlog:
+  - `BL-20260325-072` marked `done`
+  - queued next blocker `BL-20260325-073` (`planned` / `next`)
+
+Primary output:
+
+- [POST_PROVIDER_PROFILE_GOVERNED_REPLAY_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_PROVIDER_PROFILE_GOVERNED_REPLAY_VALIDATION_REPORT.md)
+
+Key result:
+
+- profile-selection path is validated in real execute runtime:
+  - runtime started on `https://fast.vpsairobot.com/v1/responses`
+  - `wire_api=responses` confirmed in runtime log
+  - fallback rotated to `https://fast.vpsairobot.com/responses`
+- replay finished with `rejected` due terminal provider auth blocker:
+  - class `http_401`
+  - endpoint `https://fast.vpsairobot.com/responses`
+- BL-071 objective (remove desktop extraction dependency from execute step)
+  is operationally validated; dominant live blocker moved to credential/profile
+  alignment (`BL-073`)
+
+Verification snapshot on 2026-03-25:
+
+- `python3 skills/execute_approved_previews.py ... --test-mode off --allow-replay` returned:
+  - `status = done`
+  - `processed = 0`
+  - `rejected = 1`
+- runtime evidence:
+  - `runtime_archives/bl072/runtime/automation-runtime.attempt-1.profile.log`
+- state/result evidence:
+  - `runtime_archives/bl072/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.json`
+- probe evidence:
+  - `runtime_archives/bl072/tmp/bl072_probe_matrix.txt`

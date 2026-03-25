@@ -1264,3 +1264,37 @@ Allowed enum values:
 - evidence: `skills/delegate_task.py` now supports profile-selected provider env assembly via `ARGUS_PROVIDER_PROFILE` and `ARGUS_PROVIDER_PROFILES_FILE` (with fail-closed key reference checks), `contracts/provider_profiles.example.json` defines non-secret profile structure, `tests/test_argus_hardening.py` adds three profile-selection regressions, and `bash scripts/premerge_check.sh` passed on 2026-03-25 with no failures
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
+
+### BL-20260325-072
+- title: Validate BL-20260325-071 provider-profile execute path on one governed replay without desktop-secret extraction
+- type: mainline
+- status: done
+- phase: now
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-071
+- start_when: `BL-20260325-071` is merged so execute runtime can select provider profile from config
+- done_when: One governed replay execute (`--test-mode off --allow-replay`) runs with profile-selected provider config and archived evidence, without manual desktop-secret extraction during execution step
+- source: `BL-20260325-071` completed source-side provider-profile selection hardening; next required step is governed replay validation using the new profile path
+- link: /Users/lingguozhong/openclaw-team/POST_PROVIDER_PROFILE_GOVERNED_REPLAY_VALIDATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/137
+- evidence: One elevated governed replay on `preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153` ran with profile-selected config (`ARGUS_PROVIDER_PROFILE=bl072_fast_override`, `ARGUS_PROVIDER_PROFILES_FILE=/tmp/bl072_provider_profiles.json`) and archived evidence in `runtime_archives/bl072/`; runtime log confirms endpoint override from ambient `aixj.vip` to profile endpoint `https://fast.vpsairobot.com/v1/responses` (`wire_api=responses`), with terminal provider auth blocker `http_401` at `https://fast.vpsairobot.com/responses`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-073
+- title: Restore provider credential/profile alignment so profile-selected governed execute can pass automation handoff
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-072
+- start_when: BL-072 replay confirms profile-selection path is active but terminal failure class is provider authentication (`http_401`) under current key/profile pairing
+- done_when: At least one approved provider profile + credential pairing executes governed replay without terminal auth failure and reaches automation success (and, ideally, critic handoff) under real run conditions
+- source: `POST_PROVIDER_PROFILE_GOVERNED_REPLAY_VALIDATION_REPORT.md` on 2026-03-25 records profile override success but terminal `http_401` on fast provider responses endpoint
+- link: -
+- issue: -
+- evidence: -
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
