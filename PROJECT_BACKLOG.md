@@ -826,8 +826,8 @@ Allowed enum values:
 ### BL-20260325-046
 - title: Harden wrapper success/partial evidence semantics after BL-20260325-045 critic findings
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-045
@@ -835,7 +835,24 @@ Allowed enum values:
 - done_when: Source-side contract hardening aligns wrapper verdict behavior with best-effort evidence-backed partial semantics (without over-claiming success or over-failing reviewable partial outcomes), focused tests cover the targeted semantics, and one blocker report records the mitigation
 - source: `POST_MULTI_ENDPOINT_POLICY_HARDENING_VALIDATION_REPORT.md` on 2026-03-25 records that multi-endpoint policy blocker is no longer dominant in the governed run and the next blocker is critic-identified wrapper/delegate evidence semantics
 - link: /Users/lingguozhong/openclaw-team/WRAPPER_PARTIAL_EVIDENCE_SEMANTICS_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260325-045 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/84
+- evidence: `WRAPPER_PARTIAL_EVIDENCE_SEMANTICS_HARDENING_REPORT.md` records source-side contract hardening in `adapters/local_inbox_adapter.py` that explicitly distinguishes wrapper success-only evidence gates from contract-compliant partial outcomes, adds partial-evidence guidance and next-step requirements, and is covered by focused regressions in `tests/test_local_inbox_adapter.py`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-047
+- title: Validate BL-20260325-046 wrapper partial-evidence semantics hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-046
+- start_when: `BL-20260325-046` is merged so a fresh same-origin governed run can verify whether updated wrapper contract semantics reduce recurrence of critic findings around success-vs-partial evidence handling under real execute
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-046, runs one explicit approval plus one real execute, and records whether critic findings shift away from wrapper partial-evidence semantics
+- source: `WRAPPER_PARTIAL_EVIDENCE_SEMANTICS_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming source-side semantic hardening success without live evidence
+- link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_PARTIAL_EVIDENCE_SEMANTICS_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-046 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
