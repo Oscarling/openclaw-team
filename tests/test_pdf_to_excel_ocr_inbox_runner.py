@@ -123,6 +123,15 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
             summary["parameters"]["preferred_base_script"],
             str((REPO_ROOT / "artifacts" / "scripts" / "pdf_to_excel_ocr.py").resolve()),
         )
+        self.assertEqual(
+            summary["provenance"]["delegate_path_resolution"]["strategy"],
+            "repo_root_relative",
+        )
+        self.assertEqual(
+            summary["provenance"]["delegate_path_resolution"]["repo_relative_path"],
+            "artifacts/scripts/pdf_to_excel_ocr.py",
+        )
+        self.assertTrue(summary["provenance"]["delegate_path_resolution"]["within_repo_root"])
 
     def test_rejects_unreviewed_delegate_script(self) -> None:
         input_dir = self._make_input_dir(with_pdf=True)
@@ -138,7 +147,26 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
         self.assertEqual(summary["status"], "failed")
         self.assertFalse(summary["execution"]["delegated"])
         self.assertFalse(summary["contract"]["readonly_delegate_verified"])
-        self.assertTrue(any("reviewed repository script" in note for note in summary["notes"]))
+        self.assertTrue(
+            any(
+                ("reviewed repository script" in note) or ("within repository root" in note)
+                for note in summary["notes"]
+            )
+        )
+
+    def test_rejects_delegate_path_outside_repo_root(self) -> None:
+        input_dir = self._make_input_dir(with_pdf=True)
+
+        exit_code, summary, _ = self._invoke_main(
+            input_dir=input_dir,
+            extra_args=["--preferred-base-script", "../../outside-repo/delegate.py"],
+        )
+
+        self.assertEqual(exit_code, 5)
+        self.assertEqual(summary["status"], "failed")
+        self.assertFalse(summary["execution"]["delegated"])
+        self.assertFalse(summary["provenance"]["delegate_path_resolution"]["within_repo_root"])
+        self.assertTrue(any("within repository root" in note for note in summary["notes"]))
 
     def test_propagates_delegate_partial_status_when_output_exists(self) -> None:
         input_dir = self._make_input_dir(with_pdf=True)
@@ -240,6 +268,20 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
         self.assertIn("Traceability:", self.runner.DEFAULT_DESCRIPTION)
         self.assertIn("BL-20260324-014", self.runner.DEFAULT_DESCRIPTION)
         self.assertNotIn("...", self.runner.DEFAULT_DESCRIPTION)
+
+    def test_emits_provenance_and_readonly_attestation(self) -> None:
+        input_dir = self._make_input_dir(with_pdf=False)
+
+        exit_code, summary, _ = self._invoke_main(input_dir=input_dir)
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("run_id", summary)
+        self.assertEqual(summary["readonly_attestation"]["mode"], "local_filesystem_delegate_only")
+        self.assertFalse(summary["readonly_attestation"]["network_calls_performed"])
+        self.assertFalse(summary["readonly_attestation"]["trello_write_performed"])
+        self.assertTrue(summary["readonly_attestation"]["readonly_label_present"])
+        self.assertIn("delegate_path_resolution", summary["provenance"])
+        self.assertIn("input_dir_resolution", summary["provenance"])
 
 
 if __name__ == "__main__":

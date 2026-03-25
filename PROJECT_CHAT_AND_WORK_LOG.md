@@ -2902,3 +2902,50 @@ Verification snapshot on 2026-03-25:
   - `execution.status = rejected`
   - `execution.executed = true`
   - `execution.attempts = 3`
+
+### 58. Wrapper Provenance/Path Traceability Hardening After BL-049 Findings
+
+User objective:
+
+- continue the next planned phase without drift
+- harden wrapper provenance/path traceability semantics after BL-049 critic focus
+  shift
+- preserve existing best-effort status semantics and verification flow
+
+Main work areas:
+
+- activated `BL-20260325-050` and mirrored it to issue `#92`
+- hardened `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` with:
+  - deterministic delegate path resolution strategy (`absolute` vs
+    `repo_root_relative`)
+  - explicit path-resolution provenance payload (`requested`, `expanded`,
+    `strategy`, `resolved`, `within_repo_root`, `repo_relative_path`)
+  - repository-boundary guard for reviewed-script mode
+  - explicit `run_id`, `provenance`, and `readonly_attestation` summary blocks
+  - improved delegate JSON parsing fallback for trailing-json stdout lines
+- expanded focused regressions in
+  `tests/test_pdf_to_excel_ocr_inbox_runner.py` to cover:
+  - deterministic repo-root resolution assertions
+  - repository-boundary rejection for escape paths
+  - required provenance/readonly traceability attestation fields
+- produced blocker closeout report and prepared next validation phase item
+
+Primary output:
+
+- [WRAPPER_PROVENANCE_PATH_TRACEABILITY_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/WRAPPER_PROVENANCE_PATH_TRACEABILITY_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-050` is complete as a source-side blocker-hardening phase
+- wrapper now emits explicit, machine-readable provenance/traceability evidence
+  instead of relying on implicit path behavior
+- delegate path resolution is deterministic and boundary-aware in reviewed-script
+  mode
+- next phase `BL-20260325-051` is defined as fresh governed validation
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_inbox_runner.py` passed
+  `10/10`
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with BL-050 issue mirror to `#92`
