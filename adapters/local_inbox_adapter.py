@@ -348,10 +348,21 @@ def normalize_local_inbox_payload(
                         "When the delegate prints a JSON report to stdout, parse that JSON "
                         "directly instead of relying only on sidecar-report file path discovery."
                     ),
+                    "delegate_report_flag_contract": (
+                        "If wrapper passes a sidecar report path to the reviewed delegate, "
+                        "use the reviewed delegate CLI flag --report-json (or another "
+                        "explicitly supported alias). Do not invent undeclared flags such "
+                        "as --report-file."
+                    ),
                     "dry_run_semantics": (
                         "If wrapper dry-run short-circuits before delegate execution, keep "
                         "execution.delegated=false and report partial honestly. If wrapper "
                         "does delegate under dry-run, pass through --dry-run explicitly."
+                    ),
+                    "pdf_discovery_consistency": (
+                        "Keep wrapper preflight PDF discovery semantics aligned with the "
+                        "reviewed delegate (for example recursive vs non-recursive), so "
+                        "wrapper evidence and delegated execution count the same candidate set."
                     ),
                 },
             }
@@ -376,7 +387,9 @@ def normalize_local_inbox_payload(
             "Do not claim wrapper success from exit code plus output existence alone when the reviewed delegate report does not provide strong enough success evidence.",
             "Use delegate report fields status/total_files/status_counter/dry_run as canonical evidence; do not require undeclared per-counter keys.",
             "When delegate emits JSON to stdout, parse that report directly instead of depending only on sidecar report-file discovery.",
+            "When wrapper passes a sidecar report path to the reviewed delegate, use --report-json exactly unless the reviewed delegate explicitly supports another alias.",
             "If wrapper supports dry-run short-circuit semantics, keep execution.delegated=false and preserve partial status honestly.",
+            "Keep wrapper PDF discovery semantics aligned with reviewed delegate discovery semantics to avoid preflight/execution evidence drift.",
             "Use an explicit timeout on delegate subprocess execution so the smoke wrapper cannot hang indefinitely.",
         ],
         "priority": priority,
@@ -391,7 +404,9 @@ def normalize_local_inbox_payload(
             "Wrapper success requires stronger delegate evidence than zero exit code plus a non-empty output file alone.",
             "Wrapper evidence logic remains compatible with delegate JSON fields status/total_files/status_counter/dry_run.",
             "Delegate report handoff can consume JSON printed to stdout without relying exclusively on report sidecar file discovery.",
+            "Wrapper/delegate sidecar report handoff remains CLI-compatible by using --report-json (or another explicitly supported delegate alias).",
             "Dry-run semantics remain explicit: short-circuit stays partial with no delegated execution, or delegated dry-run is passed through honestly.",
+            "Wrapper preflight PDF discovery semantics remain aligned with delegate discovery semantics to keep evidence counts consistent.",
             "Delegate execution is bounded by an explicit timeout and reports timeout honestly.",
         ],
         "metadata": {

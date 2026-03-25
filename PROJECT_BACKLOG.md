@@ -588,8 +588,8 @@ Allowed enum values:
 ### BL-20260325-032
 - title: Re-align generated wrapper report-handoff flag and discovery contract after BL-20260325-031
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-031
@@ -597,7 +597,24 @@ Allowed enum values:
 - done_when: Source-side/runtime contract hardening prevents wrapper-side report-flag drift against reviewed delegate CLI, wrapper/delegate PDF discovery semantics are aligned or explicitly justified in contract/tests, and one phase report records the implementation outcome with focused regressions
 - source: `POST_CLI_ALIGNMENT_VALIDATION_REPORT.md` on 2026-03-25 confirms the fresh governed validation after BL-20260325-030 still yields `needs_revision` due wrapper-side report-handoff drift and discovery inconsistency
 - link: /Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_REPORT_FLAG_REALIGNMENT_REPORT.md
-- issue: deferred:phase=next until BL-20260325-031 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/57
+- evidence: `WRAPPER_DELEGATE_REPORT_FLAG_REALIGNMENT_REPORT.md` records source-side hardening in `adapters/local_inbox_adapter.py` that adds explicit report-flag contract guidance (`--report-json` vs undeclared aliases), wrapper/delegate discovery-consistency guidance, and matching constraint/acceptance gates, with focused regression updates in `tests/test_local_inbox_adapter.py`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-033
+- title: Validate BL-20260325-032 report-flag and discovery hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-032
+- start_when: `BL-20260325-032` is merged so a fresh same-origin governed run can verify whether strengthened source-side contract guidance now prevents wrapper report-flag drift and discovery inconsistency under real execute
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-032, runs one explicit approval plus one real execute, and records whether automation/critic outcome now clears the `--report-file` vs `--report-json` and discovery-alignment findings observed in BL-20260325-031
+- source: `WRAPPER_DELEGATE_REPORT_FLAG_REALIGNMENT_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming source-side contract hardening success without live evidence
+- link: /Users/lingguozhong/openclaw-team/POST_REPORT_FLAG_REALIGNMENT_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-032 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
