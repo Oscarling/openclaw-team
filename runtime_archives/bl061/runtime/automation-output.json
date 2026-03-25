@@ -1,0 +1,26 @@
+{
+  "task_id": "AUTO-20260325-871",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated exactly one runnable helper script artifact that wraps the reviewed PDF-to-Excel delegate with conservative evidence gating, sidecar report handoff via --report-json, portable delegate resolution, timeout handling, partial-on-dry-run/zero-input semantics, and explicit readonly/reviewable runtime summaries.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-25T09:42:12.278683Z",
+  "duration_ms": 87624,
+  "notes": [
+    "The script is parameter-driven and does not hardcode the requested input directory.",
+    "It prefers the reviewed repository delegate artifacts/scripts/pdf_to_excel_ocr.py and fails honestly if that delegate is unavailable.",
+    "Wrapper success is intentionally conservative and requires structured delegate evidence beyond exit code and file existence.",
+    "Dry-run and zero-PDF discovery resolve to partial, not success.",
+    "Readonly wording is limited to no external/Trello writeback; local filesystem output may still occur when dry_run=false."
+  ],
+  "metadata": {
+    "task_id": "AUTO-20260325-871",
+    "worker": "automation",
+    "generated_files": 1
+  }
+}

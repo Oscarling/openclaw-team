@@ -1,0 +1,27 @@
+{
+  "task_id": "CRITIC-20260325-287",
+  "worker": "critic",
+  "status": "success",
+  "summary": "Reviewed the inbox runner and paired delegate together as an end-to-end readonly smoke path. The wrapper is conservative and aligns with the best-effort/evidence-backed contract, but the pair has a material compatibility risk: the wrapper assumes delegate support for structured sidecar/stdout JSON with specific fields, while the delegate only conditionally guarantees those fields and can emit failure shapes that are too sparse for robust wrapper interpretation. Overall verdict: needs_revision.",
+  "artifacts": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "timestamp": "2026-03-25T09:42:48.412603Z",
+  "duration_ms": 35744,
+  "notes": [
+    "Used supplied artifact snapshots as grounded evidence.",
+    "Evaluated wrapper and delegate together per review scope."
+  ],
+  "metadata": {
+    "verdict": "needs_revision",
+    "task_id": "CRITIC-20260325-287",
+    "worker": "critic",
+    "review_scope": [
+      "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "artifacts/scripts/pdf_to_excel_ocr.py"
+    ]
+  }
+}
