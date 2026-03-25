@@ -516,3 +516,37 @@ Allowed enum values:
 - evidence: `POST_TIMEOUT_HARDENING_VALIDATION_REPORT.md` records one fresh same-origin regeneration (`regen-20260325-bl027-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-4ce6c1cce934`, explicit approval, and one governed real execute where automation `AUTO-20260325-854` and critic `CRITIC-20260325-275` both completed with runtime logs showing `timeout=120s, attempts=3`, confirming the timeout mitigation now reaches artifact generation and critic review
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-24
+
+### BL-20260325-028
+- title: Align generated inbox runner contract with delegate report schema and dry-run semantics
+- type: mainline
+- status: done
+- phase: now
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260324-027
+- start_when: `BL-20260324-027` confirms timeout hardening lets real governed runs reach automation and critic artifacts, exposing the remaining integration-level `needs_revision` concerns around wrapper/delegate contract alignment
+- done_when: Source-side automation contract hints and constraints explicitly enforce reuse of the reviewed inbox runner behavior and delegate-report compatibility (including `total_files/status_counter/dry_run` semantics), focused tests cover the new contract requirements, and one evidence report records the phase outcome
+- source: `POST_TIMEOUT_HARDENING_VALIDATION_REPORT.md` on 2026-03-25 records that automation and critic both completed under timeout hardening but critic still returned `needs_revision` due wrapper/delegate integration gaps
+- link: /Users/lingguozhong/openclaw-team/RUNNER_CONTRACT_ALIGNMENT_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/49
+- evidence: `RUNNER_CONTRACT_ALIGNMENT_REPORT.md` records source-side automation contract hardening in `adapters/local_inbox_adapter.py` (wrapper reuse preference, delegate schema/handoff guidance, explicit dry-run semantics), plus focused regressions in `tests/test_local_inbox_adapter.py` and `tests/test_trello_readonly_ingress.py`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-029
+- title: Validate BL-20260325-028 contract alignment on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-028
+- start_when: `BL-20260325-028` is merged so a fresh same-origin run can verify whether strengthened source-side contract guidance reduces integration-level `needs_revision` findings
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-028, runs one explicit approval plus one real execute, and records whether automation/critic outcome now clears the previously observed wrapper/delegate contract drift findings
+- source: `RUNNER_CONTRACT_ALIGNMENT_REPORT.md` on 2026-03-25 concludes the next correct step is a fresh governed validation phase rather than assuming contract hardening success without runtime evidence
+- link: /Users/lingguozhong/openclaw-team/POST_CONTRACT_ALIGNMENT_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-028 lands on main
+- evidence: -
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25

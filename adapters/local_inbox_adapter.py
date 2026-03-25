@@ -267,9 +267,9 @@ def normalize_local_inbox_payload(
             f"{title}. "
             "Generate exactly one runnable local helper script artifact for a best-effort "
             "PDF extraction/conversion attempt using the provided parameters. "
-            "Prefer reusing the repository's existing PDF-to-Excel implementation "
-            "when it already satisfies the request instead of re-implementing the "
-            "pipeline from scratch."
+            "Prefer reusing the repository's existing inbox runner and reviewed "
+            "PDF-to-Excel implementation when they already satisfy the request "
+            "instead of re-implementing the pipeline from scratch."
         ),
         "inputs": {
             "params": {
@@ -281,6 +281,7 @@ def normalize_local_inbox_payload(
                 "title": title,
                 "description": automation_description,
                 "labels": labels,
+                "preferred_wrapper_script": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
                 "preferred_base_script": "artifacts/scripts/pdf_to_excel_ocr.py",
                 "reference_docs": [
                     "artifacts/docs/pdf_to_excel_ocr_usage.md",
@@ -302,9 +303,10 @@ def normalize_local_inbox_payload(
                         "do not collapse it to a heading fragment such as Purpose:."
                     ),
                     "reuse_preference": (
-                        "Prefer a thin wrapper around artifacts/scripts/pdf_to_excel_ocr.py "
-                        "when compatible so workbook semantics and OCR behavior stay aligned "
-                        "with existing repo evidence."
+                        "Prefer reusing artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py as "
+                        "the wrapper baseline and artifacts/scripts/pdf_to_excel_ocr.py as the "
+                        "reviewed delegate when compatible, so workbook semantics and contract "
+                        "behavior stay aligned with repository evidence."
                     ),
                     "outcome_status_model": (
                         "Use the reviewable status model success/partial/failed. Dry-run "
@@ -337,6 +339,20 @@ def normalize_local_inbox_payload(
                         "The generated script should emit a structured summary of what it "
                         "produced so later review can inspect behavior without guessing."
                     ),
+                    "delegate_report_schema": (
+                        "Treat delegate JSON report fields status/total_files/status_counter/"
+                        "dry_run as the canonical evidence contract. Do not require undeclared "
+                        "processed_files/succeeded_files/failed_files counters."
+                    ),
+                    "delegate_report_handoff": (
+                        "When the delegate prints a JSON report to stdout, parse that JSON "
+                        "directly instead of relying only on sidecar-report file path discovery."
+                    ),
+                    "dry_run_semantics": (
+                        "If wrapper dry-run short-circuits before delegate execution, keep "
+                        "execution.delegated=false and report partial honestly. If wrapper "
+                        "does delegate under dry-run, pass through --dry-run explicitly."
+                    ),
                 },
             }
         },
@@ -353,10 +369,14 @@ def normalize_local_inbox_payload(
             "Do not hardcode an input directory when the task params already provide input_dir.",
             "Preserve meaningful traceability from the incoming description instead of collapsing it to a heading fragment.",
             "Prefer wrapping or adapting artifacts/scripts/pdf_to_excel_ocr.py when that existing repo script already matches the requested behavior.",
+            "When artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py already exists, prefer updating that reviewed wrapper baseline instead of rewriting a new control flow from scratch.",
             "If dry_run is true or no PDFs are discovered, report a reviewable partial outcome instead of claiming success without an XLSX artifact.",
             "Resolve relative delegate script paths from the repository or script location, not from Path.cwd().",
             "For readonly reviewable preview flows, only delegate to the reviewed repository script artifacts/scripts/pdf_to_excel_ocr.py unless failing honestly.",
             "Do not claim wrapper success from exit code plus output existence alone when the reviewed delegate report does not provide strong enough success evidence.",
+            "Use delegate report fields status/total_files/status_counter/dry_run as canonical evidence; do not require undeclared per-counter keys.",
+            "When delegate emits JSON to stdout, parse that report directly instead of depending only on sidecar report-file discovery.",
+            "If wrapper supports dry-run short-circuit semantics, keep execution.delegated=false and preserve partial status honestly.",
             "Use an explicit timeout on delegate subprocess execution so the smoke wrapper cannot hang indefinitely.",
         ],
         "priority": priority,
@@ -369,6 +389,9 @@ def normalize_local_inbox_payload(
             "Dry-run or zero-input behavior is represented as a reviewable partial outcome instead of artifact-production success.",
             "Relative preferred_base_script resolution remains portable and does not depend on Path.cwd().",
             "Wrapper success requires stronger delegate evidence than zero exit code plus a non-empty output file alone.",
+            "Wrapper evidence logic remains compatible with delegate JSON fields status/total_files/status_counter/dry_run.",
+            "Delegate report handoff can consume JSON printed to stdout without relying exclusively on report sidecar file discovery.",
+            "Dry-run semantics remain explicit: short-circuit stays partial with no delegated execution, or delegated dry-run is passed through honestly.",
             "Delegate execution is bounded by an explicit timeout and reports timeout honestly.",
         ],
         "metadata": {

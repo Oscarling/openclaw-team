@@ -79,6 +79,10 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         params = auto_task["inputs"]["params"]
         contract_hints = params["contract_hints"]
 
+        self.assertEqual(
+            params["preferred_wrapper_script"],
+            "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+        )
         self.assertEqual(params["preferred_base_script"], "artifacts/scripts/pdf_to_excel_ocr.py")
         self.assertEqual(
             params["reference_docs"],
@@ -91,12 +95,25 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         self.assertIn("Expected behavior:", params["description"])
         self.assertIn("real XLSX workbook container", contract_hints["output_format_fidelity"])
         self.assertIn("Do not hardcode", contract_hints["path_portability"])
+        self.assertIn("pdf_to_excel_ocr_inbox_runner.py", contract_hints["reuse_preference"])
         self.assertIn("artifacts/scripts/pdf_to_excel_ocr.py", contract_hints["reuse_preference"])
         self.assertIn("success/partial/failed", contract_hints["outcome_status_model"])
         self.assertIn("Path.cwd()", contract_hints["delegate_resolution"])
         self.assertIn("delegate only to the reviewed repository script", contract_hints["reviewed_delegate_contract"])
         self.assertIn("zero exit code plus output-file existence", contract_hints["delegate_success_evidence"])
         self.assertIn("explicit timeout", contract_hints["delegate_timeout"])
+        self.assertIn(
+            "status/total_files/status_counter/dry_run",
+            contract_hints["delegate_report_schema"],
+        )
+        self.assertIn(
+            "prints a JSON report to stdout",
+            contract_hints["delegate_report_handoff"],
+        )
+        self.assertIn(
+            "execution.delegated=false",
+            contract_hints["dry_run_semantics"],
+        )
         self.assertTrue(
             any(
                 "Preserve meaningful traceability from the incoming description" in item
@@ -106,6 +123,30 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         self.assertTrue(
             any(
                 "report a reviewable partial outcome" in item
+                for item in auto_task["constraints"]
+            )
+        )
+        self.assertTrue(
+            any(
+                "pdf_to_excel_ocr_inbox_runner.py already exists" in item
+                for item in auto_task["constraints"]
+            )
+        )
+        self.assertTrue(
+            any(
+                "status/total_files/status_counter/dry_run" in item
+                for item in auto_task["constraints"]
+            )
+        )
+        self.assertTrue(
+            any(
+                "emits JSON to stdout" in item
+                for item in auto_task["constraints"]
+            )
+        )
+        self.assertTrue(
+            any(
+                "execution.delegated=false" in item
                 for item in auto_task["constraints"]
             )
         )
@@ -119,6 +160,18 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         )
         self.assertIn(
             "Wrapper success requires stronger delegate evidence than zero exit code plus a non-empty output file alone.",
+            auto_task["acceptance_criteria"],
+        )
+        self.assertIn(
+            "Wrapper evidence logic remains compatible with delegate JSON fields status/total_files/status_counter/dry_run.",
+            auto_task["acceptance_criteria"],
+        )
+        self.assertIn(
+            "Delegate report handoff can consume JSON printed to stdout without relying exclusively on report sidecar file discovery.",
+            auto_task["acceptance_criteria"],
+        )
+        self.assertIn(
+            "Dry-run semantics remain explicit: short-circuit stays partial with no delegated execution, or delegated dry-run is passed through honestly.",
             auto_task["acceptance_criteria"],
         )
         self.assertIn(
