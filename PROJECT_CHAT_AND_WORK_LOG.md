@@ -4125,3 +4125,55 @@ Verification snapshot on 2026-03-25:
   - `processed = 1`
   - `rejected = 0`
   - `critic_verdict = pass`
+
+### 81. BL-071 Governed Execute Provider Profile Selection Stabilization
+
+User objective:
+
+- continue strict backlog mainline without drift
+- remove BL-070 manual desktop-secret dependency and keep governed execute
+  provider selection inside repo/runtime configuration
+
+Main work areas:
+
+- activated `BL-20260325-071` and mirrored it to issue `#135`
+- hardened `skills/delegate_task.py` provider env assembly:
+  - added profile selectors:
+    - `ARGUS_PROVIDER_PROFILE`
+    - `ARGUS_PROVIDER_PROFILES_FILE`
+  - added profile parsing for both payload shapes:
+    - top-level profile map
+    - `{ "profiles": { ... } }`
+  - added profile key resolution policy:
+    - `api_key`
+    - `api_key_env`
+    - `api_key_secret`
+  - enforced fail-closed behavior when selected profile or key reference is invalid
+  - preserved backward-compatible env behavior when no profile is selected
+- added profile configuration template:
+  - `contracts/provider_profiles.example.json`
+- extended runtime contract docs:
+  - `RUNTIME_CONTRACT.md` section `13. Provider Profile 选择契约（BL-071）`
+- added focused regressions in `tests/test_argus_hardening.py`:
+  - `test_build_worker_env_uses_selected_provider_profile`
+  - `test_build_worker_env_profile_key_env_missing_raises`
+  - `test_build_worker_env_without_profile_keeps_legacy_env_resolution`
+- produced completion report and marked `BL-20260325-071` done in backlog
+
+Primary output:
+
+- [PROVIDER_PROFILE_SELECTION_STABILIZATION_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_PROFILE_SELECTION_STABILIZATION_REPORT.md)
+
+Key result:
+
+- governed execute path can now pick provider runtime settings from profile config
+  instead of ad-hoc desktop-secret extraction
+- profile/key misconfiguration now fails closed with explicit runtime errors
+- legacy non-profile flow remains intact
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_argus_hardening.py` passed (`21/21`)
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with BL-071 mirror to `#135`
+- `bash scripts/premerge_check.sh` passed (`Failures: 0`)

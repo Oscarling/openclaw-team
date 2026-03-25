@@ -47,6 +47,7 @@ REQUIRED_MANAGER_MOUNTS = (
     "/app/dispatcher",
     "/app/agents",
 )
+DEFAULT_PROVIDER_PROFILES_RELATIVE_PATH = Path("contracts/provider_profiles.json")
 
 def resolve_base_dir():
     return Path(os.environ.get("ARGUS_BASE_DIR", str(DEFAULT_BASE_DIR))).resolve()
@@ -255,6 +256,151 @@ def first_env(*names):
     return None
 
 
+def first_profile_value(profile, *keys):
+    for key in keys:
+        value = profile.get(key)
+        if isinstance(value, str):
+            normalized = value.strip()
+            if normalized:
+                return normalized
+    return None
+
+
+def first_profile_raw(profile, *keys):
+    for key in keys:
+        if key in profile:
+            return profile.get(key)
+    return None
+
+
+def normalize_csv_env_value(value):
+    if value is None:
+        return None
+    if isinstance(value, str):
+        normalized = value.strip()
+        return normalized or None
+    if isinstance(value, (list, tuple)):
+        items = []
+        for item in value:
+            normalized = str(item).strip()
+            if normalized:
+                items.append(normalized)
+        if items:
+            return ",".join(items)
+    return None
+
+
+def resolve_provider_profiles_path():
+    configured = first_env("ARGUS_PROVIDER_PROFILES_FILE")
+    if configured:
+        path = Path(configured).expanduser()
+        if not path.is_absolute():
+            path = resolve_base_dir() / path
+        return path
+    return resolve_base_dir() / DEFAULT_PROVIDER_PROFILES_RELATIVE_PATH
+
+
+def load_provider_profile(profile_name):
+    profiles_path = resolve_provider_profiles_path()
+    if not profiles_path.exists():
+        raise RuntimeError(
+            f"ARGUS_PROVIDER_PROFILE={profile_name} but provider profiles file "
+            f"is missing: {profiles_path}"
+        )
+
+    try:
+        payload = json.loads(profiles_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise RuntimeError(f"Failed parsing provider profiles file {profiles_path}: {exc}") from exc
+
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"Provider profiles file must contain a JSON object: {profiles_path}")
+
+    profiles = payload.get("profiles", payload)
+    if not isinstance(profiles, dict):
+        raise RuntimeError(
+            "Provider profiles payload must be an object or contain an object under key 'profiles'"
+        )
+
+    profile = profiles.get(profile_name)
+    if not isinstance(profile, dict):
+        available = ", ".join(sorted(str(name) for name in profiles.keys())) or "<none>"
+        raise RuntimeError(
+            f"Provider profile '{profile_name}' not found in {profiles_path}. "
+            f"Available profiles: {available}"
+        )
+    return profile, profiles_path
+
+
+def resolve_profile_api_key(profile_name, profile):
+    direct_key = first_profile_value(profile, "api_key", "openai_api_key")
+    if direct_key:
+        return direct_key
+
+    env_name = first_profile_value(profile, "api_key_env")
+    if env_name:
+        env_value = first_env(env_name)
+        if env_value:
+            return env_value
+        raise RuntimeError(
+            f"Provider profile '{profile_name}' requires env var '{env_name}' for API key, "
+            "but it is not set"
+        )
+
+    secret_name = first_profile_value(profile, "api_key_secret")
+    if secret_name:
+        secret_value = read_secret(secret_name)
+        if secret_value:
+            return secret_value
+        raise RuntimeError(
+            f"Provider profile '{profile_name}' requires docker secret '{secret_name}' for API key, "
+            "but it is not available"
+        )
+    return None
+
+
+def resolve_provider_profile_env(profile_name):
+    profile, profiles_path = load_provider_profile(profile_name)
+    profile_env = {
+        "OPENAI_API_KEY": resolve_profile_api_key(profile_name, profile),
+        "OPENAI_API_BASE": first_profile_value(profile, "api_base", "openai_api_base", "base_url"),
+        "OPENAI_MODEL_NAME": first_profile_value(profile, "model_name", "openai_model_name", "model"),
+        "ARGUS_LLM_WIRE_API": first_profile_value(
+            profile,
+            "wire_api",
+            "openai_wire_api",
+            "llm_wire_api",
+        ),
+        "ARGUS_LLM_FALLBACK_CHAT_URLS": normalize_csv_env_value(
+            first_profile_raw(
+                profile,
+                "fallback_chat_urls",
+                "llm_fallback_chat_urls",
+                "argus_llm_fallback_chat_urls",
+            )
+        ),
+        "ARGUS_LLM_FALLBACK_RESPONSE_URLS": normalize_csv_env_value(
+            first_profile_raw(
+                profile,
+                "fallback_response_urls",
+                "llm_fallback_response_urls",
+                "argus_llm_fallback_response_urls",
+            )
+        ),
+        "ARGUS_LLM_FALLBACK_API_BASES": normalize_csv_env_value(
+            first_profile_raw(
+                profile,
+                "fallback_api_bases",
+                "llm_fallback_api_bases",
+                "argus_llm_fallback_api_bases",
+            )
+        ),
+        "ARGUS_PROVIDER_PROFILE": profile_name,
+        "ARGUS_PROVIDER_PROFILES_FILE": str(profiles_path),
+    }
+    return {key: value for key, value in profile_env.items() if value is not None}
+
+
 def build_worker_env(worker):
     env = {
         "WORKER_NAME": worker,
@@ -289,6 +435,10 @@ def build_worker_env(worker):
     env["ARGUS_LLM_FALLBACK_CHAT_URLS"] = first_env("ARGUS_LLM_FALLBACK_CHAT_URLS")
     env["ARGUS_LLM_FALLBACK_RESPONSE_URLS"] = first_env("ARGUS_LLM_FALLBACK_RESPONSE_URLS")
     env["ARGUS_LLM_FALLBACK_API_BASES"] = first_env("ARGUS_LLM_FALLBACK_API_BASES")
+    provider_profile = first_env("ARGUS_PROVIDER_PROFILE")
+    if provider_profile:
+        # Profile values override ambient defaults when explicitly selected.
+        env.update(resolve_provider_profile_env(provider_profile))
     return {key: value for key, value in env.items() if value is not None}
 
 

@@ -1251,16 +1251,16 @@ Allowed enum values:
 ### BL-20260325-071
 - title: Stabilize governed execute provider profile selection to avoid manual desktop-secret dependency in BL-070 flow
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-070
 - start_when: `BL-20260325-070` confirms fresh governed validation passes only after explicitly switching runtime env to a healthy backup provider profile
 - done_when: Governed execute path can select an approved healthy provider profile from repository/runtime configuration without manual extraction of base URL/key from ad-hoc desktop files
 - source: `POST_PROVIDER_AVAILABILITY_FAILOVER_GOVERNED_VALIDATION_REPORT.md` on 2026-03-25 shows BL-070 pass required manual backup profile injection from `~/Desktop/备用key.rtf`
-- link: -
-- issue: -
-- evidence: -
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_PROFILE_SELECTION_STABILIZATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/135
+- evidence: `skills/delegate_task.py` now supports profile-selected provider env assembly via `ARGUS_PROVIDER_PROFILE` and `ARGUS_PROVIDER_PROFILES_FILE` (with fail-closed key reference checks), `contracts/provider_profiles.example.json` defines non-secret profile structure, `tests/test_argus_hardening.py` adds three profile-selection regressions, and `bash scripts/premerge_check.sh` passed on 2026-03-25 with no failures
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
