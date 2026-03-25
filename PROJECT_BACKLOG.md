@@ -1149,8 +1149,8 @@ Allowed enum values:
 ### BL-20260325-065
 - title: Validate BL-20260325-064 output-boundary and outcome-contract hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-064
@@ -1158,6 +1158,23 @@ Allowed enum values:
 - done_when: One governed validation run (smoke -> regeneration -> preview -> approval -> real execute) records whether critic findings no longer cite wrapper output-boundary policy and extraction-vs-export outcome-contract clarity gaps
 - source: `WRAPPER_DELEGATE_OUTPUT_BOUNDARY_OUTCOME_CONTRACT_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation
 - link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_DELEGATE_OUTPUT_BOUNDARY_OUTCOME_CONTRACT_VALIDATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/123
+- evidence: `POST_WRAPPER_DELEGATE_OUTPUT_BOUNDARY_OUTCOME_CONTRACT_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl065-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-994e5ccbfd0b`; runtime reached automation (`AUTO-20260325-873`) and critic (`CRITIC-20260325-289`) with final verdict `needs_revision`, while critic focus moved away from output-boundary enforcement toward wrapper/delegate execution outcome-contract strictness and diagnostics completeness
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-066
+- title: Harden wrapper/delegate execution outcome-contract strictness and diagnostics completeness after BL-065 critic findings
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-065
+- start_when: `BL-20260325-065` confirms critic focus has shifted away from output-boundary policy to wrapper/delegate execution outcome semantics and diagnostic completeness gaps
+- done_when: Source-side hardening makes wrapper subprocess exit-code handling deterministic (including non-zero with JSON evidence), canonicalizes no-input/partial/failed semantics across wrapper/delegate, preserves relevant stderr/stdout diagnostics in structured evidence, and records one blocker report with focused tests
+- source: `POST_WRAPPER_DELEGATE_OUTPUT_BOUNDARY_OUTCOME_CONTRACT_VALIDATION_REPORT.md` on 2026-03-25 records the next blocker class as execution outcome-contract strictness and diagnostics completeness
+- link: /Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_EXECUTION_OUTCOME_DIAGNOSTIC_CONTRACT_HARDENING_REPORT.md
 - issue: -
 - evidence: -
 - last_reviewed_at: 2026-03-25
