@@ -1,0 +1,25 @@
+task_id: AUTO-20260325-863
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-863
+worker_image: argus-worker:latest
+started_at: 2026-03-25T06:46:27.630582Z
+finished_at: 2026-03-25T06:49:41.508252Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-25T06:46:27.874906Z] [automation] [INFO] Worker started using endpoint https://fast.vpsairobot.com/v1/chat/completions (timeout=120s, attempts=3)
+[2026-03-25T06:48:28.127903Z] [automation] [WARN] LLM call failed attempt 1/3 (endpoint=https://fast.vpsairobot.com/v1/chat/completions, class=timeout, retryable=True): The read operation timed out
+[2026-03-25T06:48:28.128321Z] [automation] [INFO] Retrying LLM call in 1s (next_endpoint=https://api.openai.com/v1/chat/completions)
+[2026-03-25T06:48:29.845532Z] [automation] [WARN] LLM call failed attempt 2/3 (endpoint=https://api.openai.com/v1/chat/completions, class=http_401, retryable=True): HTTP Error 401: Unauthorized
+[2026-03-25T06:48:29.845759Z] [automation] [INFO] Authorization failure detected; retrying once on fallback endpoint.
+[2026-03-25T06:48:29.845808Z] [automation] [INFO] Quarantined endpoint for current call due to authorization failure: https://api.openai.com/v1/chat/completions
+[2026-03-25T06:48:29.845849Z] [automation] [INFO] Retrying LLM call in 2s (next_endpoint=https://fast.vpsairobot.com/v1/chat/completions)
+[2026-03-25T06:49:41.341124Z] [automation] [INFO] Artifact written: artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py
+[2026-03-25T06:49:41.342082Z] [automation] [INFO] Task completed AUTO-20260325-863 with status success
+[2026-03-25T06:49:41.342926Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-863
+
+=== stderr ===
+
