@@ -1,0 +1,24 @@
+task_id: AUTO-20260325-862
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-862
+worker_image: argus-worker:latest
+started_at: 2026-03-25T06:16:09.011897Z
+finished_at: 2026-03-25T06:16:20.448155Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-25T06:16:09.242288Z] [automation] [INFO] Worker started using endpoint https://fast.vpsairobot.com/v1/chat/completions (timeout=120s, attempts=3)
+[2026-03-25T06:16:09.637495Z] [automation] [WARN] LLM call failed attempt 1/3 (endpoint=https://fast.vpsairobot.com/v1/chat/completions, class=http_403, retryable=True): HTTP Error 403: Forbidden
+[2026-03-25T06:16:09.637717Z] [automation] [INFO] Authorization failure detected; retrying once on fallback endpoint.
+[2026-03-25T06:16:09.637768Z] [automation] [INFO] Retrying LLM call in 1s (next_endpoint=https://api.openai.com/v1/chat/completions)
+[2026-03-25T06:16:18.143065Z] [automation] [WARN] LLM call failed attempt 2/3 (endpoint=https://api.openai.com/v1/chat/completions, class=tls_eof, retryable=True): <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1016)>
+[2026-03-25T06:16:18.143154Z] [automation] [INFO] Retrying LLM call in 2s (next_endpoint=https://fast.vpsairobot.com/v1/chat/completions)
+[2026-03-25T06:16:20.324456Z] [automation] [WARN] LLM call failed attempt 3/3 (endpoint=https://fast.vpsairobot.com/v1/chat/completions, class=http_403, retryable=False): HTTP Error 403: Forbidden
+[2026-03-25T06:16:20.324545Z] [automation] [ERROR] Task failed AUTO-20260325-862: LLM call exhausted (attempts=3/3, class=http_403, endpoint=https://fast.vpsairobot.com/v1/chat/completions, retryable=False): HTTP Error 403: Forbidden
+[2026-03-25T06:16:20.329856Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-862
+
+=== stderr ===
+

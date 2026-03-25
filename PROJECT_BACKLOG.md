@@ -775,8 +775,8 @@ Allowed enum values:
 ### BL-20260325-043
 - title: Validate BL-20260325-042 HTTP 403 authorization hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-042
@@ -784,7 +784,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-042, runs one explicit approval plus one real execute, and records whether runtime now clears the `http_403` automation blocker observed in BL-20260325-041
 - source: `AUTOMATION_ENDPOINT_HTTP403_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming source-side auth-fallback hardening success without live evidence
 - link: /Users/lingguozhong/openclaw-team/POST_HTTP403_HARDENING_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-042 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/79
+- evidence: `POST_HTTP403_HARDENING_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl043-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-ddd178ff3fe9` with explicit approval and one elevated real execute replay; runtime confirmed BL-20260325-042 auth-fallback behavior (primary `http_403` triggered one bounded fallback retry to `https://api.openai.com/v1/chat/completions`), but run still failed before critic dispatch due fallback `tls_eof` plus final primary `http_403`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-044
+- title: Harden multi-endpoint automation runtime policy after BL-20260325-043 mixed auth/transport blocker
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-043
+- start_when: `BL-20260325-043` has completed and confirmed auth-fallback retry now executes but governed run still fails before critic dispatch because primary endpoint remains `http_403` while fallback endpoint fails `tls_eof`
+- done_when: Automation endpoint policy/runtime handling is hardened so governed execute has at least one reliable authorized endpoint path (with deterministic endpoint-order policy and explicit diagnostics), focused tests cover the mixed auth/transport failure path, and one blocker report records the mitigation
+- source: `POST_HTTP403_HARDENING_VALIDATION_REPORT.md` on 2026-03-25 records the new mixed blocker pattern (`primary=http_403`, `fallback=tls_eof`) after BL-20260325-042 behavior activation
+- link: /Users/lingguozhong/openclaw-team/AUTOMATION_MULTI_ENDPOINT_POLICY_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-043 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
