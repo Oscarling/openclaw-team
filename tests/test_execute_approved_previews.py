@@ -3,6 +3,7 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from skills import execute_approved_previews as executor
 
@@ -128,6 +129,87 @@ class CriticVerdictExtractionTests(unittest.TestCase):
             )
             self.assertIn("runner", snapshots[0]["content"])
             self.assertIn("delegate", snapshots[1]["content"])
+
+    def test_build_critic_from_automation_keeps_full_content_under_default_limit(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="execute-approved-previews-") as tmp:
+            repo_root = Path(tmp)
+            runner_path = repo_root / "artifacts" / "scripts" / "pdf_to_excel_ocr_inbox_runner.py"
+            delegate_path = repo_root / "artifacts" / "scripts" / "pdf_to_excel_ocr.py"
+            runner_path.parent.mkdir(parents=True, exist_ok=True)
+            # Size chosen above legacy 12k truncation threshold and below new default limit.
+            large_runner = ("x" * 15050) + "\n"
+            runner_path.write_text(large_runner, encoding="utf-8")
+            delegate_path.write_text("print('delegate')\n", encoding="utf-8")
+
+            critic_task = {
+                "inputs": {
+                    "artifacts": [
+                        {"path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py", "type": "script"},
+                        {"path": "artifacts/scripts/pdf_to_excel_ocr.py", "type": "script"},
+                    ],
+                    "params": {"review_scope": "pair"},
+                },
+                "expected_outputs": [
+                    {"path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md", "type": "review"}
+                ],
+                "constraints": [],
+            }
+            auto_result = {
+                "artifacts": [
+                    {"path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py", "type": "script"}
+                ]
+            }
+
+            original_repo_root = executor.REPO_ROOT
+            try:
+                executor.REPO_ROOT = repo_root
+                updated = executor.build_critic_from_automation(critic_task, auto_result)
+            finally:
+                executor.REPO_ROOT = original_repo_root
+
+            runner_snapshot = updated["inputs"]["params"]["artifact_snapshots"][0]
+            self.assertFalse(runner_snapshot["truncated"])
+            self.assertEqual(runner_snapshot["content"], large_runner)
+
+    def test_build_critic_from_automation_truncates_when_limit_exceeded(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="execute-approved-previews-") as tmp:
+            repo_root = Path(tmp)
+            runner_path = repo_root / "artifacts" / "scripts" / "pdf_to_excel_ocr_inbox_runner.py"
+            delegate_path = repo_root / "artifacts" / "scripts" / "pdf_to_excel_ocr.py"
+            runner_path.parent.mkdir(parents=True, exist_ok=True)
+            runner_path.write_text("abcdefghijklmnopqrstuvwxyz", encoding="utf-8")
+            delegate_path.write_text("print('delegate')\n", encoding="utf-8")
+
+            critic_task = {
+                "inputs": {
+                    "artifacts": [
+                        {"path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py", "type": "script"},
+                        {"path": "artifacts/scripts/pdf_to_excel_ocr.py", "type": "script"},
+                    ],
+                    "params": {"review_scope": "pair"},
+                },
+                "expected_outputs": [
+                    {"path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md", "type": "review"}
+                ],
+                "constraints": [],
+            }
+            auto_result = {
+                "artifacts": [
+                    {"path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py", "type": "script"}
+                ]
+            }
+
+            original_repo_root = executor.REPO_ROOT
+            try:
+                executor.REPO_ROOT = repo_root
+                with mock.patch.object(executor, "MAX_SNAPSHOT_CHARS", 8):
+                    updated = executor.build_critic_from_automation(critic_task, auto_result)
+            finally:
+                executor.REPO_ROOT = original_repo_root
+
+            runner_snapshot = updated["inputs"]["params"]["artifact_snapshots"][0]
+            self.assertTrue(runner_snapshot["truncated"])
+            self.assertEqual(runner_snapshot["content"], "abcdefgh")
 
 
 if __name__ == "__main__":

@@ -20,7 +20,23 @@ from skills.delegate_task import delegate_task
 PREVIEW_DIR = REPO_ROOT / "preview"
 APPROVALS_DIR = REPO_ROOT / "approvals"
 VERDICT_VALUES = {"pass", "fail", "needs_revision"}
-MAX_SNAPSHOT_CHARS = 12000
+DEFAULT_MAX_SNAPSHOT_CHARS = 120000
+MIN_MAX_SNAPSHOT_CHARS = 4096
+MAX_ALLOWED_SNAPSHOT_CHARS = 500000
+
+
+def _resolve_max_snapshot_chars() -> int:
+    raw = os.environ.get("ARGUS_CRITIC_MAX_SNAPSHOT_CHARS", "").strip()
+    if not raw:
+        return DEFAULT_MAX_SNAPSHOT_CHARS
+    try:
+        parsed = int(raw)
+    except Exception:
+        return DEFAULT_MAX_SNAPSHOT_CHARS
+    return max(MIN_MAX_SNAPSHOT_CHARS, min(parsed, MAX_ALLOWED_SNAPSHOT_CHARS))
+
+
+MAX_SNAPSHOT_CHARS = _resolve_max_snapshot_chars()
 
 
 def utc_now() -> str:

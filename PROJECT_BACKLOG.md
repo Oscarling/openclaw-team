@@ -622,8 +622,8 @@ Allowed enum values:
 ### BL-20260325-034
 - title: Harden critic artifact snapshot completeness to avoid truncation-driven validation rejects
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-033
@@ -631,7 +631,24 @@ Allowed enum values:
 - done_when: Critic evidence handoff preserves complete wrapper artifact content (or equivalent complete review context) for generated script reviews, focused tests cover snapshot-size/completeness behavior, and one phase report records the hardening outcome
 - source: `POST_REPORT_FLAG_REALIGNMENT_VALIDATION_REPORT.md` on 2026-03-25 records that fresh governed validation still returns `needs_revision` due critic-side truncated wrapper snapshot evidence
 - link: /Users/lingguozhong/openclaw-team/CRITIC_SNAPSHOT_COMPLETENESS_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260325-033 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/61
+- evidence: `CRITIC_SNAPSHOT_COMPLETENESS_HARDENING_REPORT.md` records hardening in `skills/execute_approved_previews.py` that raises and bounds critic artifact snapshot limits (default 120000 chars with env override), plus focused regressions in `tests/test_execute_approved_previews.py` covering both non-truncation under default policy and deterministic truncation when limits are intentionally lowered
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-035
+- title: Validate BL-20260325-034 critic snapshot completeness hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-034
+- start_when: `BL-20260325-034` is merged so a fresh same-origin governed run can verify whether increased critic snapshot completeness removes truncation-driven `needs_revision` outcomes under real execute
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-034, runs one explicit approval plus one real execute, and records whether critic can now complete full wrapper/delegate review without truncation-driven rejection
+- source: `CRITIC_SNAPSHOT_COMPLETENESS_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming snapshot hardening success without live evidence
+- link: /Users/lingguozhong/openclaw-team/POST_CRITIC_SNAPSHOT_HARDENING_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-034 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

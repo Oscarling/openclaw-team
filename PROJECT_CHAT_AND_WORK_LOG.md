@@ -1279,6 +1279,49 @@ Verification snapshot on 2026-03-25:
   - `runtime_archives/bl033/state/`
   - `runtime_archives/bl033/tmp/`
 
+### 42. Critic Snapshot Completeness Hardening After BL-033
+
+User objective:
+
+- continue after `BL-20260325-033` without mixing live validation into the same
+  phase
+- reduce truncation-driven critic false negatives by improving artifact snapshot
+  completeness at execute-time handoff
+- keep changes minimal, bounded, and test-backed
+
+Main work areas:
+
+- activated `BL-20260325-034` and mirrored it to GitHub issue `#61`
+- updated `skills/execute_approved_previews.py`:
+  - replaced fixed small snapshot cap with bounded policy:
+    - default increased to `120000`
+    - env override `ARGUS_CRITIC_MAX_SNAPSHOT_CHARS`
+    - clamp range `[4096, 500000]`
+- expanded `tests/test_execute_approved_previews.py` with focused cases:
+  - default policy keeps medium-large wrapper content untruncated
+  - explicit low limit still truncates deterministically
+- recorded next fresh governed validation as `BL-20260325-035`
+
+Primary output:
+
+- [CRITIC_SNAPSHOT_COMPLETENESS_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/CRITIC_SNAPSHOT_COMPLETENESS_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-034` completed as a source-side hardening phase
+- critic snapshot handoff now has materially larger default review context with
+  explicit operational bounds
+- phase outcome remains intentionally source-side; runtime closure is deferred
+  to `BL-20260325-035`
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_execute_approved_previews.py` passed
+- `python3 -m unittest -v tests/test_local_inbox_adapter.py` passed
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with `BL-20260325-034` mirrored to
+  issue `#61`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:
