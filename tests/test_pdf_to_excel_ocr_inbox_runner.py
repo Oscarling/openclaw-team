@@ -82,19 +82,43 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
         summary = json.loads(summary_path.read_text(encoding="utf-8"))
         return exit_code, summary, stdout.getvalue()
 
-    def test_dry_run_returns_partial_without_delegation(self) -> None:
+    def test_dry_run_forwards_flag_to_delegate_and_returns_partial(self) -> None:
         input_dir = self._make_input_dir(with_pdf=True)
+        fake_base = self.tmpdir / "fake_pdf_to_excel_ocr_dry_run.py"
+        fake_base.write_text(
+            textwrap.dedent(
+                """\
+                #!/usr/bin/env python3
+                import argparse
+                import json
+
+                parser = argparse.ArgumentParser()
+                parser.add_argument("--input-dir", required=True)
+                parser.add_argument("--output-xlsx", required=True)
+                parser.add_argument("--ocr", default="auto")
+                parser.add_argument("--dry-run", action="store_true")
+                args = parser.parse_args()
+
+                print(json.dumps({"status": "partial", "dry_run": bool(args.dry_run), "total_files": 1}))
+                """
+            ),
+            encoding="utf-8",
+        )
 
         exit_code, summary, _ = self._invoke_main(
             input_dir=input_dir,
-            extra_args=["--dry-run", "true"],
+            extra_args=["--dry-run", "true", "--preferred-base-script", str(fake_base)],
+            reviewed_base_script=fake_base,
         )
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(summary["status"], "partial")
-        self.assertFalse(summary["execution"]["delegated"])
+        self.assertTrue(summary["execution"]["delegated"])
+        self.assertIn("--dry-run", summary["execution"]["command"])
+        self.assertIsInstance(summary["execution"]["delegate_report"], dict)
+        self.assertTrue(summary["execution"]["delegate_report"]["dry_run"])
         self.assertFalse(summary["output"]["exists"])
-        self.assertTrue(any("Dry run requested" in note for note in summary["notes"]))
+        self.assertTrue(any("forwarding --dry-run to delegate" in note for note in summary["notes"]))
 
     def test_zero_pdf_input_short_circuits_to_partial(self) -> None:
         input_dir = self._make_input_dir(with_pdf=False)

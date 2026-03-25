@@ -298,12 +298,6 @@ def main() -> int:
         emit_summary(summary, args.summary_json)
         return 0
 
-    if args.dry_run:
-        summary["status"] = "partial"
-        summary["notes"].append("Dry run requested; no conversion attempted and no XLSX output is claimed.")
-        emit_summary(summary, args.summary_json)
-        return 0
-
     if not base_script.exists():
         summary["notes"].append("Preferred base script was not found; no unsupported fallback conversion was attempted.")
         emit_summary(summary, args.summary_json)
@@ -321,6 +315,9 @@ def main() -> int:
     ]
     if args.ocr:
         cmd.extend(["--ocr", args.ocr])
+    if args.dry_run:
+        cmd.append("--dry-run")
+        summary["notes"].append("Dry run requested; forwarding --dry-run to delegate for end-to-end contract semantics.")
 
     summary["execution"]["delegated"] = True
     summary["execution"]["command"] = cmd
@@ -369,7 +366,18 @@ def main() -> int:
         if candidate in ALLOWED_SUMMARY_STATUSES:
             delegate_status = candidate
 
-    if completed.returncode == 0 and output_exists:
+    if args.dry_run:
+        if completed.returncode == 0:
+            summary["status"] = "partial"
+            if isinstance(delegate_report, dict) and bool(delegate_report.get("dry_run", False)):
+                summary["notes"].append("Delegate report confirmed dry_run=true.")
+            elif isinstance(delegate_report, dict):
+                summary["notes"].append("Delegate report did not attest dry_run=true; preserving partial status conservatively.")
+            else:
+                summary["notes"].append("Delegate did not emit a structured dry-run report; preserving partial status conservatively.")
+        else:
+            summary["notes"].append("Delegate script returned a non-zero exit code during dry-run mode.")
+    elif completed.returncode == 0 and output_exists:
         success_evidence_ok, success_evidence_note = has_strong_delegate_success_evidence(delegate_report)
         if delegate_status == "partial":
             summary["status"] = "partial"
