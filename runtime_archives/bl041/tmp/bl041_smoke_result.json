@@ -1,0 +1,48 @@
+{
+  "status": "done",
+  "fixture": "/Users/lingguozhong/openclaw-team/adapters/samples/trello_card_fixture.json",
+  "mapped_output": "/private/tmp/bl041_mapped.json",
+  "required_env": {
+    "credentials": [
+      "TRELLO_API_KEY",
+      "TRELLO_API_TOKEN"
+    ],
+    "credentials_aliases": [
+      "TRELLO_KEY",
+      "TRELLO_TOKEN"
+    ],
+    "credentials_priority": [
+      "TRELLO_API_KEY/TRELLO_API_TOKEN",
+      "TRELLO_KEY/TRELLO_TOKEN"
+    ],
+    "scope": [
+      "TRELLO_BOARD_ID",
+      "TRELLO_LIST_ID"
+    ],
+    "scope_rule": [
+      "TRELLO_BOARD_ID or TRELLO_LIST_ID (either one)"
+    ]
+  },
+  "smoke_read": {
+    "status": "blocked",
+    "reason": "Read-only Trello request failed before HTTP response: ConnectionError",
+    "error_type": "ConnectionError",
+    "response_preview": "HTTPSConnectionPool(host='api.trello.com', port=443): Max retries exceeded with url: /1/boards/69be462743bfa0038ca10f7a/cards?key=***redacted_key***&token=***redacted_token***&fields=id%2CidShort%2Cname%2Cdesc%2CidList%2CidBoard%2CdateLastActivity%2Clabels&limit=1 (Caused by NameResolutionError(\"HTT",
+    "auth_env": {
+      "selected_names": {
+        "key": "TRELLO_API_KEY",
+        "token": "TRELLO_API_TOKEN"
+      },
+      "priority": "TRELLO_API_* first, fallback to TRELLO_*",
+      "presence": {
+        "TRELLO_API_KEY": "set",
+        "TRELLO_KEY": "set",
+        "TRELLO_API_TOKEN": "set",
+        "TRELLO_TOKEN": "set",
+        "TRELLO_BOARD_ID": "set",
+        "TRELLO_LIST_ID": "missing"
+      }
+    }
+  },
+  "mode": "trello_readonly_prep"
+}

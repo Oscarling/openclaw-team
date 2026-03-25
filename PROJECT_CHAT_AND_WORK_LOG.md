@@ -1682,6 +1682,72 @@ Verification snapshot on 2026-03-25:
 - `python3 scripts/backlog_sync.py` passed with `BL-20260325-040` mirrored to
   issue `#73`
 
+### 49. Fresh Governed Validation After BL-040 Wrapper Success-Evidence Hardening
+
+User objective:
+
+- continue from `BL-20260325-040` with one fresh same-origin governed runtime
+  validation
+- verify whether wrapper success-evidence contract hardening can clear the
+  latest blocker cluster under real execute
+- preserve runtime evidence and keep workflow-gated delivery
+
+Main work areas:
+
+- activated `BL-20260325-041` and mirrored it to GitHub issue `#75`
+- ran live Trello read-only smoke for origin
+  `trello:69c24cd3c1a2359ddd7a1bf8`
+  - first sandboxed call blocked by DNS policy
+  - elevated rerun passed with `read_count=1`
+- generated one regeneration token:
+  - `regen-20260325-bl041-001`
+- created inbox payload from `smoke_read.mapped_preview`, ingested once, and
+  created fresh preview:
+  - `preview-trello-69c24cd3c1a2359ddd7a1bf8-c19150aca7c7`
+- wrote explicit approval and ran real execute in `test_mode=off`
+  - first sandboxed execute blocked before dispatch due Docker client access
+  - elevated replay (`--allow-replay`) reached automation dispatch but failed
+    with endpoint authorization `HTTP 403: Forbidden` (`class=http_403`)
+- archived runtime outputs under `runtime_archives/bl041/` before restoring
+  tracked baseline state
+- recorded next blocker phase as `BL-20260325-042`
+
+Primary output:
+
+- [POST_WRAPPER_SUCCESS_EVIDENCE_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_WRAPPER_SUCCESS_EVIDENCE_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-041` completed as a governed validation phase
+- `BL-20260325-040` runtime effect remained unverified in this run because
+  automation failed before artifact generation and critic review:
+  - automation task `AUTO-20260325-861`: `failed`
+  - failure class: `http_403`
+  - endpoint: `https://fast.vpsairobot.com/v1/chat/completions`
+  - critic task `CRITIC-20260325-281`: not dispatched
+- dominant blocker shifted to automation endpoint authorization/runtime access,
+  tracked as `BL-20260325-042`
+
+Verification snapshot on 2026-03-25:
+
+- smoke (elevated) returned `status=pass` with `read_count=1`
+- `python3 skills/ingest_tasks.py --once` returned:
+  - `processed = 1`
+  - `preview_created = 1`
+- sandboxed execute returned Docker-client initialization rejection
+- elevated replay execute returned:
+  - `status = rejected`
+  - decision reason includes:
+    `AUTO-20260325-861`, `class=http_403`, `HTTP 403: Forbidden`
+- worker outcomes:
+  - automation `AUTO-20260325-861`: `failed`
+  - critic `CRITIC-20260325-281`: not dispatched
+- runtime archive preserved under:
+  - `runtime_archives/bl041/artifacts/`
+  - `runtime_archives/bl041/runtime/`
+  - `runtime_archives/bl041/state/`
+  - `runtime_archives/bl041/tmp/`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:

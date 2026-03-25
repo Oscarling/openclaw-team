@@ -1,0 +1,21 @@
+{
+  "status": "done",
+  "processed": 1,
+  "rejected": 0,
+  "duplicate_skipped": 0,
+  "preview_created": 1,
+  "inbox_claimed": 1,
+  "processing_recovered": 0,
+  "test_mode": "success",
+  "results": [
+    {
+      "status": "processed",
+      "decision": "preview_created_pending_approval",
+      "decision_reason": "preview_created; waiting_for_explicit_approval",
+      "file": "/Users/lingguozhong/openclaw-team/processed/trello-69c24cd3c1a2359ddd7a1bf8-regen-20260325-bl041-001.json",
+      "result_sidecar": "/Users/lingguozhong/openclaw-team/processed/trello-69c24cd3c1a2359ddd7a1bf8-regen-20260325-bl041-001.json.result.json",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-c19150aca7c7",
+      "preview_file": "/Users/lingguozhong/openclaw-team/preview/preview-trello-69c24cd3c1a2359ddd7a1bf8-c19150aca7c7.json"
+    }
+  ]
+}
