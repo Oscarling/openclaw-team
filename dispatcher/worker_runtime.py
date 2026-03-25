@@ -3,6 +3,7 @@ import json
 import os
 import re
 import time
+import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -142,6 +143,30 @@ def llm_max_retries():
         DEFAULT_LLM_MAX_RETRIES,
         minimum=1,
     )
+
+
+def llm_fallback_chat_urls():
+    raw = first_env("ARGUS_LLM_FALLBACK_CHAT_URLS")
+    if not raw:
+        return []
+    urls = []
+    for item in raw.split(","):
+        value = item.strip()
+        if value:
+            urls.append(value)
+    return urls
+
+
+def llm_fallback_api_bases():
+    raw = first_env("ARGUS_LLM_FALLBACK_API_BASES")
+    if not raw:
+        return []
+    bases = []
+    for item in raw.split(","):
+        value = item.strip()
+        if value:
+            bases.append(value)
+    return bases
 
 
 # ==========================================
@@ -309,12 +334,56 @@ def load_test_mode_payload(task, worker):
     return build_test_mode_payload(task, worker, scenario or "success")
 
 
+def llm_candidate_chat_urls(llm_settings):
+    candidates = [llm_settings["chat_url"]]
+    candidates.extend(llm_fallback_chat_urls())
+    candidates.extend(normalize_chat_endpoint(base) for base in llm_fallback_api_bases())
+    deduped = []
+    seen = set()
+    for url in candidates:
+        if url in seen:
+            continue
+        seen.add(url)
+        deduped.append(url)
+    return deduped
+
+
+def classify_llm_call_error(error):
+    status_code = None
+    error_text = str(error or "")
+    if isinstance(error, urllib.error.URLError) and getattr(error, "reason", None) is not None:
+        error_text = f"{error_text} | reason={error.reason}"
+    if isinstance(error, urllib.error.HTTPError):
+        status_code = int(error.code)
+
+    lowered = error_text.lower()
+    if "unexpected_eof_while_reading" in lowered or "eof occurred in violation of protocol" in lowered:
+        return "tls_eof", True
+    if "timed out" in lowered:
+        return "timeout", True
+    if "name or service not known" in lowered or "name resolution" in lowered or "temporary failure in name resolution" in lowered:
+        return "dns_resolution", True
+    if "connection reset" in lowered:
+        return "connection_reset", True
+    if "connection refused" in lowered:
+        return "connection_refused", True
+    if "remote end closed connection" in lowered:
+        return "remote_closed", True
+    if status_code is not None:
+        retryable_codes = {408, 409, 425, 429, 500, 502, 503, 504}
+        return f"http_{status_code}", status_code in retryable_codes
+    if isinstance(error, TimeoutError):
+        return "timeout", True
+    return "unknown", True
+
+
 # ==========================================
 # LLM Call with retry
 # ==========================================
 def call_llm(system_prompt, user_prompt, worker, llm_settings):
     timeout_seconds = llm_timeout_seconds()
     max_attempts = llm_max_retries()
+    chat_urls = llm_candidate_chat_urls(llm_settings)
     payload = {
         "model": llm_settings["model_name"],
         "messages": [
@@ -327,11 +396,13 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
         "Content-Type": "application/json",
         "Authorization": f"Bearer {llm_settings['api_key']}",
         "User-Agent": HTTP_USER_AGENT,
+        "Connection": "close",
     }
     for attempt in range(max_attempts):
+        chat_url = chat_urls[attempt % len(chat_urls)]
         try:
             req = urllib.request.Request(
-                llm_settings["chat_url"],
+                chat_url,
                 data=json.dumps(payload).encode("utf-8"),
                 headers=headers,
                 method="POST",
@@ -345,10 +416,26 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
             content = choices[0].get("message", {}).get("content", "")
             return content
         except Exception as e:
-            log(worker, "WARN", f"LLM call failed attempt {attempt + 1}: {e}")
-            if attempt == max_attempts - 1:
-                raise
-            time.sleep(2 ** attempt)
+            error_class, retryable = classify_llm_call_error(e)
+            log(
+                worker,
+                "WARN",
+                (
+                    f"LLM call failed attempt {attempt + 1}/{max_attempts} "
+                    f"(endpoint={chat_url}, class={error_class}, retryable={retryable}): {e}"
+                ),
+            )
+            if attempt == max_attempts - 1 or not retryable:
+                raise RuntimeError(
+                    (
+                        f"LLM call exhausted (attempts={attempt + 1}/{max_attempts}, "
+                        f"class={error_class}, endpoint={chat_url}, retryable={retryable}): {e}"
+                    )
+                ) from e
+            delay_seconds = 2 ** attempt
+            next_url = chat_urls[(attempt + 1) % len(chat_urls)]
+            log(worker, "INFO", f"Retrying LLM call in {delay_seconds}s (next_endpoint={next_url})")
+            time.sleep(delay_seconds)
     return ""
 
 

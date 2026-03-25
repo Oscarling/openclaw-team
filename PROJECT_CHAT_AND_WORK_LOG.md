@@ -1509,6 +1509,64 @@ Verification snapshot on 2026-03-25:
   - `runtime_archives/bl037/state/`
   - `runtime_archives/bl037/tmp/`
 
+### 46. Automation Transport Reliability Hardening After BL-037
+
+User objective:
+
+- continue after `BL-20260325-037` without mixing a new live validation into
+  the same phase
+- harden automation transport behavior for TLS EOF failures observed at runtime
+- make retry outcomes and terminal failures deterministic and diagnosable
+- keep the change minimal and test-backed
+
+Main work areas:
+
+- activated `BL-20260325-038` and mirrored it to GitHub issue `#69`
+- updated `dispatcher/worker_runtime.py`:
+  - added deterministic transport error classification for retry decisions and
+    diagnostics
+  - enriched retry logs with:
+    - attempt counters
+    - endpoint
+    - error class
+    - retryable flag
+  - terminal failures now raise structured exhaustion errors with class and
+    endpoint context
+  - added deterministic endpoint rotation across candidate chat endpoints
+  - added `Connection: close` request header to reduce stale-connection
+    sensitivity
+  - added env-supported fallback endpoint inputs:
+    - `ARGUS_LLM_FALLBACK_CHAT_URLS`
+    - `ARGUS_LLM_FALLBACK_API_BASES`
+- updated `skills/delegate_task.py` to pass fallback endpoint env into worker
+  containers
+- expanded `tests/test_argus_hardening.py` with focused regressions:
+  - TLS EOF on primary endpoint rotates to fallback and succeeds
+  - exhausted TLS EOF retries emit classified terminal error
+- recorded next governed validation phase as `BL-20260325-039`
+
+Primary output:
+
+- [AUTOMATION_ENDPOINT_SSL_RELIABILITY_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/AUTOMATION_ENDPOINT_SSL_RELIABILITY_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-038` completed as a source-side blocker-hardening phase
+- automation transport path now provides deterministic classification and
+  endpoint-aware retry diagnostics
+- optional fallback endpoint rotation is now available without code changes
+  (via env configuration)
+- runtime closure is intentionally deferred to governed validation phase
+  `BL-20260325-039`
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_argus_hardening.py` passed
+- `python3 -m unittest -v tests/test_backlog_sync.py` passed
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with `BL-20260325-038` mirrored to
+  issue `#69`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:

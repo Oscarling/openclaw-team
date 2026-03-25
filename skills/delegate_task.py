@@ -285,6 +285,8 @@ def build_worker_env(worker):
     )
     env["ARGUS_LLM_TIMEOUT_SECONDS"] = first_env("ARGUS_LLM_TIMEOUT_SECONDS")
     env["ARGUS_LLM_MAX_RETRIES"] = first_env("ARGUS_LLM_MAX_RETRIES")
+    env["ARGUS_LLM_FALLBACK_CHAT_URLS"] = first_env("ARGUS_LLM_FALLBACK_CHAT_URLS")
+    env["ARGUS_LLM_FALLBACK_API_BASES"] = first_env("ARGUS_LLM_FALLBACK_API_BASES")
     return {key: value for key, value in env.items() if value is not None}
 
 
