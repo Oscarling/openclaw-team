@@ -1,59 +1,17 @@
 # Review: pdf_to_excel_ocr_inbox_runner.py
 
 ## Scope
-
-Reviewed `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` using the provided artifact snapshot. The review covers whether the script aligns with the stated best-effort, evidence-backed, read-only preview smoke intent and whether its behavior is appropriately constrained and reviewable.
+- Evaluated `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` as the Trello inbox wrapper.
+- Reviewed the paired delegate `artifacts/scripts/pdf_to_excel_ocr.py` to confirm end-to-end readonly behavior and evidence reporting.
 
 ## Findings
-
-1. **Positive: constrained wrapper design**
-   - The script acts as a wrapper around a preferred base script instead of re-implementing OCR/conversion logic.
-   - It emits a structured JSON summary with discovery, execution, output, and notes fields.
-   - It avoids claiming success unless both the delegate exits with code `0` and the expected `.xlsx` file exists.
-   - It explicitly refuses mismatched output extensions and avoids unsupported fallback conversion when the base script is missing.
-
-2. **Positive: evidence-oriented reporting**
-   - The summary records discovered PDFs, command execution details, delegate stdout/stderr, and output file presence.
-   - Dry-run mode is clearly represented and documented in notes.
-   - This is consistent with the instruction not to claim OCR success without evidence.
-
-3. **Issue: success on dry-run may be misleading for automation contracts**
-   - When `--dry-run` is used, the script returns `status = "success"` without producing an XLSX output.
-   - While the note says no conversion was attempted, some pipelines may interpret `success` as artifact production success.
-   - A more contract-safe approach would be a distinct partial/reviewable status in the summary model, or clearer separation between runner success and conversion success.
-
-4. **Issue: runner status model is narrower than review contract expectations**
-   - Internally the script only emits `success` or `failed`.
-   - The surrounding review contract explicitly recognizes `success`, `partial`, and `failed`.
-   - Because this wrapper is for best-effort evidence-backed execution, lack of a `partial` state reduces fidelity for reviewable intermediate outcomes.
-
-5. **Issue: delegate path resolution may be brittle**
-   - `preferred_base_script` is resolved relative to `Path.cwd()` when not absolute.
-   - That can work in repository-root execution, but is fragile if invoked from another working directory.
-   - A more robust implementation would resolve relative to the runner file or repository root explicitly.
-
-6. **Issue: no explicit readonly guarantee beyond metadata intent**
-   - The script carries readonly/source metadata in the summary but does not enforce or validate that the delegated base script itself is readonly.
-   - Since it shells out to another script, the readonly guarantee is only indirect unless the base script is also reviewed/controlled.
-
-7. **Issue: limited validation of discovered-input edge cases**
-   - If zero PDFs are discovered, the script still delegates rather than failing fast or marking a reviewable partial condition.
-   - That may be acceptable if the base script handles it, but the wrapper could provide clearer evidence-backed behavior by short-circuiting with an explicit note.
+1. ✅ **Delegate confinement & provenance enforcement** – The runner resolves the preferred base script via `resolve_delegate_script` and `validate_delegate_script`, refusing to run unless it matches the reviewed `pdf_to_excel_ocr.py` inside the repo. This protects the readonly preview boundary and disallows untracked scripts.
+2. ✅ **Approved output boundary** – `resolve_output_path` verifies that every requested XLSX lands under `artifacts/outputs`, and the wrapper aborts otherwise. This prevents accidental writes outside the governed sandbox while still allowing local artifacts.
+3. ✅ **Evidence-backed success gating** – The wrapper only marks "success" when the delegate report (sidecar or stdout) proves a real XLSX (`excel_written`/`output_exists`/size) with `status=success` and no failed/partial files. Otherwise it downgrades to `partial` or `failed`, which aligns with the best-effort, evidence-backed Trello contract.
+4. ✅ **Delegate reporting quality** – `pdf_to_excel_ocr.py` always emits a structured JSON summary (and optional sidecar), distinguishes extraction vs. export phases, tracks per-file results, and honors dry-run/"no input" scenarios. These semantics match the wrapper’s expectations (e.g., `extraction_status`, `export_status`, dry-run handling), ensuring consistent auditability.
 
 ## Verdict
-
-**needs_revision**
+**pass**
 
 ## Rationale
-
-The artifact is credible and mostly aligned with a best-effort, evidence-backed wrapper pattern. It shows good discipline in summary generation, refusal to fabricate success, and reuse of an existing repository script.
-
-However, it does not fully meet a strong review pass because:
-
-- dry-run returns `success` without output creation,
-- there is no `partial` status for honest reviewable intermediate outcomes,
-- base script resolution is environment-sensitive,
-- readonly behavior is not enforced beyond intent metadata,
-- zero-input handling could be clearer and more deterministic.
-
-These are revision-level concerns rather than total failure because the script is functional, reviewable, and cautious about unsupported claims.
+The wrapper and delegate operate as a coherent readonly pipeline: the runner constrains delegate selection and output paths, forwards parameters deterministically, and only escalates to success when the delegate proves an actual XLSX artifact with zero outstanding failures. The delegate provides the necessary structured evidence, per-file accounting, and dry-run safeguards. No blocking correctness or contract violations were found, so the pair is approved for the described best-effort Trello smoke use case.

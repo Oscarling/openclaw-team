@@ -4022,3 +4022,48 @@ Verification snapshot on 2026-03-25:
   - runtime auto-fallback chat -> responses was triggered
   - terminal class: `http_502`
   - terminal endpoint: `https://aixj.vip/v1/responses`
+
+### 79. BL-069 Completion via Backup Provider Health Check and Governed Replay Pass
+
+User objective:
+
+- retest with updated Desktop file `备用key`
+- verify whether runtime/provider availability blocker can be cleared
+
+Main work areas:
+
+- re-read `~/Desktop/备用key.rtf` and detected updated provider endpoint
+  `https://fast.vpsairobot.com`
+- executed provider health probes on responses API:
+  - `https://fast.vpsairobot.com/v1/responses`
+  - `https://fast.vpsairobot.com/responses`
+  - both returned `200` for `gpt-5.4` and `gpt-5-codex`
+- ran one elevated governed replay on approved preview
+  `preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153` using backup provider
+- archived automation + critic evidence bundle under `runtime_archives/bl069/`
+- updated backlog evidence and marked `BL-20260325-069` as `done`
+
+Primary output:
+
+- [AUTOMATION_RUNTIME_PROVIDER_AVAILABILITY_FAILOVER_COMPLETION_REPORT.md](/Users/lingguozhong/openclaw-team/AUTOMATION_RUNTIME_PROVIDER_AVAILABILITY_FAILOVER_COMPLETION_REPORT.md)
+
+Key result:
+
+- execute replay returned `processed` with `critic_verdict=pass`
+- runtime path reached critic handoff successfully:
+  - automation: `AUTO-20260325-874` (`success`)
+  - critic: `CRITIC-20260325-290` (`success`, verdict `pass`)
+- `BL-20260325-069` done condition is now satisfied
+
+Verification snapshot on 2026-03-25:
+
+- probe:
+  - `gpt-5.4 | https://fast.vpsairobot.com/v1/responses -> 200`
+  - `gpt-5.4 | https://fast.vpsairobot.com/responses -> 200`
+  - `gpt-5-codex | https://fast.vpsairobot.com/v1/responses -> 200`
+  - `gpt-5-codex | https://fast.vpsairobot.com/responses -> 200`
+- elevated replay returned:
+  - `status = done`
+  - `processed = 1`
+  - `rejected = 0`
+  - `decision_reason = critic_verdict=pass`
