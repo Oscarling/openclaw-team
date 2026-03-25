@@ -1,0 +1,21 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-25T23:43:50.163086Z
+finished_at: 2026-03-25T23:48:02.328708Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-25T23:43:50.436863Z] [automation] [INFO] Worker started using endpoint https://fast.vpsairobot.com/v1/responses (wire_api=responses, timeout=180s, attempts=2, timeout_recovery_retries=1)
+[2026-03-25T23:45:55.702124Z] [automation] [WARN] LLM call failed attempt 1/2 (endpoint=https://fast.vpsairobot.com/v1/responses, class=http_524, retryable=True): HTTP Error 524: <none>
+[2026-03-25T23:45:55.702377Z] [automation] [INFO] Retrying LLM call in 1s (next_endpoint=https://fast.vpsairobot.com/responses)
+[2026-03-25T23:48:02.182513Z] [automation] [WARN] LLM call failed attempt 2/2 (endpoint=https://fast.vpsairobot.com/responses, class=http_524, retryable=True): HTTP Error 524: <none>
+[2026-03-25T23:48:02.182718Z] [automation] [ERROR] Task failed AUTO-20260325-874: LLM call exhausted (attempts=2/2, class=http_524, endpoint=https://fast.vpsairobot.com/responses, retryable=True): HTTP Error 524: <none>
+[2026-03-25T23:48:02.190272Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+

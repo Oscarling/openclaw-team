@@ -4286,3 +4286,48 @@ Verification snapshot on 2026-03-25:
   - `runtime_archives/bl073/runtime/automation-runtime.attempt-1.profile.log`
   - shows timeout sequence `1/3`, `2/3`, timeout-recovery `3/4`, and terminal
     timeout `4/4`
+
+### 84. BL-074 Fast-Provider Timeout Stability Validation (Tuned Replays)
+
+User objective:
+
+- continue strict global process and keep no-drift execution
+- reduce/clear timeout blocker after BL-073 auth alignment
+
+Main work areas:
+
+- activated `BL-20260325-074` and mirrored it to issue `#141`
+- ran two elevated governed replay attempts under aligned fast-provider profile
+  with tuned timeout/model variants:
+  - Run A: model `gpt-5.4`, `ARGUS_LLM_TIMEOUT_SECONDS=300`,
+    `ARGUS_LLM_MAX_RETRIES=2`
+  - Run B: model `gpt-5`, `ARGUS_LLM_TIMEOUT_SECONDS=180`,
+    `ARGUS_LLM_MAX_RETRIES=2`
+- both runs were executed via profile-selected config (no desktop extraction in
+  execute step), with artifacts archived under `runtime_archives/bl074/`
+- produced BL-074 validation report and advanced backlog:
+  - `BL-20260325-074` marked `done`
+  - queued next blocker `BL-20260325-075` (`planned` / `next`)
+
+Primary output:
+
+- [POST_FAST_PROVIDER_TIMEOUT_STABILITY_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_FAST_PROVIDER_TIMEOUT_STABILITY_VALIDATION_REPORT.md)
+
+Key result:
+
+- auth blocker remained cleared
+- both tuned runs still ended with terminal `http_524` at fallback endpoint
+  `https://fast.vpsairobot.com/responses`
+- model switch (`gpt-5.4` -> `gpt-5`) did not remove `http_524`, indicating the
+  blocker is not model-specific in current setup
+- runtime startup logs still reported `timeout_recovery_retries=1` despite
+  execute env exporting `ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES=0`, indicating
+  timeout-recovery knob propagation gap at delegate env boundary
+
+Verification snapshot on 2026-03-25:
+
+- Run A result: `runtime_archives/bl074/tmp/bl074_execute_replay_tuned.json`
+- Run B result: `runtime_archives/bl074/tmp/bl074_execute_replay_gpt5.json`
+- runtime log: `runtime_archives/bl074/runtime/automation-runtime.attempt-1.gpt5.log`
+- both runs: `status=done`, `processed=0`, `rejected=1`, terminal
+  `class=http_524`

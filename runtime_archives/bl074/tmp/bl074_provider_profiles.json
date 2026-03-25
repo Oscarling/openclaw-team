@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "bl074_fast_timeout_tuned": {
+      "api_base": "https://fast.vpsairobot.com/v1",
+      "model_name": "gpt-5.4",
+      "wire_api": "responses",
+      "api_key_env": "OPENAI_API_KEY_BACKUP",
+      "fallback_response_urls": [
+        "https://fast.vpsairobot.com/responses"
+      ]
+    }
+  }
+}
