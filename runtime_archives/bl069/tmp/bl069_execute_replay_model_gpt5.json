@@ -1,0 +1,18 @@
+{
+  "status": "done",
+  "processed": 0,
+  "rejected": 1,
+  "skipped": 0,
+  "test_mode": "off",
+  "allow_replay": true,
+  "results": [
+    {
+      "status": "rejected",
+      "decision_reason": "Automation task failed: {\"task_id\": \"AUTO-20260325-874\", \"worker\": \"automation\", \"status\": \"failed\", \"summary\": \"Worker execution failed\", \"artifacts\": [], \"errors\": [\"LLM call exhausted (attempts=3/3, class=http_502, endpoint=https://aixj.vip/responses, retryable=True): HTTP Error 502: Bad Gateway\"], \"metadata\": {}, \"duration_ms\": 77460, \"timestamp\": \"2026-03-25T12:47:38.986175Z\"}",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.json",
+      "result_sidecar": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.json",
+      "critic_verdict": "needs_revision"
+    }
+  ]
+}

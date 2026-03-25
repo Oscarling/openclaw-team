@@ -1,0 +1,26 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-25T12:46:21.278399Z
+finished_at: 2026-03-25T12:47:39.166296Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-25T12:46:21.526785Z] [automation] [INFO] Worker started using endpoint https://aixj.vip/v1/chat/completions (wire_api=auto, timeout=120s, attempts=3, timeout_recovery_retries=1)
+[2026-03-25T12:46:22.668674Z] [automation] [INFO] Chat-completions returned http_400; retrying with responses wire API candidates (count=2).
+[2026-03-25T12:46:27.122626Z] [automation] [WARN] LLM call failed attempt 1/3 (endpoint=https://aixj.vip/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:46:27.122747Z] [automation] [INFO] Retrying LLM call in 1s (next_endpoint=https://aixj.vip/v1/chat/completions)
+[2026-03-25T12:47:28.874199Z] [automation] [INFO] Chat-completions returned http_400; retrying with responses wire API candidates (count=2).
+[2026-03-25T12:47:31.732675Z] [automation] [WARN] LLM call failed attempt 2/3 (endpoint=https://aixj.vip/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:47:31.732759Z] [automation] [INFO] Retrying LLM call in 2s (next_endpoint=https://aixj.vip/v1/chat/completions)
+[2026-03-25T12:47:34.292027Z] [automation] [INFO] Chat-completions returned http_400; retrying with responses wire API candidates (count=2).
+[2026-03-25T12:47:38.983414Z] [automation] [WARN] LLM call failed attempt 3/3 (endpoint=https://aixj.vip/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:47:38.983533Z] [automation] [ERROR] Task failed AUTO-20260325-874: LLM call exhausted (attempts=3/3, class=http_502, endpoint=https://aixj.vip/responses, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:47:38.991975Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+

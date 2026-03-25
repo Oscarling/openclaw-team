@@ -1227,7 +1227,7 @@ Allowed enum values:
 - source: `AUTOMATION_RUNTIME_ENDPOINT_PROTOCOL_COMPATIBILITY_HARDENING_REPORT.md` on 2026-03-25 confirms next blocker class is provider responses-endpoint availability/failover reliability
 - link: /Users/lingguozhong/openclaw-team/AUTOMATION_RUNTIME_PROVIDER_AVAILABILITY_FAILOVER_ITERATION1_REPORT.md
 - issue: https://github.com/Oscarling/openclaw-team/issues/131
-- evidence: Iteration-1 hardening adds multi-candidate responses failover for `wire_api=auto` and new regression `test_call_llm_auto_fallback_tries_response_candidates_until_success`; live governed replay evidence under `runtime_archives/bl069/` confirms candidate routing (`count=2`) but still terminates with provider `http_502` at `https://aixj.vip/responses`, including a higher-retry replay (`ARGUS_LLM_MAX_RETRIES=6`) with the same terminal class
+- evidence: Iteration-1 hardening adds multi-candidate responses failover for `wire_api=auto` and new regression `test_call_llm_auto_fallback_tries_response_candidates_until_success`; live governed replay evidence under `runtime_archives/bl069/` confirms candidate routing (`count=2`) but still terminates with provider `http_502` at `https://aixj.vip/responses`, including both a higher-retry replay (`ARGUS_LLM_MAX_RETRIES=6`) and a model probe (`OPENAI_MODEL_NAME=gpt-5`) with the same terminal class
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
 

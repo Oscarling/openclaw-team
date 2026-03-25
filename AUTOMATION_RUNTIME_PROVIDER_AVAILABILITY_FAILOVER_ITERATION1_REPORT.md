@@ -44,6 +44,11 @@ Live governed replay evidence (preview
   - status: `rejected`
   - terminal class: `http_502`
   - terminal endpoint: `https://aixj.vip/responses`
+- replay C (model probe `OPENAI_MODEL_NAME=gpt-5`):
+  - archive: `runtime_archives/bl069/tmp/bl069_execute_replay_model_gpt5.json`
+  - status: `rejected`
+  - terminal class: `http_502`
+  - terminal endpoint: `https://aixj.vip/responses`
 
 Runtime log evidence confirms compatibility routing is active:
 
@@ -56,4 +61,6 @@ Runtime log evidence confirms compatibility routing is active:
 - Protocol-layer compatibility remains healthy (chat mismatch no longer terminal)
 - Responses failover candidate routing is active and tested
 - Dominant blocker remains upstream provider responses availability (`http_502`)
+- quick model probe (`gpt-5`) produced the same terminal class, so this is not
+  isolated to the current model name
 - `BL-20260325-069` is **not done yet** (critic handoff still not reached)

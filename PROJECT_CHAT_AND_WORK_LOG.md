@@ -3935,6 +3935,8 @@ Main work areas:
   `preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153`:
   - default retry policy
   - higher retry policy (`ARGUS_LLM_MAX_RETRIES=6`)
+- executed one additional model-availability probe replay
+  (`OPENAI_MODEL_NAME=gpt-5`) to validate whether `http_502` is model-specific
 - archived evidence under `runtime_archives/bl069/`
 
 Primary output:
@@ -3959,6 +3961,10 @@ Verification snapshot on 2026-03-25:
   - terminal class: `http_502`
   - terminal endpoint: `https://aixj.vip/responses`
 - elevated replay B (`ARGUS_LLM_MAX_RETRIES=6`) returned:
+  - `status = rejected`
+  - terminal class: `http_502`
+  - terminal endpoint: `https://aixj.vip/responses`
+- elevated replay C (`OPENAI_MODEL_NAME=gpt-5`) returned:
   - `status = rejected`
   - terminal class: `http_502`
   - terminal endpoint: `https://aixj.vip/responses`
