@@ -138,7 +138,11 @@ def load_delegate_report_file(path: Path) -> dict[str, Any] | None:
     return None
 
 
-def has_strong_delegate_success_evidence(delegate_report: dict[str, Any] | None) -> tuple[bool, str | None]:
+def has_strong_delegate_success_evidence(
+    delegate_report: dict[str, Any] | None,
+    *,
+    ocr_mode: str,
+) -> tuple[bool, str | None]:
     if not isinstance(delegate_report, dict):
         return False, "Delegate did not emit a structured JSON report for success evidence."
 
@@ -170,6 +174,18 @@ def has_strong_delegate_success_evidence(delegate_report: dict[str, Any] | None)
     output_size_bytes = delegate_report.get("output_size_bytes")
     if not isinstance(output_size_bytes, int) or output_size_bytes < 1:
         return False, "Delegate report did not attest a non-empty output_size_bytes value."
+
+    normalized_ocr_mode = str(ocr_mode).strip().lower()
+    delegate_ocr_runtime_status = str(delegate_report.get("ocr_runtime_status", "")).strip().lower()
+    if normalized_ocr_mode in {"auto", "on"} and delegate_ocr_runtime_status in {"partial", "blocked"}:
+        return (
+            False,
+            (
+                "Delegate OCR runtime is not fully available "
+                f"(ocr_runtime_status={delegate_ocr_runtime_status}); "
+                "wrapper keeps partial status to avoid overclaiming OCR completeness."
+            ),
+        )
 
     return True, None
 
@@ -258,13 +274,15 @@ def main() -> int:
         },
         "readonly_attestation": {
             "mode": "local_filesystem_delegate_only",
+            "readonly_scope": "no_external_writeback",
             "network_calls_performed": False,
             "trello_write_performed": False,
+            "local_filesystem_writes_allowed": not args.dry_run,
             "readonly_label_present": readonly_labels_present,
             "delegate_restricted_to_reviewed_script": delegate_contract_error is None,
             "statement": (
-                "Wrapper performs local file discovery and local delegate execution only; "
-                "it performs no Trello writeback and no direct network calls."
+                "Readonly semantics in this wrapper mean no external/Trello writeback. "
+                "When dry_run=false, local filesystem artifacts may still be written."
             ),
         },
         "discovery": {
@@ -296,6 +314,9 @@ def main() -> int:
 
     if not readonly_labels_present:
         summary["notes"].append("Readonly label is missing; preserving conservative local-only execution contract.")
+    summary["notes"].append(
+        "Readonly semantics here mean no external writeback; local filesystem outputs may be written when dry_run=false."
+    )
 
     if output_xlsx.suffix.lower() != ".xlsx":
         summary["notes"].append("Requested output path does not end with .xlsx; refusing mismatched workbook contract.")
@@ -416,7 +437,10 @@ def main() -> int:
         else:
             summary["notes"].append("Delegate script returned a non-zero exit code during dry-run mode.")
     elif completed.returncode == 0 and output_exists:
-        success_evidence_ok, success_evidence_note = has_strong_delegate_success_evidence(delegate_report)
+        success_evidence_ok, success_evidence_note = has_strong_delegate_success_evidence(
+            delegate_report,
+            ocr_mode=args.ocr,
+        )
         if delegate_status == "partial":
             summary["status"] = "partial"
             summary["notes"].append("Delegate reported a reviewable partial outcome; preserving partial status.")

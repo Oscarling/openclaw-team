@@ -111,6 +111,10 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         self.assertIn("status partial instead of escalating to failed", contract_hints["delegate_partial_evidence"])
         self.assertIn("next-step guidance", contract_hints["delegate_partial_evidence"])
         self.assertIn("explicit timeout", contract_hints["delegate_timeout"])
+        self.assertIn("no external/Trello writeback", contract_hints["readonly_semantics"])
+        self.assertIn("dry_run=false", contract_hints["readonly_semantics"])
+        self.assertIn("ocr_runtime_status", contract_hints["ocr_sufficiency"])
+        self.assertIn("blocked/partial", contract_hints["ocr_sufficiency"])
         self.assertIn(
             "status/total_files/status_counter/dry_run",
             contract_hints["delegate_report_schema"],
@@ -195,6 +199,18 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
                 for item in auto_task["constraints"]
             )
         )
+        self.assertTrue(
+            any(
+                "no external writeback" in item
+                for item in auto_task["constraints"]
+            )
+        )
+        self.assertTrue(
+            any(
+                "ocr_runtime_status as blocked/partial" in item
+                for item in auto_task["constraints"]
+            )
+        )
         self.assertIn(
             "If output_xlsx ends with .xlsx, the artifact must preserve true XLSX output semantics or fail honestly before writing a mismatched format.",
             auto_task["acceptance_criteria"],
@@ -233,6 +249,14 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         )
         self.assertIn(
             "Wrapper preflight PDF discovery semantics remain aligned with delegate discovery semantics to keep evidence counts consistent.",
+            auto_task["acceptance_criteria"],
+        )
+        self.assertIn(
+            "Readonly semantics are explicit as no external writeback, and runtime summary wording does not overclaim strict filesystem readonly when dry_run=false.",
+            auto_task["acceptance_criteria"],
+        )
+        self.assertIn(
+            "Wrapper success is conservative when OCR mode is auto/on and delegate reports ocr_runtime_status as blocked/partial.",
             auto_task["acceptance_criteria"],
         )
         self.assertIn(

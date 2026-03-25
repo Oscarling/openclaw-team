@@ -336,6 +336,57 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
         self.assertTrue(summary["output"]["exists"])
         self.assertTrue(any("at least one processed PDF file" in note for note in summary["notes"]))
 
+    def test_ocr_runtime_blocked_keeps_wrapper_partial_even_with_success_attestation(self) -> None:
+        input_dir = self._make_input_dir(with_pdf=True)
+        fake_base = self.tmpdir / "fake_pdf_to_excel_ocr_ocr_blocked.py"
+        fake_base.write_text(
+            textwrap.dedent(
+                """\
+                #!/usr/bin/env python3
+                import argparse
+                import json
+                from pathlib import Path
+
+                parser = argparse.ArgumentParser()
+                parser.add_argument("--input-dir", required=True)
+                parser.add_argument("--output-xlsx", required=True)
+                parser.add_argument("--ocr", default="auto")
+                parser.add_argument("--report-json", default="")
+                args = parser.parse_args()
+
+                output = Path(args.output_xlsx)
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_bytes(b"fake-xlsx")
+                payload = {
+                    "status": "success",
+                    "total_files": 1,
+                    "status_counter": {"failed": 0, "partial": 0},
+                    "dry_run": False,
+                    "excel_written": True,
+                    "output_exists": True,
+                    "output_size_bytes": 9,
+                    "ocr_runtime_status": "blocked",
+                }
+                if args.report_json:
+                    Path(args.report_json).write_text(json.dumps(payload), encoding="utf-8")
+                print(json.dumps(payload))
+                """
+            ),
+            encoding="utf-8",
+        )
+
+        exit_code, summary, _ = self._invoke_main(
+            input_dir=input_dir,
+            extra_args=["--preferred-base-script", str(fake_base)],
+            reviewed_base_script=fake_base,
+        )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(summary["status"], "partial")
+        self.assertTrue(
+            any("ocr_runtime_status=blocked" in note for note in summary["notes"])
+        )
+
     def test_timeout_returns_failed_with_explicit_note(self) -> None:
         input_dir = self._make_input_dir(with_pdf=True)
         fake_base = self.tmpdir / "fake_pdf_to_excel_ocr_timeout.py"
@@ -370,8 +421,10 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("run_id", summary)
         self.assertEqual(summary["readonly_attestation"]["mode"], "local_filesystem_delegate_only")
+        self.assertEqual(summary["readonly_attestation"]["readonly_scope"], "no_external_writeback")
         self.assertFalse(summary["readonly_attestation"]["network_calls_performed"])
         self.assertFalse(summary["readonly_attestation"]["trello_write_performed"])
+        self.assertTrue(summary["readonly_attestation"]["local_filesystem_writes_allowed"])
         self.assertTrue(summary["readonly_attestation"]["readonly_label_present"])
         self.assertIn("delegate_path_resolution", summary["provenance"])
         self.assertIn("input_dir_resolution", summary["provenance"])
