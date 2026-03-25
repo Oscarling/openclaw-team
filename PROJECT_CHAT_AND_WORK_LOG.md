@@ -2251,6 +2251,70 @@ Verification snapshot on 2026-03-25:
 - `python3 -m unittest -v tests/test_argus_hardening.py` passed `15/15`
 - `python3 scripts/backlog_lint.py` passed
 - `python3 scripts/backlog_sync.py` passed with BL-054 issue mirror to `#100`
+
+### 63. Fresh Governed Validation After BL-054 Timeout/Runtime Reliability Hardening
+
+User objective:
+
+- continue phase-by-phase without drift
+- validate BL-054 automation timeout/runtime reliability hardening on one fresh
+  same-origin governed candidate
+
+Main work areas:
+
+- activated `BL-20260325-055` and mirrored it to issue `#102`
+- executed governed validation pipeline with token
+  `regen-20260325-bl055-001`:
+  - sandbox Trello smoke (captured network-policy block evidence)
+  - elevated Trello smoke (live pass + mapped preview)
+  - generated regeneration payload and ingest once -> fresh preview
+    `preview-trello-69c24cd3c1a2359ddd7a1bf8-206313e36a04`
+  - explicit approval write
+  - sandbox execute (captured Docker init block evidence)
+  - elevated replay with runtime env injection reached automation and critic
+- captured and archived real runtime evidence confirming BL-054 behavior:
+  - automation and critic startup logs include
+    `timeout_recovery_retries=1` (new BL-054 setting active)
+  - run progressed beyond pre-critic timeout exhaustion to critic dispatch
+  - automation task completed (`AUTO-20260325-868`)
+  - critic task completed (`CRITIC-20260325-284`)
+- final execute decision remained `rejected` due critic verdict
+  `needs_revision` on wrapper/delegate dry-run propagation semantics
+- produced validation report and queued next blocker phase for dry-run
+  propagation hardening (`BL-20260325-056`)
+
+Primary output:
+
+- [POST_AUTOMATION_TIMEOUT_RUNTIME_RELIABILITY_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_AUTOMATION_TIMEOUT_RUNTIME_RELIABILITY_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-055` is complete as a governed validation phase
+- BL-054 hardening is validated as active in runtime and no longer blocks at
+  pre-critic timeout exhaustion
+- blocker focus shifted from timeout reliability to critic-raised dry-run
+  propagation semantics (`BL-20260325-056`)
+
+Verification snapshot on 2026-03-25:
+
+- `python3 scripts/backlog_lint.py` passed after BL-055 activation
+- `python3 scripts/backlog_sync.py` passed with BL-055 issue mirror to `#102`
+- sandbox smoke evidence captured as blocked (`ConnectionError` /
+  `NameResolutionError`)
+- elevated smoke passed with `read_count = 1`
+- `python3 skills/ingest_tasks.py --once --test-mode success` returned:
+  - `processed = 1`
+  - `duplicate_skipped = 0`
+  - `preview_created = 1`
+- elevated execute replay returned:
+  - `status = rejected`
+  - `decision_reason = critic_verdict=needs_revision`
+  - `critic_verdict = needs_revision`
+- final preview state:
+  - `approved = true`
+  - `execution.status = rejected`
+  - `execution.executed = true`
+  - `execution.attempts = 2`
 - automation worker:
   - task `AUTO-20260325-854`
   - `status = success`

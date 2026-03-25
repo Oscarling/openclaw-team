@@ -1,0 +1,194 @@
+{
+  "task_id": "AUTO-20260325-868",
+  "worker": "automation",
+  "status": "success",
+  "created_at": "2026-03-25T08:25:38.062336Z",
+  "updated_at": "2026-03-25T08:27:16.993477Z",
+  "retries": 0,
+  "max_retries": 0,
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "success",
+      "retryable": false,
+      "error": null,
+      "runtime_log": "/Users/lingguozhong/openclaw-team/workspaces/automation/AUTO-20260325-868/runtime.attempt-1.log",
+      "exit_code": 0,
+      "timed_out": false,
+      "wait_error": null,
+      "output_path": "/Users/lingguozhong/openclaw-team/workspaces/automation/AUTO-20260325-868/output.json",
+      "started_at": "2026-03-25T08:25:38.063646Z",
+      "finished_at": "2026-03-25T08:27:16.971351Z"
+    }
+  ],
+  "task_dir": "/Users/lingguozhong/openclaw-team/workspaces/automation/AUTO-20260325-868",
+  "payload": {
+    "task_id": "AUTO-20260325-868",
+    "worker": "automation",
+    "task_type": "generate_script",
+    "objective": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt). Generate exactly one runnable local helper script artifact for a best-effort PDF extraction/conversion attempt using the provided parameters. Prefer reusing the repository's existing inbox runner and reviewed PDF-to-Excel implementation when they already satisfy the request instead of re-implementing the pipeline from scratch.",
+    "inputs": {
+      "params": {
+        "input_dir": "~/Desktop/pdf样本",
+        "output_xlsx": "artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx",
+        "ocr": "auto",
+        "dry_run": false,
+        "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+        "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+        "description": "Purpose: | Controlled Trello live preview smoke for openclaw-team. | Expected behavior: | - read-only Trello ingest | - preview creation smoke only | - no business execution claim | - no Trello writeback expected in this step | Traceability: | - backlog: BL-20260324-014 | - blocker context: BL-20260324-015 | - created_by: Oscarling | - created_at: 2026-03-24 Asia/Shanghai | Note: | This card is only for governed smoke verification and should remain open until the smoke is finished.",
+        "labels": [
+          "best_effort",
+          "evidence_backed",
+          "readonly",
+          "reviewable",
+          "trello"
+        ],
+        "preferred_wrapper_script": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+        "preferred_base_script": "artifacts/scripts/pdf_to_excel_ocr.py",
+        "reference_docs": [
+          "artifacts/docs/pdf_to_excel_ocr_usage.md",
+          "artifacts/reviews/pdf_to_excel_ocr_review.md"
+        ],
+        "contract_hints": {
+          "output_format_fidelity": "If output_xlsx ends with .xlsx, produce a real XLSX workbook container or fail honestly before writing mismatched text/XML/CSV content to a .xlsx path.",
+          "path_portability": "Use the provided input_dir parameter as runtime input. Do not hardcode a user-home or absolute input path when params already declare the path.",
+          "traceability": "Preserve meaningful description context from the external input; do not collapse it to a heading fragment such as Purpose:.",
+          "reuse_preference": "Prefer reusing artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py as the wrapper baseline and artifacts/scripts/pdf_to_excel_ocr.py as the reviewed delegate when compatible, so workbook semantics and contract behavior stay aligned with repository evidence.",
+          "outcome_status_model": "Use the reviewable status model success/partial/failed. Dry-run requests or zero-PDF discovery should resolve to partial rather than claiming success without an output artifact.",
+          "delegate_resolution": "If preferred_base_script is relative, resolve it from the repository or script location instead of Path.cwd() so behavior stays portable across shells and CI.",
+          "reviewed_delegate_contract": "For readonly reviewable preview flows, delegate only to the reviewed repository script artifacts/scripts/pdf_to_excel_ocr.py or fail honestly instead of broadening behavior through an arbitrary helper.",
+          "delegate_success_evidence": "Do not treat zero exit code plus output-file existence as sufficient wrapper success evidence on their own. Prefer a structured delegate report that confirms a real success outcome before the wrapper claims success. Require delegate status=success, total_files>=1, dry_run=false, status_counter.failed=0, status_counter.partial=0, and explicit output attestation fields excel_written=true, output_exists=true, and output_size_bytes>0. Apply these gates only when wrapper status is success.",
+          "delegate_partial_evidence": "For best-effort readonly flows, if delegate status is partial and structured evidence is present, keep wrapper status partial instead of escalating to failed solely because success-only gates are unmet. Surface explicit limitations and next-step guidance in wrapper output.",
+          "delegate_timeout": "Bound delegate subprocess execution with an explicit timeout and report timeout as an honest failed/partial outcome instead of allowing smoke automation to hang indefinitely.",
+          "runtime_summary": "The generated script should emit a structured summary of what it produced so later review can inspect behavior without guessing.",
+          "delegate_report_schema": "Treat delegate JSON report fields status/total_files/status_counter/dry_run as the canonical evidence contract. Do not require undeclared processed_files/succeeded_files/failed_files counters.",
+          "delegate_report_handoff": "When the delegate prints a JSON report to stdout, parse that JSON directly instead of relying only on sidecar-report file path discovery.",
+          "delegate_report_flag_contract": "If wrapper passes a sidecar report path to the reviewed delegate, use the reviewed delegate CLI flag --report-json (or another explicitly supported alias). Do not invent undeclared flags such as --report-file.",
+          "dry_run_semantics": "If wrapper dry-run short-circuits before delegate execution, keep execution.delegated=false and report partial honestly. If wrapper does delegate under dry-run, pass through --dry-run explicitly.",
+          "pdf_discovery_consistency": "Keep wrapper preflight PDF discovery semantics aligned with the reviewed delegate (for example recursive vs non-recursive), so wrapper evidence and delegated execution count the same candidate set."
+        }
+      }
+    },
+    "expected_outputs": [
+      {
+        "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+        "type": "script"
+      }
+    ],
+    "constraints": [
+      "Follow the local inbox normalized request",
+      "Do not claim unsupported runtime dependencies",
+      "Keep output deterministic and executable",
+      "Produce only the expected script artifact",
+      "Prefer honest, reviewable intermediate behavior over unsupported OCR claims",
+      "If the requested output path ends with .xlsx, do not write non-XLSX text/XML/CSV content to that path.",
+      "Do not hardcode an input directory when the task params already provide input_dir.",
+      "Preserve meaningful traceability from the incoming description instead of collapsing it to a heading fragment.",
+      "Prefer wrapping or adapting artifacts/scripts/pdf_to_excel_ocr.py when that existing repo script already matches the requested behavior.",
+      "When artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py already exists, prefer updating that reviewed wrapper baseline instead of rewriting a new control flow from scratch.",
+      "If dry_run is true or no PDFs are discovered, report a reviewable partial outcome instead of claiming success without an XLSX artifact.",
+      "Resolve relative delegate script paths from the repository or script location, not from Path.cwd().",
+      "For readonly reviewable preview flows, only delegate to the reviewed repository script artifacts/scripts/pdf_to_excel_ocr.py unless failing honestly.",
+      "Do not claim wrapper success from exit code plus output existence alone when the reviewed delegate report does not provide strong enough success evidence.",
+      "When wrapper reports success, enforce delegate evidence gates: status=success, total_files>=1, dry_run=false, status_counter.failed=0, status_counter.partial=0, excel_written=true, output_exists=true, and output_size_bytes>0.",
+      "If delegate reports partial with structured evidence in readonly best-effort mode, keep wrapper status partial (not failed) and include explicit limitations with next-step guidance.",
+      "Use delegate report fields status/total_files/status_counter/dry_run as canonical evidence; do not require undeclared per-counter keys.",
+      "When delegate emits JSON to stdout, parse that report directly instead of depending only on sidecar report-file discovery.",
+      "When wrapper passes a sidecar report path to the reviewed delegate, use --report-json exactly unless the reviewed delegate explicitly supports another alias.",
+      "If wrapper supports dry-run short-circuit semantics, keep execution.delegated=false and preserve partial status honestly.",
+      "Keep wrapper PDF discovery semantics aligned with reviewed delegate discovery semantics to avoid preflight/execution evidence drift.",
+      "Use an explicit timeout on delegate subprocess execution so the smoke wrapper cannot hang indefinitely."
+    ],
+    "priority": "medium",
+    "source": {
+      "kind": "local_inbox",
+      "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+      "inbox_file": "trello-69c24cd3c1a2359ddd7a1bf8-regen-20260325-bl055-001.json",
+      "received_at": "2026-03-25T08:24:36.136522Z",
+      "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+      "labels": [
+        "best_effort",
+        "evidence_backed",
+        "readonly",
+        "reviewable",
+        "trello"
+      ],
+      "provider": "trello",
+      "mode": "readonly",
+      "card_id": "69c24cd3c1a2359ddd7a1bf8",
+      "board_id": "69be462743bfa0038ca10f7a",
+      "list_id": "69be462743bfa0038ca10f8f",
+      "regeneration_token": "regen-20260325-bl055-001"
+    },
+    "acceptance_criteria": [
+      "Produce the expected script artifact at expected_outputs[0].path",
+      "Script behavior remains runnable, deterministic, and reviewable",
+      "If output_xlsx ends with .xlsx, the artifact must preserve true XLSX output semantics or fail honestly before writing a mismatched format.",
+      "Artifact behavior remains parameter-driven for input_dir and output_xlsx rather than hardcoding unrelated local defaults.",
+      "Dry-run or zero-input behavior is represented as a reviewable partial outcome instead of artifact-production success.",
+      "Relative preferred_base_script resolution remains portable and does not depend on Path.cwd().",
+      "Wrapper success requires stronger delegate evidence than zero exit code plus a non-empty output file alone.",
+      "Wrapper success attestation requires delegate fields excel_written=true, output_exists=true, output_size_bytes>0, and status_counter.partial/status_counter.failed equal to 0.",
+      "Contract-compliant delegate partial outcomes remain partial with explicit limitations and next-step guidance, rather than being escalated to failed by success-only gates.",
+      "Wrapper evidence logic remains compatible with delegate JSON fields status/total_files/status_counter/dry_run.",
+      "Delegate report handoff can consume JSON printed to stdout without relying exclusively on report sidecar file discovery.",
+      "Wrapper/delegate sidecar report handoff remains CLI-compatible by using --report-json (or another explicitly supported delegate alias).",
+      "Dry-run semantics remain explicit: short-circuit stays partial with no delegated execution, or delegated dry-run is passed through honestly.",
+      "Wrapper preflight PDF discovery semantics remain aligned with delegate discovery semantics to keep evidence counts consistent.",
+      "Delegate execution is bounded by an explicit timeout and reports timeout honestly."
+    ],
+    "metadata": {
+      "integration_phase": "8B",
+      "pipeline": "inbox->adapter->manager->automation->critic",
+      "request_type": "pdf_to_excel_ocr",
+      "payload_hash": "206313e36a04deabc3b8cd0e231d341e7db47e853be5f3377cf807150fb7c357",
+      "regeneration_token": "regen-20260325-bl055-001",
+      "labels": [
+        "best_effort",
+        "evidence_backed",
+        "readonly",
+        "reviewable",
+        "trello"
+      ],
+      "external_metadata": {
+        "source_system": "trello",
+        "card_id": "69c24cd3c1a2359ddd7a1bf8",
+        "card_short_id": 7,
+        "board_id": "69be462743bfa0038ca10f7a",
+        "list_id": "69be462743bfa0038ca10f8f",
+        "date_last_activity": "2026-03-24T08:35:56.234Z",
+        "readonly_mapped_at": "2026-03-25T08:23:52.677844Z",
+        "contract_profile": "best_effort_evidence_backed",
+        "ocr_claim_policy": "do_not_claim_success_without_evidence",
+        "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable",
+        "regeneration_token": "regen-20260325-bl055-001"
+      },
+      "automation_contract_profile": "narrow_script_artifact_with_repo_reuse_and_reviewable_runner_contract"
+    }
+  },
+  "result": {
+    "task_id": "AUTO-20260325-868",
+    "worker": "automation",
+    "status": "success",
+    "summary": "Generated exactly one runnable helper script artifact that wraps the reviewed PDF-to-Excel delegate with portable path resolution, preflight PDF discovery, dry-run/zero-input partial handling, explicit timeout control, stdout/sidecar JSON report parsing, success evidence gates, and structured reviewable summary output.",
+    "artifacts": [
+      {
+        "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+        "type": "script"
+      }
+    ],
+    "timestamp": "2026-03-25T08:27:16.821051Z",
+    "duration_ms": 98478,
+    "notes": [
+      "The script is parameter-driven and uses the provided input_dir and output_xlsx values as defaults while remaining overridable from the CLI.",
+      "It preserves readonly/best-effort reviewable semantics by delegating only to the reviewed repository script when available and by keeping dry-run or zero-PDF discovery outcomes as partial.",
+      "It enforces stronger success attestation than subprocess exit code plus output existence alone."
+    ],
+    "metadata": {
+      "task_id": "AUTO-20260325-868",
+      "worker": "automation",
+      "artifact_count": 1,
+      "expected_output_path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py"
+    }
+  }
+}
