@@ -377,6 +377,18 @@ def classify_llm_call_error(error):
     return "unknown", True
 
 
+def should_retry_auth_failure_on_fallback(error_class, attempt, max_attempts, chat_urls):
+    if error_class not in {"http_401", "http_403"}:
+        return False
+    if attempt >= max_attempts - 1:
+        return False
+    if len(chat_urls) < 2:
+        return False
+    current_url = chat_urls[attempt % len(chat_urls)]
+    next_url = chat_urls[(attempt + 1) % len(chat_urls)]
+    return current_url != next_url
+
+
 # ==========================================
 # LLM Call with retry
 # ==========================================
@@ -398,6 +410,7 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
         "User-Agent": HTTP_USER_AGENT,
         "Connection": "close",
     }
+    auth_fallback_retry_used = False
     for attempt in range(max_attempts):
         chat_url = chat_urls[attempt % len(chat_urls)]
         try:
@@ -417,21 +430,34 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
             return content
         except Exception as e:
             error_class, retryable = classify_llm_call_error(e)
+            auth_fallback_retry = False
+            if not retryable and not auth_fallback_retry_used:
+                auth_fallback_retry = should_retry_auth_failure_on_fallback(
+                    error_class=error_class,
+                    attempt=attempt,
+                    max_attempts=max_attempts,
+                    chat_urls=chat_urls,
+                )
+                if auth_fallback_retry:
+                    auth_fallback_retry_used = True
+            effective_retryable = retryable or auth_fallback_retry
             log(
                 worker,
                 "WARN",
                 (
                     f"LLM call failed attempt {attempt + 1}/{max_attempts} "
-                    f"(endpoint={chat_url}, class={error_class}, retryable={retryable}): {e}"
+                    f"(endpoint={chat_url}, class={error_class}, retryable={effective_retryable}): {e}"
                 ),
             )
-            if attempt == max_attempts - 1 or not retryable:
+            if attempt == max_attempts - 1 or not effective_retryable:
                 raise RuntimeError(
                     (
                         f"LLM call exhausted (attempts={attempt + 1}/{max_attempts}, "
-                        f"class={error_class}, endpoint={chat_url}, retryable={retryable}): {e}"
+                        f"class={error_class}, endpoint={chat_url}, retryable={effective_retryable}): {e}"
                     )
                 ) from e
+            if auth_fallback_retry:
+                log(worker, "INFO", "Authorization failure detected; retrying once on fallback endpoint.")
             delay_seconds = 2 ** attempt
             next_url = chat_urls[(attempt + 1) % len(chat_urls)]
             log(worker, "INFO", f"Retrying LLM call in {delay_seconds}s (next_endpoint={next_url})")

@@ -545,6 +545,103 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertEqual([timeout for _url, timeout in calls], [120, 120])
         self.assertEqual(json.loads(content)["status"], "success")
 
+    def test_call_llm_rotates_to_fallback_chat_url_after_http_403_on_primary(self) -> None:
+        calls: list[tuple[str, int]] = []
+
+        class FakeResponse:
+            def __enter__(self) -> "FakeResponse":
+                return self
+
+            def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+                return False
+
+            def read(self) -> bytes:
+                payload = {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps({"status": "success", "summary": "ok"})
+                            }
+                        }
+                    ]
+                }
+                return json.dumps(payload).encode("utf-8")
+
+        class AuthFallbackOpener:
+            def open(self, req: Any, timeout: int | None = None) -> FakeResponse:
+                calls.append((req.full_url, timeout or 0))
+                if "primary.invalid" in req.full_url:
+                    raise urllib.error.HTTPError(req.full_url, 403, "Forbidden", None, None)
+                return FakeResponse()
+
+        with mock.patch.object(worker_runtime, "NO_PROXY_OPENER", AuthFallbackOpener()):
+            with mock.patch.object(worker_runtime.time, "sleep", return_value=None):
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "ARGUS_LLM_MAX_RETRIES": "2",
+                        "ARGUS_LLM_FALLBACK_CHAT_URLS": "https://fallback.invalid/v1/chat/completions",
+                    },
+                    clear=False,
+                ):
+                    content = worker_runtime.call_llm(
+                        "system",
+                        "user",
+                        "automation",
+                        {
+                            "api_key": "key",
+                            "api_base": "https://primary.invalid/v1",
+                            "chat_url": "https://primary.invalid/v1/chat/completions",
+                            "model_name": "demo-model",
+                        },
+                    )
+
+        self.assertEqual(
+            [url for url, _timeout in calls],
+            [
+                "https://primary.invalid/v1/chat/completions",
+                "https://fallback.invalid/v1/chat/completions",
+            ],
+        )
+        self.assertEqual([timeout for _url, timeout in calls], [120, 120])
+        self.assertEqual(json.loads(content)["status"], "success")
+
+    def test_call_llm_http_403_without_fallback_remains_non_retryable(self) -> None:
+        attempts = {"count": 0}
+
+        class AlwaysForbiddenOpener:
+            def open(self, req: Any, timeout: int | None = None) -> Any:  # noqa: ARG002
+                attempts["count"] += 1
+                raise urllib.error.HTTPError(req.full_url, 403, "Forbidden", None, None)
+
+        with mock.patch.object(worker_runtime, "NO_PROXY_OPENER", AlwaysForbiddenOpener()):
+            with mock.patch.object(worker_runtime.time, "sleep", return_value=None):
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "ARGUS_LLM_MAX_RETRIES": "3",
+                        "ARGUS_LLM_FALLBACK_CHAT_URLS": "",
+                    },
+                    clear=False,
+                ):
+                    with self.assertRaises(RuntimeError) as ctx:
+                        worker_runtime.call_llm(
+                            "system",
+                            "user",
+                            "automation",
+                            {
+                                "api_key": "key",
+                                "api_base": "https://primary.invalid/v1",
+                                "chat_url": "https://primary.invalid/v1/chat/completions",
+                                "model_name": "demo-model",
+                            },
+                        )
+
+        message = str(ctx.exception)
+        self.assertIn("class=http_403", message)
+        self.assertIn("attempts=1/3", message)
+        self.assertEqual(attempts["count"], 1)
+
     def test_call_llm_raises_classified_tls_error_after_exhaustion(self) -> None:
         class AlwaysFailOpener:
             def open(self, req: Any, timeout: int | None = None) -> Any:  # noqa: ARG002
