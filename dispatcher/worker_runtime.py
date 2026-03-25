@@ -113,13 +113,37 @@ DEFAULT_ARTIFACT_TYPE = "doc"
 TEST_MODE_ENV = "ARGUS_TEST_MODE"
 TEST_SCENARIO_ENV = "ARGUS_TEST_SCENARIO"
 TEST_RESPONSE_FILE_ENV = "ARGUS_TEST_LLM_RESPONSE_FILE"
+ALLOWED_WIRE_APIS = {"chat_completions", "responses", "auto"}
+DEFAULT_WIRE_API = "auto"
 
 
 def normalize_chat_endpoint(api_base):
     base = api_base.rstrip("/")
+    if base.endswith("/responses"):
+        base = base[: -len("/responses")]
     if base.endswith("/chat/completions"):
         return base
     return f"{base}/chat/completions"
+
+
+def normalize_responses_endpoint(api_base):
+    base = api_base.rstrip("/")
+    if base.endswith("/chat/completions"):
+        base = base[: -len("/chat/completions")]
+    if base.endswith("/responses"):
+        return base
+    return f"{base}/responses"
+
+
+def normalize_wire_api(value):
+    normalized = str(value or "").strip().lower().replace("-", "_")
+    aliases = {
+        "chat": "chat_completions",
+        "chat_completions": "chat_completions",
+        "responses": "responses",
+        "auto": "auto",
+    }
+    return aliases.get(normalized, DEFAULT_WIRE_API)
 
 
 def get_llm_settings():
@@ -138,10 +162,21 @@ def get_llm_settings():
         ("openai_model_name", "model_name"),
         ("OPENAI_MODEL_NAME", "MODEL_NAME", "LLM_MODEL_NAME", "LLM_MODEL", "MODEL"),
     )
+    configured_wire_api = normalize_wire_api(
+        read_secret("openai_wire_api", "wire_api")
+        or first_env("ARGUS_LLM_WIRE_API", "OPENAI_WIRE_API", "WIRE_API")
+        or DEFAULT_WIRE_API
+    )
+    chat_url = normalize_chat_endpoint(api_base)
+    responses_url = normalize_responses_endpoint(api_base)
+    endpoint_url = responses_url if configured_wire_api == "responses" else chat_url
     return {
         "api_key": api_key,
         "api_base": api_base,
-        "chat_url": normalize_chat_endpoint(api_base),
+        "wire_api": configured_wire_api,
+        "chat_url": chat_url,
+        "responses_url": responses_url,
+        "endpoint_url": endpoint_url,
         "model_name": model_name,
     }
 
@@ -172,6 +207,18 @@ def llm_timeout_recovery_retries():
 
 def llm_fallback_chat_urls():
     raw = first_env("ARGUS_LLM_FALLBACK_CHAT_URLS")
+    if not raw:
+        return []
+    urls = []
+    for item in raw.split(","):
+        value = item.strip()
+        if value:
+            urls.append(value)
+    return urls
+
+
+def llm_fallback_response_urls():
+    raw = first_env("ARGUS_LLM_FALLBACK_RESPONSE_URLS")
     if not raw:
         return []
     urls = []
@@ -359,10 +406,20 @@ def load_test_mode_payload(task, worker):
     return build_test_mode_payload(task, worker, scenario or "success")
 
 
-def llm_candidate_chat_urls(llm_settings):
-    candidates = [llm_settings["chat_url"]]
-    candidates.extend(llm_fallback_chat_urls())
-    candidates.extend(normalize_chat_endpoint(base) for base in llm_fallback_api_bases())
+def llm_candidate_urls(llm_settings):
+    configured_wire_api = normalize_wire_api(llm_settings.get("wire_api", DEFAULT_WIRE_API))
+    primary_endpoint = llm_settings.get("endpoint_url") or llm_settings.get("chat_url")
+    if not isinstance(primary_endpoint, str) or not primary_endpoint.strip():
+        raise RuntimeError("LLM settings missing primary endpoint URL")
+
+    candidates = [primary_endpoint]
+    if configured_wire_api == "responses":
+        candidates.extend(llm_fallback_response_urls())
+        candidates.extend(normalize_responses_endpoint(base) for base in llm_fallback_api_bases())
+    else:
+        candidates.extend(llm_fallback_chat_urls())
+        candidates.extend(normalize_chat_endpoint(base) for base in llm_fallback_api_bases())
+
     deduped = []
     seen = set()
     for url in candidates:
@@ -371,6 +428,84 @@ def llm_candidate_chat_urls(llm_settings):
         seen.add(url)
         deduped.append(url)
     return deduped
+
+
+def infer_wire_api_for_endpoint(endpoint, configured_wire_api):
+    if configured_wire_api in {"chat_completions", "responses"}:
+        return configured_wire_api
+    if str(endpoint).rstrip("/").endswith("/responses"):
+        return "responses"
+    return "chat_completions"
+
+
+def build_chat_payload(model_name, system_prompt, user_prompt):
+    return {
+        "model": model_name,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        "response_format": {"type": "json_object"},
+    }
+
+
+def build_responses_payload(model_name, system_prompt, user_prompt):
+    return {
+        "model": model_name,
+        "instructions": system_prompt,
+        "input": user_prompt,
+    }
+
+
+def extract_content_from_chat_result(result):
+    choices = result.get("choices", [])
+    if not choices:
+        raise RuntimeError("No choices returned")
+    content = choices[0].get("message", {}).get("content", "")
+    if not isinstance(content, str) or not content.strip():
+        raise RuntimeError("No message content returned")
+    return content
+
+
+def extract_content_from_responses_result(result):
+    output_text = result.get("output_text")
+    if isinstance(output_text, str) and output_text.strip():
+        return output_text
+
+    output_items = result.get("output")
+    if not isinstance(output_items, list):
+        raise RuntimeError("No output_text returned from responses API")
+
+    chunks = []
+    for item in output_items:
+        if not isinstance(item, dict):
+            continue
+        content_list = item.get("content")
+        if isinstance(content_list, list):
+            for content_item in content_list:
+                if not isinstance(content_item, dict):
+                    continue
+                text = content_item.get("text")
+                if isinstance(text, str) and text.strip():
+                    chunks.append(text)
+    if chunks:
+        return "\n".join(chunks)
+    raise RuntimeError("No usable text returned from responses API")
+
+
+def call_llm_once(endpoint_url, wire_api, payload, headers, timeout_seconds):
+    req = urllib.request.Request(
+        endpoint_url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers=headers,
+        method="POST",
+    )
+    with NO_PROXY_OPENER.open(req, timeout=timeout_seconds) as resp:
+        raw = resp.read().decode("utf-8")
+        result = json.loads(raw)
+    if wire_api == "responses":
+        return extract_content_from_responses_result(result)
+    return extract_content_from_chat_result(result)
 
 
 def classify_llm_call_error(error):
@@ -443,15 +578,8 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
     timeout_seconds = llm_timeout_seconds()
     max_attempts = llm_max_retries()
     timeout_recovery_retries_remaining = llm_timeout_recovery_retries()
-    chat_urls = llm_candidate_chat_urls(llm_settings)
-    payload = {
-        "model": llm_settings["model_name"],
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        "response_format": {"type": "json_object"},
-    }
+    endpoint_urls = llm_candidate_urls(llm_settings)
+    configured_wire_api = normalize_wire_api(llm_settings.get("wire_api", DEFAULT_WIRE_API))
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {llm_settings['api_key']}",
@@ -461,31 +589,64 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
     auth_fallback_retry_used = False
     attempt = 0
     while attempt < max_attempts:
-        chat_url = chat_urls[attempt % len(chat_urls)]
+        endpoint_url = endpoint_urls[attempt % len(endpoint_urls)]
+        wire_api = infer_wire_api_for_endpoint(endpoint_url, configured_wire_api)
+        if wire_api == "responses":
+            payload = build_responses_payload(llm_settings["model_name"], system_prompt, user_prompt)
+        else:
+            payload = build_chat_payload(llm_settings["model_name"], system_prompt, user_prompt)
         try:
-            req = urllib.request.Request(
-                chat_url,
-                data=json.dumps(payload).encode("utf-8"),
+            return call_llm_once(
+                endpoint_url=endpoint_url,
+                wire_api=wire_api,
+                payload=payload,
                 headers=headers,
-                method="POST",
+                timeout_seconds=timeout_seconds,
             )
-            with NO_PROXY_OPENER.open(req, timeout=timeout_seconds) as resp:
-                raw = resp.read().decode("utf-8")
-                result = json.loads(raw)
-            choices = result.get("choices", [])
-            if not choices:
-                raise RuntimeError("No choices returned")
-            content = choices[0].get("message", {}).get("content", "")
-            return content
         except Exception as e:
             error_class, retryable = classify_llm_call_error(e)
+
+            # Automatic compatibility fallback: if chat-completions fails with
+            # HTTP 400, retry once against the responses wire API endpoint for
+            # the same base URL before regular retry backoff.
+            if (
+                configured_wire_api == "auto"
+                and wire_api == "chat_completions"
+                and error_class == "http_400"
+            ):
+                responses_url = normalize_responses_endpoint(endpoint_url)
+                if responses_url != endpoint_url:
+                    log(
+                        worker,
+                        "INFO",
+                        (
+                            "Chat-completions returned http_400; retrying once with "
+                            f"responses wire API (endpoint={responses_url})."
+                        ),
+                    )
+                    try:
+                        response_payload = build_responses_payload(
+                            llm_settings["model_name"], system_prompt, user_prompt
+                        )
+                        return call_llm_once(
+                            endpoint_url=responses_url,
+                            wire_api="responses",
+                            payload=response_payload,
+                            headers=headers,
+                            timeout_seconds=timeout_seconds,
+                        )
+                    except Exception as responses_error:
+                        e = responses_error
+                        error_class, retryable = classify_llm_call_error(e)
+                        endpoint_url = responses_url
+
             auth_fallback_retry = False
             if not retryable and not auth_fallback_retry_used:
                 auth_fallback_retry = should_retry_auth_failure_on_fallback(
                     error_class=error_class,
                     attempt=attempt,
                     max_attempts=max_attempts,
-                    chat_urls=chat_urls,
+                    chat_urls=endpoint_urls,
                 )
                 if auth_fallback_retry:
                     auth_fallback_retry_used = True
@@ -513,28 +674,28 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
                 "WARN",
                 (
                     f"LLM call failed attempt {attempt + 1}/{max_attempts} "
-                    f"(endpoint={chat_url}, class={error_class}, retryable={effective_retryable}): {e}"
+                    f"(endpoint={endpoint_url}, class={error_class}, retryable={effective_retryable}): {e}"
                 ),
             )
             if attempt == max_attempts - 1 or not effective_retryable:
                 raise RuntimeError(
                     (
                         f"LLM call exhausted (attempts={attempt + 1}/{max_attempts}, "
-                        f"class={error_class}, endpoint={chat_url}, retryable={effective_retryable}): {e}"
+                        f"class={error_class}, endpoint={endpoint_url}, retryable={effective_retryable}): {e}"
                     )
                 ) from e
             if auth_fallback_retry:
                 log(worker, "INFO", "Authorization failure detected; retrying once on fallback endpoint.")
-                next_chat_urls = remove_endpoint_for_current_call(chat_urls, chat_url)
-                if next_chat_urls != chat_urls:
-                    chat_urls = next_chat_urls
+                next_chat_urls = remove_endpoint_for_current_call(endpoint_urls, endpoint_url)
+                if next_chat_urls != endpoint_urls:
+                    endpoint_urls = next_chat_urls
                     log(
                         worker,
                         "INFO",
-                        f"Quarantined endpoint for current call due to authorization failure: {chat_url}",
+                        f"Quarantined endpoint for current call due to authorization failure: {endpoint_url}",
                     )
             delay_seconds = 2 ** attempt
-            next_url = chat_urls[(attempt + 1) % len(chat_urls)]
+            next_url = endpoint_urls[(attempt + 1) % len(endpoint_urls)]
             log(worker, "INFO", f"Retrying LLM call in {delay_seconds}s (next_endpoint={next_url})")
             time.sleep(delay_seconds)
             attempt += 1
@@ -933,8 +1094,9 @@ def run_worker(task_dir=None, worker_override=None, base_dir=None, llm_override=
                     worker,
                     "INFO",
                     "Worker started using endpoint "
-                    f"{llm_settings['chat_url']} "
-                    f"(timeout={llm_timeout_seconds()}s, attempts={llm_max_retries()}, "
+                    f"{llm_settings.get('endpoint_url', llm_settings.get('chat_url', ''))} "
+                    f"(wire_api={llm_settings.get('wire_api', DEFAULT_WIRE_API)}, "
+                    f"timeout={llm_timeout_seconds()}s, attempts={llm_max_retries()}, "
                     f"timeout_recovery_retries={llm_timeout_recovery_retries()})",
                 )
                 soul = load_soul(worker)

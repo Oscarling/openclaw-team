@@ -3912,3 +3912,57 @@ Verification snapshot on 2026-03-25:
   - `execution.status = rejected`
   - `execution.executed = true`
   - `execution.attempts = 4`
+
+### 77. Automation Runtime Endpoint/Protocol Compatibility Hardening After BL-067 Findings
+
+User objective:
+
+- continue strict backlog mainline without drift
+- close blocker on runtime/provider endpoint protocol compatibility before
+  critic handoff
+
+Main work areas:
+
+- activated `BL-20260325-068` and mirrored it to issue `#129`
+- hardened runtime provider protocol handling in
+  `dispatcher/worker_runtime.py`:
+  - added wire-api normalization and endpoint resolution
+    (`chat_completions` / `responses` / `auto`)
+  - expanded LLM settings to include `wire_api`, `chat_url`,
+    `responses_url`, and active `endpoint_url`
+  - added protocol-specific payload/response parsing helpers
+  - implemented automatic compatibility fallback: on `wire_api=auto`, if
+    chat endpoint returns `http_400`, retry once against `/responses`
+- propagated runtime protocol env in `skills/delegate_task.py`:
+  - `ARGUS_LLM_WIRE_API` (plus aliases)
+  - `ARGUS_LLM_FALLBACK_RESPONSE_URLS`
+- added focused regressions in `tests/test_argus_hardening.py`:
+  - `test_call_llm_auto_falls_back_to_responses_after_http_400`
+  - `test_get_llm_settings_supports_responses_wire_api`
+- ran one elevated live replay and archived evidence under
+  `runtime_archives/bl068/`
+
+Primary output:
+
+- [AUTOMATION_RUNTIME_ENDPOINT_PROTOCOL_COMPATIBILITY_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/AUTOMATION_RUNTIME_ENDPOINT_PROTOCOL_COMPATIBILITY_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-068` is complete as a source-side blocker-hardening phase
+- terminal failure class shifted from protocol mismatch (`http_400` on
+  `/chat/completions`) to provider availability (`http_502` on `/responses`)
+- next blocker is provider responses-endpoint availability/failover
+  reliability (`BL-20260325-069`)
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_argus_hardening.py` passed (`17/17`)
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed
+- elevated replay
+  (`python3 skills/execute_approved_previews.py --once --preview-id preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153 --test-mode off --allow-replay`)
+  returned:
+  - `status = rejected`
+  - runtime auto-fallback chat -> responses was triggered
+  - terminal class: `http_502`
+  - terminal endpoint: `https://aixj.vip/v1/responses`

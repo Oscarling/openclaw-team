@@ -1,0 +1,26 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-25T12:25:04.935946Z
+finished_at: 2026-03-25T12:25:15.021786Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-25T12:25:05.209569Z] [automation] [INFO] Worker started using endpoint https://aixj.vip/v1/chat/completions (wire_api=auto, timeout=120s, attempts=3, timeout_recovery_retries=1)
+[2026-03-25T12:25:05.797462Z] [automation] [INFO] Chat-completions returned http_400; retrying once with responses wire API (endpoint=https://aixj.vip/v1/responses).
+[2026-03-25T12:25:07.049544Z] [automation] [WARN] LLM call failed attempt 1/3 (endpoint=https://aixj.vip/v1/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:25:07.049588Z] [automation] [INFO] Retrying LLM call in 1s (next_endpoint=https://aixj.vip/v1/chat/completions)
+[2026-03-25T12:25:08.762269Z] [automation] [INFO] Chat-completions returned http_400; retrying once with responses wire API (endpoint=https://aixj.vip/v1/responses).
+[2026-03-25T12:25:11.041646Z] [automation] [WARN] LLM call failed attempt 2/3 (endpoint=https://aixj.vip/v1/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:25:11.041684Z] [automation] [INFO] Retrying LLM call in 2s (next_endpoint=https://aixj.vip/v1/chat/completions)
+[2026-03-25T12:25:13.802660Z] [automation] [INFO] Chat-completions returned http_400; retrying once with responses wire API (endpoint=https://aixj.vip/v1/responses).
+[2026-03-25T12:25:14.873748Z] [automation] [WARN] LLM call failed attempt 3/3 (endpoint=https://aixj.vip/v1/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:25:14.873868Z] [automation] [ERROR] Task failed AUTO-20260325-874: LLM call exhausted (attempts=3/3, class=http_502, endpoint=https://aixj.vip/v1/responses, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:25:14.879973Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+

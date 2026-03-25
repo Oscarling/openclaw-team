@@ -430,6 +430,82 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertEqual(calls, [120])
         self.assertEqual(json.loads(content)["status"], "success")
 
+    def test_call_llm_auto_falls_back_to_responses_after_http_400(self) -> None:
+        calls: list[tuple[str, int]] = []
+
+        class FakeResponse:
+            def __init__(self, payload: dict[str, Any]) -> None:
+                self._payload = payload
+
+            def __enter__(self) -> "FakeResponse":
+                return self
+
+            def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+                return False
+
+            def read(self) -> bytes:
+                return json.dumps(self._payload).encode("utf-8")
+
+        class AutoWireOpener:
+            def open(self, req: Any, timeout: int | None = None) -> FakeResponse:
+                calls.append((req.full_url, timeout or 0))
+                if req.full_url.endswith("/chat/completions"):
+                    raise urllib.error.HTTPError(req.full_url, 400, "Bad Request", None, None)
+                return FakeResponse(
+                    {
+                        "id": "resp_test_123",
+                        "output_text": json.dumps({"status": "success", "summary": "ok"}),
+                    }
+                )
+
+        with mock.patch.object(worker_runtime, "NO_PROXY_OPENER", AutoWireOpener()):
+            with mock.patch.object(worker_runtime.time, "sleep", return_value=None):
+                with mock.patch.dict(
+                    os.environ,
+                    {"ARGUS_LLM_MAX_RETRIES": "2"},
+                    clear=False,
+                ):
+                    content = worker_runtime.call_llm(
+                        "system",
+                        "user",
+                        "automation",
+                        {
+                            "api_key": "key",
+                            "api_base": "https://provider.invalid/v1",
+                            "chat_url": "https://provider.invalid/v1/chat/completions",
+                            "model_name": "demo-model",
+                        },
+                    )
+
+        self.assertEqual(
+            [url for url, _timeout in calls],
+            [
+                "https://provider.invalid/v1/chat/completions",
+                "https://provider.invalid/v1/responses",
+            ],
+        )
+        self.assertEqual([timeout for _url, timeout in calls], [120, 120])
+        self.assertEqual(json.loads(content)["status"], "success")
+
+    def test_get_llm_settings_supports_responses_wire_api(self) -> None:
+        with mock.patch.object(worker_runtime, "read_secret", return_value=None):
+            with mock.patch.dict(
+                os.environ,
+                {
+                    "OPENAI_API_KEY": "key",
+                    "OPENAI_API_BASE": "https://provider.invalid/v1",
+                    "OPENAI_MODEL_NAME": "demo-model",
+                    "ARGUS_LLM_WIRE_API": "responses",
+                },
+                clear=False,
+            ):
+                settings = worker_runtime.get_llm_settings()
+
+        self.assertEqual(settings["wire_api"], "responses")
+        self.assertEqual(settings["endpoint_url"], "https://provider.invalid/v1/responses")
+        self.assertEqual(settings["chat_url"], "https://provider.invalid/v1/chat/completions")
+        self.assertEqual(settings["responses_url"], "https://provider.invalid/v1/responses")
+
     def test_call_llm_honors_env_timeout_and_retry_overrides(self) -> None:
         calls: list[int] = []
         attempts = {"count": 0}
