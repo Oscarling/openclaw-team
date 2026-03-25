@@ -4232,3 +4232,57 @@ Verification snapshot on 2026-03-25:
   - `runtime_archives/bl072/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.json`
 - probe evidence:
   - `runtime_archives/bl072/tmp/bl072_probe_matrix.txt`
+
+### 83. BL-073 Provider Credential/Profile Alignment Completion
+
+User objective:
+
+- continue strict global workflow without drift
+- clear profile-selected execute auth blocker (`http_401`) by aligning provider
+  profile and credentials
+
+Main work areas:
+
+- activated `BL-20260325-073` and mirrored it to issue `#139`
+- located backup provider config/key source from desktop file `~/Desktop/备用key.rtf`
+- validated backup credential against fast provider responses endpoints:
+  - `https://fast.vpsairobot.com/v1/responses` -> `200`
+  - `https://fast.vpsairobot.com/responses` -> `200`
+  - models: `gpt-5.4`, `gpt-5-codex`, `gpt-5`
+- prepared runtime profile (`/tmp/bl073_provider_profiles.json`):
+  - `api_base=https://fast.vpsairobot.com/v1`
+  - `wire_api=responses`
+  - `api_key_env=OPENAI_API_KEY_BACKUP`
+- executed elevated governed replay in real mode:
+  - `python3 skills/execute_approved_previews.py --once --preview-id preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153 --test-mode off --allow-replay`
+- archived full evidence under `runtime_archives/bl073/`
+- produced alignment report and advanced backlog:
+  - `BL-20260325-073` marked `done`
+  - queued next blocker `BL-20260325-074` (`planned` / `next`)
+
+Primary output:
+
+- [POST_PROVIDER_CREDENTIAL_PROFILE_ALIGNMENT_REPORT.md](/Users/lingguozhong/openclaw-team/POST_PROVIDER_CREDENTIAL_PROFILE_ALIGNMENT_REPORT.md)
+
+Key result:
+
+- credential/profile alignment is now valid (probe-level `200` and no terminal
+  `http_401` in replay)
+- dominant execute blocker shifted from auth to timeout:
+  - replay terminal class `timeout`
+  - endpoint `https://fast.vpsairobot.com/responses`
+  - `attempts=4/4` (including timeout-recovery retry)
+- next blocker class is runtime timeout/stability under aligned provider
+  profile (`BL-074`)
+
+Verification snapshot on 2026-03-25:
+
+- probe evidence:
+  - `runtime_archives/bl073/tmp/bl073_probe_matrix.txt`
+- replay result:
+  - `runtime_archives/bl073/tmp/bl073_execute_replay_profile.json`
+  - `status = done`, `processed = 0`, `rejected = 1`
+- runtime evidence:
+  - `runtime_archives/bl073/runtime/automation-runtime.attempt-1.profile.log`
+  - shows timeout sequence `1/3`, `2/3`, timeout-recovery `3/4`, and terminal
+    timeout `4/4`

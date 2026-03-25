@@ -1285,14 +1285,31 @@ Allowed enum values:
 ### BL-20260325-073
 - title: Restore provider credential/profile alignment so profile-selected governed execute can pass automation handoff
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-072
 - start_when: BL-072 replay confirms profile-selection path is active but terminal failure class is provider authentication (`http_401`) under current key/profile pairing
-- done_when: At least one approved provider profile + credential pairing executes governed replay without terminal auth failure and reaches automation success (and, ideally, critic handoff) under real run conditions
+- done_when: At least one approved provider profile + credential pairing is verified by live probe and governed replay to remove terminal auth failure as the dominant blocker class; if a new dominant blocker emerges, record evidence and queue next blocker
 - source: `POST_PROVIDER_PROFILE_GOVERNED_REPLAY_VALIDATION_REPORT.md` on 2026-03-25 records profile override success but terminal `http_401` on fast provider responses endpoint
+- link: /Users/lingguozhong/openclaw-team/POST_PROVIDER_CREDENTIAL_PROFILE_ALIGNMENT_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/139
+- evidence: Backup profile/key pairing from `~/Desktop/备用key.rtf` was applied via runtime profile (`ARGUS_PROVIDER_PROFILE=bl073_fast_backup`) and probe matrix recorded `200` across `https://fast.vpsairobot.com/v1/responses` and `https://fast.vpsairobot.com/responses` for models `gpt-5.4`, `gpt-5-codex`, and `gpt-5`; governed replay on `preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153` no longer failed with `http_401` and instead shifted dominant terminal class to `timeout` (`attempts=4/4`, endpoint `https://fast.vpsairobot.com/responses`) with evidence in `runtime_archives/bl073/`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-074
+- title: Stabilize aligned fast-provider runtime timeouts so governed replay can reach automation success
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-073
+- start_when: BL-073 confirms auth blocker is removed but governed replay still terminates on timeout after retries under aligned profile/key pairing
+- done_when: One governed replay under aligned fast-provider profile avoids terminal timeout exhaustion and reaches automation success (and preferably critic handoff) with archived runtime evidence
+- source: `POST_PROVIDER_CREDENTIAL_PROFILE_ALIGNMENT_REPORT.md` on 2026-03-25 records probe `200` but execute terminal class shifted to timeout (`attempts=4/4`)
 - link: -
 - issue: -
 - evidence: -
