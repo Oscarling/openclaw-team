@@ -894,8 +894,8 @@ Allowed enum values:
 ### BL-20260325-050
 - title: Harden wrapper provenance/path traceability semantics after BL-20260325-049 critic findings
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-049
@@ -903,7 +903,24 @@ Allowed enum values:
 - done_when: Source-side wrapper hardening removes path-resolution ambiguity, strengthens provenance and readonly traceability attestations, and one blocker report records mitigation with focused tests
 - source: `POST_DELEGATE_OCR_STATUS_REPORTING_VALIDATION_REPORT.md` on 2026-03-25 records the next required phase as wrapper-level provenance/path traceability hardening after delegate evidence semantics were validated
 - link: /Users/lingguozhong/openclaw-team/WRAPPER_PROVENANCE_PATH_TRACEABILITY_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260325-049 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/92
+- evidence: `WRAPPER_PROVENANCE_PATH_TRACEABILITY_HARDENING_REPORT.md` records source-side hardening in `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` that enforces deterministic repo-root delegate path resolution, adds explicit provenance and readonly traceability attestation fields, and is covered by focused regressions in `tests/test_pdf_to_excel_ocr_inbox_runner.py`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-051
+- title: Validate BL-20260325-050 wrapper provenance/path traceability hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-050
+- start_when: `BL-20260325-050` is merged so a fresh same-origin governed run can verify whether wrapper provenance/path/readonly traceability hardening reduces recurrence of critic findings under real execute
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-050, runs one explicit approval plus one real execute, and records whether critic findings shift away from wrapper provenance/path traceability concerns
+- source: `WRAPPER_PROVENANCE_PATH_TRACEABILITY_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming wrapper hardening success without live evidence
+- link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_PROVENANCE_PATH_TRACEABILITY_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-050 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

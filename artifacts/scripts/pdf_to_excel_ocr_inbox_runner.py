@@ -41,18 +41,44 @@ def expand_path(path_str: str) -> Path:
     return Path(path_str).expanduser()
 
 
-def resolve_repo_relative_path(path_str: str) -> Path:
-    path = expand_path(path_str)
-    if not path.is_absolute():
-        path = REPO_ROOT / path
-    return path.resolve()
+def repo_relative_path(path: Path) -> str | None:
+    try:
+        return str(path.relative_to(REPO_ROOT))
+    except ValueError:
+        return None
 
 
-def resolve_delegate_script(path_str: str) -> Path:
-    return resolve_repo_relative_path(path_str)
+def resolve_delegate_script(path_str: str) -> tuple[Path, dict[str, Any]]:
+    requested = expand_path(path_str)
+    if requested.is_absolute():
+        resolved = requested.resolve()
+        strategy = "absolute"
+    else:
+        # Keep one deterministic rule for relative delegate paths.
+        resolved = (REPO_ROOT / requested).resolve()
+        strategy = "repo_root_relative"
+
+    relative_to_repo = repo_relative_path(resolved)
+    resolution = {
+        "requested": path_str,
+        "expanded": str(requested),
+        "strategy": strategy,
+        "resolved": str(resolved),
+        "within_repo_root": relative_to_repo is not None,
+        "repo_relative_path": relative_to_repo,
+    }
+    return resolved, resolution
 
 
 def validate_delegate_script(base_script: Path) -> str | None:
+    reviewed_in_repo = repo_relative_path(REVIEWED_BASE_SCRIPT) is not None
+    base_in_repo = repo_relative_path(base_script) is not None
+
+    if reviewed_in_repo and not base_in_repo:
+        return (
+            "Preferred base script must stay within repository root "
+            f"{REPO_ROOT} to preserve readonly provenance boundaries."
+        )
     if base_script != REVIEWED_BASE_SCRIPT:
         return (
             "Preferred base script must resolve to the reviewed repository script "
@@ -80,12 +106,22 @@ def parse_delegate_report(stdout_text: str) -> dict[str, Any] | None:
     stripped = stdout_text.strip()
     if not stripped:
         return None
+
     try:
         payload = json.loads(stripped)
     except json.JSONDecodeError:
-        return None
+        payload = None
+
     if isinstance(payload, dict):
         return payload
+
+    for line in reversed([line.strip() for line in stripped.splitlines() if line.strip()]):
+        try:
+            candidate = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(candidate, dict):
+            return candidate
     return None
 
 
@@ -156,9 +192,11 @@ def emit_summary(summary: dict[str, Any], summary_json: str) -> None:
 def main() -> int:
     args = build_parser().parse_args()
 
+    requested_at = utc_now()
+    run_id = "bl050-wrapper-" + requested_at.replace(":", "").replace("-", "").replace(".", "")
     input_dir = expand_path(args.input_dir)
     output_xlsx = expand_path(args.output_xlsx)
-    base_script = resolve_delegate_script(args.preferred_base_script)
+    base_script, delegate_resolution = resolve_delegate_script(args.preferred_base_script)
     pdfs = discover_pdfs(input_dir)
     readonly_labels_present = any(str(label).strip().lower() == "readonly" for label in args.labels)
     delegate_contract_error = validate_delegate_script(base_script)
@@ -166,7 +204,8 @@ def main() -> int:
     summary: dict[str, Any] = {
         "status": "failed",
         "runner": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
-        "requested_at": utc_now(),
+        "requested_at": requested_at,
+        "run_id": run_id,
         "origin": {
             "origin_id": args.origin_id,
             "title": args.title,
@@ -179,6 +218,7 @@ def main() -> int:
             "ocr": args.ocr,
             "dry_run": args.dry_run,
             "preferred_base_script": str(base_script),
+            "preferred_base_script_requested": args.preferred_base_script,
             "reference_docs": args.reference_docs,
         },
         "contract": {
@@ -190,6 +230,28 @@ def main() -> int:
             "delegate_success_evidence_policy": (
                 "Require delegate report status=success, total_files>=1, no failed files, "
                 "and a real XLSX artifact before the wrapper reports success."
+            ),
+        },
+        "provenance": {
+            "runner_path": str(RUNNER_PATH),
+            "repo_root": str(REPO_ROOT),
+            "origin_id": args.origin_id,
+            "delegate_path_resolution": delegate_resolution,
+            "input_dir_resolution": {
+                "requested": args.input_dir,
+                "resolved": str(input_dir.resolve()),
+                "discovery_mode": "recursive_rglob_*.pdf",
+            },
+        },
+        "readonly_attestation": {
+            "mode": "local_filesystem_delegate_only",
+            "network_calls_performed": False,
+            "trello_write_performed": False,
+            "readonly_label_present": readonly_labels_present,
+            "delegate_restricted_to_reviewed_script": delegate_contract_error is None,
+            "statement": (
+                "Wrapper performs local file discovery and local delegate execution only; "
+                "it performs no Trello writeback and no direct network calls."
             ),
         },
         "discovery": {
@@ -216,6 +278,9 @@ def main() -> int:
             "If XLSX output cannot be produced honestly, the runner reports failure instead of writing mismatched content.",
         ],
     }
+
+    if not readonly_labels_present:
+        summary["notes"].append("Readonly label is missing; preserving conservative local-only execution contract.")
 
     if output_xlsx.suffix.lower() != ".xlsx":
         summary["notes"].append("Requested output path does not end with .xlsx; refusing mismatched workbook contract.")
