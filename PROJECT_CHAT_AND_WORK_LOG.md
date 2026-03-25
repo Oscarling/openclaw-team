@@ -1217,6 +1217,68 @@ Verification snapshot on 2026-03-25:
 - `python3 scripts/backlog_sync.py` passed with `BL-20260325-032` mirrored to
   issue `#57`
 
+### 41. Fresh Governed Validation After BL-032 Contract Hardening
+
+User objective:
+
+- continue from `BL-20260325-032` with a fresh same-origin governed validation
+- verify whether report-flag and discovery hardening clears the `BL-031` runtime
+  review blockers
+- preserve runtime artifacts and backlog traceability
+
+Main work areas:
+
+- activated `BL-20260325-033` and mirrored it to GitHub issue `#59`
+- ran one live Trello read-only smoke for origin
+  `trello:69c24cd3c1a2359ddd7a1bf8`
+- generated one explicit regeneration token:
+  - `regen-20260325-bl033-001`
+- ingested one fresh payload and created preview candidate:
+  - `preview-trello-69c24cd3c1a2359ddd7a1bf8-2355ba57c8c0`
+- wrote one explicit approval file and ran one governed real execute in
+  `test_mode=off`
+- archived runtime outputs under `runtime_archives/bl033/` before restoring
+  tracked `artifacts/` baselines
+- wrote validation report and promoted next blocker as `BL-20260325-034`
+
+Primary output:
+
+- [POST_REPORT_FLAG_REALIGNMENT_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_REPORT_FLAG_REALIGNMENT_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-033` completed as a governed validation phase
+- final execute still returned:
+  - `critic_verdict = needs_revision`
+- prior explicit report-flag mismatch signal did not reappear in critic output;
+  automation summary reports wrapper sidecar handoff using `--report-json`
+- new dominant blocker became critic evidence completeness:
+  - wrapper snapshot provided to critic was truncated, so full-file validation
+    was treated as insufficient
+- backlog updates from this phase:
+  - `BL-20260325-033` marked done with evidence
+  - `BL-20260325-034` created for critic snapshot completeness hardening
+
+Verification snapshot on 2026-03-25:
+
+- ingest output:
+  - `processed = 1`
+  - `preview_created = 1`
+  - preview id:
+    `preview-trello-69c24cd3c1a2359ddd7a1bf8-2355ba57c8c0`
+- execute sidecar:
+  - `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-2355ba57c8c0.result.json`
+  - `status = rejected`
+  - `decision_reason = critic_verdict=needs_revision`
+- worker outcomes:
+  - automation `AUTO-20260325-857`: `success`
+  - critic `CRITIC-20260325-278`: `partial` with verdict `needs_revision`
+- runtime archive preserved under:
+  - `runtime_archives/bl033/artifacts/`
+  - `runtime_archives/bl033/runtime/`
+  - `runtime_archives/bl033/state/`
+  - `runtime_archives/bl033/tmp/`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:

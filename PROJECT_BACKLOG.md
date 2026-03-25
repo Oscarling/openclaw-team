@@ -605,8 +605,8 @@ Allowed enum values:
 ### BL-20260325-033
 - title: Validate BL-20260325-032 report-flag and discovery hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-032
@@ -614,7 +614,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-032, runs one explicit approval plus one real execute, and records whether automation/critic outcome now clears the `--report-file` vs `--report-json` and discovery-alignment findings observed in BL-20260325-031
 - source: `WRAPPER_DELEGATE_REPORT_FLAG_REALIGNMENT_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming source-side contract hardening success without live evidence
 - link: /Users/lingguozhong/openclaw-team/POST_REPORT_FLAG_REALIGNMENT_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-032 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/59
+- evidence: `POST_REPORT_FLAG_REALIGNMENT_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl033-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-2355ba57c8c0` with explicit approval and one real execute; automation (`AUTO-20260325-857`) succeeded with `--report-json` in wrapper summary while critic (`CRITIC-20260325-278`) still returned `needs_revision` because wrapper evidence snapshot was truncated for full-file validation
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-034
+- title: Harden critic artifact snapshot completeness to avoid truncation-driven validation rejects
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-033
+- start_when: `BL-20260325-033` has completed and confirmed the main runtime rejection shifted to critic-side truncated wrapper snapshot evidence rather than explicit report-flag mismatch
+- done_when: Critic evidence handoff preserves complete wrapper artifact content (or equivalent complete review context) for generated script reviews, focused tests cover snapshot-size/completeness behavior, and one phase report records the hardening outcome
+- source: `POST_REPORT_FLAG_REALIGNMENT_VALIDATION_REPORT.md` on 2026-03-25 records that fresh governed validation still returns `needs_revision` due critic-side truncated wrapper snapshot evidence
+- link: /Users/lingguozhong/openclaw-team/CRITIC_SNAPSHOT_COMPLETENESS_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-033 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

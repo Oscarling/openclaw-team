@@ -1,0 +1,33 @@
+{
+  "task_id": "CRITIC-20260325-278",
+  "worker": "critic",
+  "status": "partial",
+  "summary": "Reviewed the inbox runner together with its delegate as an end-to-end readonly pair. The overall design is aligned with a best-effort evidence-backed smoke path, but the supplied runner snapshot is truncated and therefore cannot be fully validated for syntax/completeness. Verdict: needs_revision.",
+  "artifacts": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "timestamp": "2026-03-25T02:34:04.160608Z",
+  "duration_ms": 22753,
+  "errors": [
+    "The snapshot for artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py is truncated, so full-file syntax and final CLI/output behavior cannot be conclusively validated.",
+    "Because the runner snapshot ends mid-parser definition, there is insufficient evidence that the script is complete and executable as provided."
+  ],
+  "notes": [
+    "Review was grounded in the supplied artifact snapshots and evaluated the wrapper and delegate together.",
+    "The delegate script provides evidence-aware reporting and avoids overstating OCR success, which is consistent with the stated contract.",
+    "The wrapper logic shown includes cautious success validation and partial/failure handling, which is positive, but incomplete snapshot evidence prevents a pass verdict."
+  ],
+  "metadata": {
+    "task_id": "CRITIC-20260325-278",
+    "worker": "critic",
+    "verdict": "needs_revision",
+    "reviewed_artifacts": [
+      "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "artifacts/scripts/pdf_to_excel_ocr.py"
+    ],
+    "review_scope": "end-to-end readonly wrapper+delegate review"
+  }
+}
