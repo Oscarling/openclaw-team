@@ -1200,8 +1200,8 @@ Allowed enum values:
 ### BL-20260325-068
 - title: Harden automation runtime endpoint/protocol compatibility for provider-backed LLM execution after BL-067 failures
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-067
@@ -1209,6 +1209,23 @@ Allowed enum values:
 - done_when: Runtime/config hardening ensures automation worker can complete one real LLM call against declared provider settings (base URL + protocol + model mapping) without `http_400` contract mismatch, with focused tests and one blocker report
 - source: `POST_WRAPPER_DELEGATE_EXECUTION_OUTCOME_DIAGNOSTIC_CONTRACT_VALIDATION_REPORT.md` on 2026-03-25 records endpoint/protocol/model compatibility as the next blocker class
 - link: /Users/lingguozhong/openclaw-team/AUTOMATION_RUNTIME_ENDPOINT_PROTOCOL_COMPATIBILITY_HARDENING_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/129
+- evidence: `AUTOMATION_RUNTIME_ENDPOINT_PROTOCOL_COMPATIBILITY_HARDENING_REPORT.md` records runtime wire-api hardening (`chat_completions`/`responses`/`auto`), delegate env propagation, and focused regressions (`tests/test_argus_hardening.py`), with one live replay showing terminal class moved from protocol mismatch `http_400` at `/chat/completions` to provider availability `http_502` at `/responses` (compatibility fallback active, blocker class shifted)
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-069
+- title: Restore automation runtime provider availability/failover reliability after BL-068 protocol hardening
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-068
+- start_when: `BL-20260325-068` is merged and replay evidence confirms protocol mismatch is mitigated while provider runtime remains blocked by `http_502` on responses endpoint before critic handoff
+- done_when: Runtime failover configuration and execution path are verified by one governed real execute that reaches critic handoff without terminal provider availability failure at the initial endpoint
+- source: `AUTOMATION_RUNTIME_ENDPOINT_PROTOCOL_COMPATIBILITY_HARDENING_REPORT.md` on 2026-03-25 confirms next blocker class is provider responses-endpoint availability/failover reliability
+- link: -
 - issue: -
 - evidence: -
 - last_reviewed_at: 2026-03-25
