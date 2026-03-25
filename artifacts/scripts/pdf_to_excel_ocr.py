@@ -206,7 +206,11 @@ def process_one_pdf(
             status = "partial"
             warnings.append("No extractable text captured")
     else:
-        status = "success"
+        if errors:
+            status = "partial"
+            warnings.append("Text was extracted, but one or more extraction attempts failed; review errors")
+        else:
+            status = "success"
 
     return FileResult(
         file_name=pdf_path.name,
@@ -273,12 +277,16 @@ def main() -> int:
                 "output_xlsx": str(output_xlsx),
                 "ocr_mode": args.ocr,
                 "total_files": 0,
+                "files": [],
                 "status_counter": {},
                 "dry_run": bool(args.dry_run),
                 "excel_written": False,
                 "output_exists": False,
                 "output_size_bytes": 0,
                 "notes": [f"No PDF files found under {input_dir}"],
+                "next_steps": [
+                    "Add one or more .pdf files under the input directory and rerun.",
+                ],
             },
             args.report_json,
         )
@@ -315,12 +323,25 @@ def main() -> int:
     for item in results:
         status_counter[item.status] = status_counter.get(item.status, 0) + 1
 
+    files_payload = [asdict(item) for item in results]
     failed_count = status_counter.get("failed", 0)
     partial_count = status_counter.get("partial", 0)
     if failed_count == 0 and partial_count == 0:
         aggregate_status = "success"
     else:
         aggregate_status = "partial"
+
+    notes: list[str] = []
+    next_steps: list[str] = []
+    if ocr_runtime != "available":
+        notes.append(f"OCR runtime status is {ocr_runtime}; missing dependencies: {', '.join(missing) or 'none'}")
+        next_steps.append("Install missing OCR runtime dependencies if OCR fallback is required.")
+    if partial_count > 0:
+        notes.append(f"{partial_count} file(s) reported partial status.")
+        next_steps.append("Inspect per-file partial records in `files` and address listed warnings/errors.")
+    if failed_count > 0:
+        notes.append(f"{failed_count} file(s) reported failed status.")
+        next_steps.append("Inspect per-file failures in `files` and resolve the extraction or OCR error causes.")
 
     report = {
         "status": aggregate_status,
@@ -330,11 +351,14 @@ def main() -> int:
         "ocr_runtime_status": ocr_runtime,
         "ocr_missing_dependencies": missing,
         "total_files": len(results),
+        "files": files_payload,
         "status_counter": status_counter,
         "dry_run": bool(args.dry_run),
         "excel_written": False,
         "output_exists": False,
         "output_size_bytes": 0,
+        "notes": notes,
+        "next_steps": next_steps,
     }
 
     if args.dry_run:
@@ -356,6 +380,8 @@ def main() -> int:
         if report["output_exists"]:
             report["output_size_bytes"] = int(output_xlsx.stat().st_size)
         report["excel_written"] = bool(report["output_exists"] and report["output_size_bytes"] > 0)
+        report["notes"] = report.get("notes", []) + ["Excel write step failed after extraction."]
+        report["next_steps"] = report.get("next_steps", []) + ["Check pandas/openpyxl availability and output path permissions."]
         emit_report(report, args.report_json)
         return 3
 

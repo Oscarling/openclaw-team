@@ -2100,6 +2100,55 @@ Verification snapshot on 2026-03-25:
   - `runtime_archives/bl047/state/`
   - `runtime_archives/bl047/tmp/`
 
+### 56. Delegate OCR/Status Reporting Hardening After BL-047 Findings
+
+User objective:
+
+- continue from `BL-20260325-047` without mixing another governed runtime rerun
+  into the same phase
+- harden delegate OCR/status/report semantics so best-effort readonly outcomes
+  remain truthful and evidence-rich
+- keep the hardening focused, test-backed, and compatible with existing report
+  consumers
+
+Main work areas:
+
+- activated and completed `BL-20260325-048` and mirrored it to GitHub issue
+  `#88`
+- updated `artifacts/scripts/pdf_to_excel_ocr.py`:
+  - refined `process_one_pdf(...)` semantics so mixed outcomes with extracted
+    text plus extraction errors are represented as `partial` instead of
+    over-claiming `success`
+  - enriched aggregate report payload with per-file `files` evidence,
+    `notes`, and actionable `next_steps`
+  - added guidance fields for no-file and write-failure paths
+- added focused regression file `tests/test_pdf_to_excel_ocr_script.py`:
+  - verifies mixed extraction path status semantics
+  - verifies clean success path behavior
+  - verifies report includes `files` / `notes` / `next_steps`
+- recorded next governed validation phase as `BL-20260325-049`
+
+Primary output:
+
+- [DELEGATE_OCR_STATUS_REPORTING_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/DELEGATE_OCR_STATUS_REPORTING_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-048` completed as a source-side blocker-hardening phase
+- delegate report contract is now more evidence-rich and semantically
+  conservative for readonly best-effort flows
+- live effectiveness is intentionally deferred to fresh governed validation
+  phase `BL-20260325-049`
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_script.py` passed
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_inbox_runner.py` passed
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with no phase=now actionable issue
+  mirroring required
+- `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:
