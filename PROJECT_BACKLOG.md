@@ -690,8 +690,8 @@ Allowed enum values:
 ### BL-20260325-038
 - title: Harden automation endpoint transport reliability after BL-20260325-037 SSL EOF blocker
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-037
@@ -699,7 +699,24 @@ Allowed enum values:
 - done_when: Automation LLM call path handles endpoint transport instability with deterministic retry/error classification hardening (or endpoint/TLS configuration hardening), focused tests cover the new behavior, and one blocker report records the implemented mitigation
 - source: `POST_SEMANTIC_CONTRACT_ALIGNMENT_VALIDATION_REPORT.md` on 2026-03-25 records automation transport failure as the active blocker that prevented semantic runtime validation closure
 - link: /Users/lingguozhong/openclaw-team/AUTOMATION_ENDPOINT_SSL_RELIABILITY_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260325-037 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/69
+- evidence: `AUTOMATION_ENDPOINT_SSL_RELIABILITY_HARDENING_REPORT.md` records source-side hardening in `dispatcher/worker_runtime.py` and `skills/delegate_task.py` for deterministic transport error classification, endpoint-aware retry diagnostics, and optional fallback endpoint rotation (`ARGUS_LLM_FALLBACK_CHAT_URLS` / `ARGUS_LLM_FALLBACK_API_BASES`), with focused regression coverage in `tests/test_argus_hardening.py`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-039
+- title: Validate BL-20260325-038 automation transport hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-038
+- start_when: `BL-20260325-038` is merged so a fresh same-origin governed run can verify whether transport hardening clears SSL EOF-driven early automation failure
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-038, runs one explicit approval plus one real execute, and records whether runtime now reaches artifact generation and critic dispatch without transport-side SSL EOF blocker
+- source: `AUTOMATION_ENDPOINT_SSL_RELIABILITY_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming transport hardening success without live evidence
+- link: /Users/lingguozhong/openclaw-team/POST_AUTOMATION_SSL_RELIABILITY_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-038 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
