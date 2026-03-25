@@ -1,0 +1,27 @@
+{
+  "task_id": "AUTO-20260325-858",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated one runnable wrapper script artifact that prefers the reviewed repository delegate, preserves parameter-driven paths, uses explicit delegate timeout, parses delegate JSON from stdout and optional --report-json sidecar, keeps dry-run/zero-PDF outcomes as partial, and emits structured reviewable summaries.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-25T04:22:34.971092Z",
+  "duration_ms": 82923,
+  "notes": [
+    "Produced exactly one script artifact as requested.",
+    "The wrapper is deterministic and local-only, with no unsupported external dependency claims.",
+    "The wrapper resolves the reviewed base delegate relative to repository/script location instead of Path.cwd().",
+    "Success requires canonical delegate evidence via status/total_files/status_counter/dry_run rather than exit code plus file existence alone."
+  ],
+  "metadata": {
+    "task_id": "AUTO-20260325-858",
+    "worker": "automation",
+    "task_type": "generate_script",
+    "source_origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+    "expected_output_path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py"
+  }
+}

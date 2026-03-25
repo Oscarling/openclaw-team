@@ -1322,6 +1322,72 @@ Verification snapshot on 2026-03-25:
 - `python3 scripts/backlog_sync.py` passed with `BL-20260325-034` mirrored to
   issue `#61`
 
+### 43. Fresh Governed Validation After BL-034 Snapshot Hardening
+
+User objective:
+
+- continue immediately with the next governed validation phase
+- validate `BL-20260325-034` on one fresh same-origin candidate instead of
+  assuming source-side hardening solved runtime behavior
+- preserve runtime evidence and keep workflow-gated delivery
+
+Main work areas:
+
+- activated `BL-20260325-035` and mirrored it to GitHub issue `#63`
+- ran live Trello read-only smoke for origin
+  `trello:69c24cd3c1a2359ddd7a1bf8`
+  - first sandboxed call blocked by DNS policy
+  - elevated rerun passed with `read_count=1`
+- generated one regeneration token:
+  - `regen-20260325-bl035-001`
+- created inbox payload from `smoke_read.mapped_preview`, ingested once, and
+  created fresh preview:
+  - `preview-trello-69c24cd3c1a2359ddd7a1bf8-103723900dc8`
+- wrote explicit approval and ran real execute in `test_mode=off`
+  - first sandboxed execute blocked before dispatch due Docker client access
+  - elevated replay (`--allow-replay`) completed governed runtime intent
+- archived runtime outputs under `runtime_archives/bl035/` before restoring
+  tracked `artifacts/` baselines
+- recorded next blocker phase as `BL-20260325-036`
+
+Primary output:
+
+- [POST_CRITIC_SNAPSHOT_HARDENING_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_CRITIC_SNAPSHOT_HARDENING_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-035` completed as a governed validation phase
+- final execute still returned:
+  - `critic_verdict = needs_revision`
+- prior dominant truncation blocker did not reappear in critic outcome
+- new dominant blocker is semantic contract alignment between wrapper and
+  delegate:
+  - zero-input status mismatch
+  - aggregate status truthfulness for partial outcomes
+  - missing explicit output-write evidence fields in delegate report
+- backlog updates from this phase:
+  - `BL-20260325-035` marked done with evidence
+  - `BL-20260325-036` created for source-side semantic contract hardening
+
+Verification snapshot on 2026-03-25:
+
+- smoke (elevated) returned `status=pass` with `read_count=1`
+- `python3 skills/ingest_tasks.py --once` returned:
+  - `processed = 1`
+  - `preview_created = 1`
+- sandboxed execute returned Docker-client initialization rejection
+- elevated replay execute returned:
+  - `status = rejected`
+  - `decision_reason = critic_verdict=needs_revision`
+- worker outcomes:
+  - automation `AUTO-20260325-858`: `success`
+  - critic `CRITIC-20260325-279`: `success` with verdict `needs_revision`
+- runtime archive preserved under:
+  - `runtime_archives/bl035/artifacts/`
+  - `runtime_archives/bl035/runtime/`
+  - `runtime_archives/bl035/state/`
+  - `runtime_archives/bl035/tmp/`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:

@@ -1,0 +1,19 @@
+task_id: CRITIC-20260325-279
+worker: critic
+attempt: 1
+container_name: argus-critic-critic-20260325-279
+worker_image: argus-worker:latest
+started_at: 2026-03-25T04:22:35.173165Z
+finished_at: 2026-03-25T04:23:05.984349Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-25T04:22:35.380263Z] [critic] [INFO] Worker started using endpoint https://fast.vpsairobot.com/v1/chat/completions (timeout=120s, attempts=3)
+[2026-03-25T04:23:05.855357Z] [critic] [INFO] Artifact written: artifacts/reviews/pdf_to_excel_ocr_inbox_review.md
+[2026-03-25T04:23:05.856396Z] [critic] [INFO] Task completed CRITIC-20260325-279 with status success
+[2026-03-25T04:23:05.857620Z] [critic] [INFO] Worker exiting from /app/workspaces/critic/CRITIC-20260325-279
+
+=== stderr ===
+
