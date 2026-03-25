@@ -1234,14 +1234,31 @@ Allowed enum values:
 ### BL-20260325-070
 - title: Validate BL-20260325-069 provider availability/failover hardening on one fresh governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-069
 - start_when: `BL-20260325-069` source-side failover hardening is merged so one fresh governed execute can confirm automation reaches critic handoff
 - done_when: One governed validation run (smoke -> regeneration -> preview -> approval -> real execute) records critic handoff success and whether dominant findings move away from provider availability/failover failures
 - source: `BL-20260325-069` is a blocker-hardening phase whose next required step is governed runtime validation on a fresh candidate
+- link: /Users/lingguozhong/openclaw-team/POST_PROVIDER_AVAILABILITY_FAILOVER_GOVERNED_VALIDATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/133
+- evidence: `POST_PROVIDER_AVAILABILITY_FAILOVER_GOVERNED_VALIDATION_REPORT.md` records one fresh governed run (`regen-20260325-bl070-001`) creating preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-cb445a22289d`; elevated real execute reached automation (`AUTO-20260325-875`) and critic (`CRITIC-20260325-291`) with final decision `processed` / `critic_verdict=pass`, confirming BL-069 availability/failover hardening on a fresh candidate
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-071
+- title: Stabilize governed execute provider profile selection to avoid manual desktop-secret dependency in BL-070 flow
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-070
+- start_when: `BL-20260325-070` confirms fresh governed validation passes only after explicitly switching runtime env to a healthy backup provider profile
+- done_when: Governed execute path can select an approved healthy provider profile from repository/runtime configuration without manual extraction of base URL/key from ad-hoc desktop files
+- source: `POST_PROVIDER_AVAILABILITY_FAILOVER_GOVERNED_VALIDATION_REPORT.md` on 2026-03-25 shows BL-070 pass required manual backup profile injection from `~/Desktop/备用key.rtf`
 - link: -
 - issue: -
 - evidence: -

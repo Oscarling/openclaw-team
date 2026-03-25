@@ -1,0 +1,14 @@
+{
+  "task_id": "AUTO-20260325-875",
+  "worker": "automation",
+  "status": "success",
+  "summary": "['Generated automation helper script artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py that wraps the reviewed delegate pdf_to_excel_ocr.py with Trello-governed smoke controls, timeout enforcement, delegate report parsing, and conservative success gating aligned with the provided contract.']",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-25T13:36:41.827678Z",
+  "duration_ms": 58443
+}

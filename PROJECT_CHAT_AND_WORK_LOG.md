@@ -4067,3 +4067,61 @@ Verification snapshot on 2026-03-25:
   - `processed = 1`
   - `rejected = 0`
   - `decision_reason = critic_verdict=pass`
+
+### 80. Fresh Governed Validation After BL-069 Provider Availability/Failover Hardening
+
+User objective:
+
+- continue strict backlog mainline without drift
+- validate BL-069 on one fresh governed candidate (smoke -> regeneration ->
+  preview -> approval -> real execute)
+
+Main work areas:
+
+- activated `BL-20260325-070` and mirrored it to issue `#133`
+- executed fresh Trello readonly smoke and captured mapped candidate:
+  - `runtime_archives/bl070/tmp/bl070_smoke_sandbox.json`
+  - `runtime_archives/bl070/tmp/bl070_smoke_elevated.json`
+  - `runtime_archives/bl070/tmp/bl070_live_mapped_preview.json`
+- generated regenerated inbox payload with token
+  `regen-20260325-bl070-001` and ingested once:
+  - preview created:
+    `preview-trello-69c24cd3c1a2359ddd7a1bf8-cb445a22289d`
+- wrote explicit approval for the fresh preview
+- executed real run in two phases:
+  - non-elevated execute captured sandbox Docker-init rejection evidence
+  - elevated replay (`--allow-replay`) completed automation + critic with pass
+- archived full runtime/state evidence under `runtime_archives/bl070/`
+- produced validation report and advanced backlog tracking:
+  - `BL-20260325-070` moved to `done`
+  - queued next blocker candidate `BL-20260325-071` (`planned` / `next`)
+
+Primary output:
+
+- [POST_PROVIDER_AVAILABILITY_FAILOVER_GOVERNED_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_PROVIDER_AVAILABILITY_FAILOVER_GOVERNED_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-070` is complete as a fresh governed validation phase
+- elevated real execute reached full handoff:
+  - automation `AUTO-20260325-875` success
+  - critic `CRITIC-20260325-291` success, verdict `pass`
+- final fresh preview state is `processed` with
+  `decision_reason=critic_verdict=pass`
+
+Verification snapshot on 2026-03-25:
+
+- `python3 scripts/backlog_lint.py` passed after BL-070 activation
+- `python3 scripts/backlog_sync.py` passed with BL-070 mirror to `#133`
+- `python3 skills/ingest_tasks.py --once --test-mode success` returned:
+  - `processed = 1`
+  - `duplicate_skipped = 0`
+  - `preview_created = 1`
+- non-elevated execute returned:
+  - `status = rejected`
+  - reason: Docker client initialization unavailable
+- elevated replay returned:
+  - `status = done`
+  - `processed = 1`
+  - `rejected = 0`
+  - `critic_verdict = pass`
