@@ -43,6 +43,7 @@ ALLOWED_EXPORT_STATUSES = {
     "skipped_no_input",
     "unknown",
 }
+DIAGNOSTIC_EXCERPT_LIMIT = 1200
 
 
 def utc_now() -> str:
@@ -178,6 +179,21 @@ def load_delegate_report_file(path: Path) -> dict[str, Any] | None:
     if isinstance(payload, dict):
         return payload
     return None
+
+
+def build_diagnostic_excerpt(text: str, *, limit: int = DIAGNOSTIC_EXCERPT_LIMIT) -> str:
+    cleaned = text.strip()
+    if not cleaned:
+        return ""
+    if len(cleaned) <= limit:
+        return cleaned
+    return cleaned[:limit] + "...[truncated]"
+
+
+def line_count(text: str) -> int:
+    if not text:
+        return 0
+    return len(text.splitlines())
 
 
 def has_strong_delegate_success_evidence(
@@ -386,6 +402,12 @@ def main() -> int:
             "timeout_seconds": max(int(args.delegate_timeout_seconds), 1),
             "stdout": "",
             "stderr": "",
+            "stdout_present": False,
+            "stderr_present": False,
+            "stdout_line_count": 0,
+            "stderr_line_count": 0,
+            "stdout_excerpt": "",
+            "stderr_excerpt": "",
             "delegate_report": None,
             "delegate_report_source": "none",
             "delegate_report_sidecar_path": "",
@@ -502,6 +524,20 @@ def main() -> int:
     summary["execution"]["returncode"] = completed.returncode
     summary["execution"]["stdout"] = completed.stdout
     summary["execution"]["stderr"] = completed.stderr
+    summary["execution"]["stdout_present"] = bool(completed.stdout.strip())
+    summary["execution"]["stderr_present"] = bool(completed.stderr.strip())
+    summary["execution"]["stdout_line_count"] = line_count(completed.stdout)
+    summary["execution"]["stderr_line_count"] = line_count(completed.stderr)
+    summary["execution"]["stdout_excerpt"] = build_diagnostic_excerpt(completed.stdout)
+    summary["execution"]["stderr_excerpt"] = build_diagnostic_excerpt(completed.stderr)
+    if summary["execution"]["stderr_present"]:
+        summary["notes"].append(
+            "Delegate stderr was captured and preserved in execution diagnostics."
+        )
+    if summary["execution"]["stdout_present"] and not parse_delegate_report(completed.stdout):
+        summary["notes"].append(
+            "Delegate stdout was captured but did not contain a structured JSON report."
+        )
 
     sidecar_report = load_delegate_report_file(delegate_report_sidecar)
     stdout_report = parse_delegate_report(completed.stdout)
@@ -558,40 +594,62 @@ def main() -> int:
             else:
                 summary["notes"].append("Delegate did not emit a structured dry-run report; preserving partial status conservatively.")
         else:
-            summary["notes"].append("Delegate script returned a non-zero exit code during dry-run mode.")
-    elif completed.returncode == 0 and output_exists:
-        success_evidence_ok, success_evidence_note = has_strong_delegate_success_evidence(
-            delegate_report,
-            ocr_mode=args.ocr,
-        )
-        if delegate_status == "partial":
-            summary["status"] = "partial"
-            summary["notes"].append("Delegate reported a reviewable partial outcome; preserving partial status.")
-        elif delegate_status == "failed":
             summary["notes"].append(
-                "Delegate reported failed status despite producing an XLSX artifact; review extraction/export phase details."
+                "Delegate script returned a non-zero exit code during dry-run mode; hard-failing wrapper outcome."
             )
-        elif success_evidence_ok:
-            summary["status"] = "success"
-        elif delegate_status == "success":
-            summary["status"] = "partial"
+    elif completed.returncode != 0:
+        if delegate_status:
             summary["notes"].append(
-                success_evidence_note
-                or "Delegate success evidence was too weak for the wrapper to claim success."
+                (
+                    f"Delegate reported status={delegate_status}, but returncode={completed.returncode}; "
+                    "wrapper treats non-zero delegate exits as hard failure."
+                )
             )
         else:
-            summary["status"] = "partial"
-            summary["notes"].append("Delegate produced XLSX output but did not provide a recognized summary status.")
+            summary["notes"].append("Delegate script returned a non-zero exit code.")
     else:
-        if completed.returncode == 0 and not output_exists:
-            if delegate_status == "failed" and delegate_export_status == "failed":
+        if delegate_status == "failed":
+            if output_exists:
                 summary["notes"].append(
-                    "Delegate exited with failed export semantics and no XLSX artifact; preserving failed wrapper status."
+                    "Delegate reported failed status despite producing an XLSX artifact; review extraction/export phase details."
+                )
+            else:
+                summary["notes"].append(
+                    "Delegate exited with failed semantics and no XLSX artifact; preserving failed wrapper status."
+                )
+        elif delegate_status == "partial":
+            summary["status"] = "partial"
+            if output_exists:
+                summary["notes"].append(
+                    "Delegate reported a reviewable partial outcome with XLSX artifact; preserving partial status."
+                )
+            else:
+                summary["notes"].append(
+                    "Delegate reported a reviewable partial outcome without XLSX artifact; preserving partial status."
+                )
+        elif output_exists:
+            success_evidence_ok, success_evidence_note = has_strong_delegate_success_evidence(
+                delegate_report,
+                ocr_mode=args.ocr,
+            )
+            if success_evidence_ok:
+                summary["status"] = "success"
+            elif delegate_status == "success":
+                summary["status"] = "partial"
+                summary["notes"].append(
+                    success_evidence_note
+                    or "Delegate success evidence was too weak for the wrapper to claim success."
+                )
+            else:
+                summary["status"] = "partial"
+                summary["notes"].append("Delegate produced XLSX output but did not provide a recognized summary status.")
+        else:
+            if delegate_status == "success":
+                summary["notes"].append(
+                    "Delegate reported success but expected XLSX output was not found; preserving failed wrapper status."
                 )
             else:
                 summary["notes"].append("Delegate exited successfully but expected XLSX output was not found.")
-        elif completed.returncode != 0:
-            summary["notes"].append("Delegate script returned a non-zero exit code.")
 
     emit_summary(summary, args.summary_json)
     delegate_report_sidecar.unlink(missing_ok=True)

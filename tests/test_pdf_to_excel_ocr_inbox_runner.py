@@ -240,6 +240,155 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
         self.assertTrue(summary["output"]["exists"])
         self.assertEqual(summary["execution"]["delegate_report_source"], "sidecar")
 
+    def test_preserves_delegate_partial_without_output_when_exit_zero(self) -> None:
+        input_dir = self._make_input_dir(with_pdf=True)
+        fake_base = self.tmpdir / "fake_pdf_to_excel_ocr_partial_without_output.py"
+        fake_base.write_text(
+            textwrap.dedent(
+                """\
+                #!/usr/bin/env python3
+                import argparse
+                import json
+                from pathlib import Path
+
+                parser = argparse.ArgumentParser()
+                parser.add_argument("--input-dir", required=True)
+                parser.add_argument("--output-xlsx", required=True)
+                parser.add_argument("--ocr", default="auto")
+                parser.add_argument("--report-json", default="")
+                args = parser.parse_args()
+
+                payload = {
+                    "status": "partial",
+                    "total_files": 0,
+                    "status_counter": {},
+                    "dry_run": False,
+                    "extraction_status": "none",
+                    "export_status": "skipped_no_input",
+                    "excel_written": False,
+                    "output_exists": False,
+                    "output_size_bytes": 0,
+                    "notes": ["No PDFs were available to process."],
+                }
+                if args.report_json:
+                    Path(args.report_json).write_text(json.dumps(payload), encoding="utf-8")
+                print(json.dumps(payload))
+                """
+            ),
+            encoding="utf-8",
+        )
+
+        exit_code, summary, _ = self._invoke_main(
+            input_dir=input_dir,
+            extra_args=["--preferred-base-script", str(fake_base)],
+            reviewed_base_script=fake_base,
+        )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(summary["status"], "partial")
+        self.assertFalse(summary["output"]["exists"])
+        self.assertEqual(summary["execution"]["returncode"], 0)
+        self.assertTrue(any("without XLSX artifact" in note for note in summary["notes"]))
+
+    def test_nonzero_delegate_exit_hard_fails_even_with_structured_json(self) -> None:
+        input_dir = self._make_input_dir(with_pdf=True)
+        fake_base = self.tmpdir / "fake_pdf_to_excel_ocr_nonzero_with_json.py"
+        fake_base.write_text(
+            textwrap.dedent(
+                """\
+                #!/usr/bin/env python3
+                import argparse
+                import json
+                import sys
+                from pathlib import Path
+
+                parser = argparse.ArgumentParser()
+                parser.add_argument("--input-dir", required=True)
+                parser.add_argument("--output-xlsx", required=True)
+                parser.add_argument("--ocr", default="auto")
+                parser.add_argument("--report-json", default="")
+                args = parser.parse_args()
+
+                payload = {
+                    "status": "partial",
+                    "total_files": 1,
+                    "dry_run": False,
+                    "excel_written": False,
+                    "output_exists": False,
+                    "output_size_bytes": 0,
+                }
+                if args.report_json:
+                    Path(args.report_json).write_text(json.dumps(payload), encoding="utf-8")
+                print(json.dumps(payload))
+                sys.exit(7)
+                """
+            ),
+            encoding="utf-8",
+        )
+
+        exit_code, summary, _ = self._invoke_main(
+            input_dir=input_dir,
+            extra_args=["--preferred-base-script", str(fake_base)],
+            reviewed_base_script=fake_base,
+        )
+
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(summary["status"], "failed")
+        self.assertEqual(summary["execution"]["returncode"], 7)
+        self.assertTrue(any("hard failure" in note for note in summary["notes"]))
+
+    def test_preserves_stdout_stderr_diagnostics_in_summary(self) -> None:
+        input_dir = self._make_input_dir(with_pdf=True)
+        fake_base = self.tmpdir / "fake_pdf_to_excel_ocr_diagnostics.py"
+        fake_base.write_text(
+            textwrap.dedent(
+                """\
+                #!/usr/bin/env python3
+                import argparse
+                import json
+                import sys
+                from pathlib import Path
+
+                parser = argparse.ArgumentParser()
+                parser.add_argument("--input-dir", required=True)
+                parser.add_argument("--output-xlsx", required=True)
+                parser.add_argument("--ocr", default="auto")
+                parser.add_argument("--report-json", default="")
+                args = parser.parse_args()
+
+                payload = {
+                    "status": "partial",
+                    "total_files": 1,
+                    "dry_run": False,
+                    "excel_written": False,
+                    "output_exists": False,
+                    "output_size_bytes": 0,
+                }
+                if args.report_json:
+                    Path(args.report_json).write_text(json.dumps(payload), encoding="utf-8")
+                print("diagnostic: delegate stdout line")
+                print(json.dumps(payload))
+                print("diagnostic: delegate stderr line", file=sys.stderr)
+                """
+            ),
+            encoding="utf-8",
+        )
+
+        exit_code, summary, _ = self._invoke_main(
+            input_dir=input_dir,
+            extra_args=["--preferred-base-script", str(fake_base)],
+            reviewed_base_script=fake_base,
+        )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(summary["status"], "partial")
+        self.assertTrue(summary["execution"]["stdout_present"])
+        self.assertTrue(summary["execution"]["stderr_present"])
+        self.assertGreaterEqual(summary["execution"]["stdout_line_count"], 2)
+        self.assertGreaterEqual(summary["execution"]["stderr_line_count"], 1)
+        self.assertIn("delegate stderr line", summary["execution"]["stderr_excerpt"])
+        self.assertTrue(any("captured and preserved in execution diagnostics" in note for note in summary["notes"]))
+
     def test_sidecar_report_is_canonical_when_stdout_diverges(self) -> None:
         input_dir = self._make_input_dir(with_pdf=True)
         fake_base = self.tmpdir / "fake_pdf_to_excel_ocr_sidecar_priority.py"

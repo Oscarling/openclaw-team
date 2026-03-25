@@ -3790,3 +3790,62 @@ Verification snapshot on 2026-03-25:
   - `execution.status = rejected`
   - `execution.executed = true`
   - `execution.attempts = 2`
+
+### 75. Wrapper/Delegate Execution Outcome-Contract + Diagnostics Hardening After BL-065 Findings
+
+User objective:
+
+- continue strict backlog mainline without drift
+- close blocker on wrapper/delegate execution outcome semantics and
+  diagnostics completeness
+
+Main work areas:
+
+- activated `BL-20260325-066` and mirrored it to issue `#125`
+- implemented execution outcome-contract hardening in
+  `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`:
+  - made non-zero delegate return code a strict hard-failure signal even when
+    structured JSON exists
+  - added explicit note when delegate status evidence is overridden by non-zero
+    subprocess exit code
+  - preserved deterministic wrapper process contract (`success`/`partial` => 0,
+    `failed` => 1)
+- implemented canonical no-output partial semantics in
+  `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`:
+  - preserves `partial` when delegate exits 0 and reports `status=partial`
+    without XLSX artifact
+  - keeps `failed` for explicit delegate `failed` and contradictory
+    `success`-without-artifact paths
+- implemented diagnostics completeness fields in
+  `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`:
+  - added `stdout_present`/`stderr_present`
+  - added line counts and excerpts for stdout/stderr
+  - added explicit audit note when stderr is captured
+- expanded focused regressions in
+  `tests/test_pdf_to_excel_ocr_inbox_runner.py`:
+  - `test_preserves_delegate_partial_without_output_when_exit_zero`
+  - `test_nonzero_delegate_exit_hard_fails_even_with_structured_json`
+  - `test_preserves_stdout_stderr_diagnostics_in_summary`
+- produced blocker hardening report and advanced backlog tracking:
+  - `BL-20260325-066` moved to `done`
+  - added next validation item `BL-20260325-067` (`planned` / `next`)
+
+Primary output:
+
+- [WRAPPER_DELEGATE_EXECUTION_OUTCOME_DIAGNOSTIC_CONTRACT_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_EXECUTION_OUTCOME_DIAGNOSTIC_CONTRACT_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-066` is complete as a source-side blocker-hardening phase
+- wrapper/delegate non-zero and partial/no-output semantics are now stricter
+  and more canonical
+- wrapper summary now preserves structured diagnostics completeness for
+  stdout/stderr evidence
+- governance docs and next-step backlog item are synchronized
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_inbox_runner.py`
+  passed (`18/18`)
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed
