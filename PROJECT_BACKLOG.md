@@ -1217,14 +1217,31 @@ Allowed enum values:
 ### BL-20260325-069
 - title: Restore automation runtime provider availability/failover reliability after BL-068 protocol hardening
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-068
 - start_when: `BL-20260325-068` is merged and replay evidence confirms protocol mismatch is mitigated while provider runtime remains blocked by `http_502` on responses endpoint before critic handoff
 - done_when: Runtime failover configuration and execution path are verified by one governed real execute that reaches critic handoff without terminal provider availability failure at the initial endpoint
 - source: `AUTOMATION_RUNTIME_ENDPOINT_PROTOCOL_COMPATIBILITY_HARDENING_REPORT.md` on 2026-03-25 confirms next blocker class is provider responses-endpoint availability/failover reliability
+- link: /Users/lingguozhong/openclaw-team/AUTOMATION_RUNTIME_PROVIDER_AVAILABILITY_FAILOVER_COMPLETION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/131
+- evidence: Iteration-1 hardening adds multi-candidate responses failover for `wire_api=auto` and new regression `test_call_llm_auto_fallback_tries_response_candidates_until_success`; completion replay using healthy backup provider endpoint reached full automation->critic handoff with `critic_verdict=pass` (`AUTO-20260325-874`, `CRITIC-20260325-290`) and final execute `processed`, with evidence archived in `runtime_archives/bl069/`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-070
+- title: Validate BL-20260325-069 provider availability/failover hardening on one fresh governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-069
+- start_when: `BL-20260325-069` source-side failover hardening is merged so one fresh governed execute can confirm automation reaches critic handoff
+- done_when: One governed validation run (smoke -> regeneration -> preview -> approval -> real execute) records critic handoff success and whether dominant findings move away from provider availability/failover failures
+- source: `BL-20260325-069` is a blocker-hardening phase whose next required step is governed runtime validation on a fresh candidate
 - link: -
 - issue: -
 - evidence: -

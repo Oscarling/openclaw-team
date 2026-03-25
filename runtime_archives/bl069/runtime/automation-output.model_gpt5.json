@@ -1,0 +1,13 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "failed",
+  "summary": "Worker execution failed",
+  "artifacts": [],
+  "errors": [
+    "LLM call exhausted (attempts=3/3, class=http_502, endpoint=https://aixj.vip/responses, retryable=True): HTTP Error 502: Bad Gateway"
+  ],
+  "metadata": {},
+  "duration_ms": 77460,
+  "timestamp": "2026-03-25T12:47:38.986175Z"
+}

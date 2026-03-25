@@ -3913,6 +3913,62 @@ Verification snapshot on 2026-03-25:
   - `execution.executed = true`
   - `execution.attempts = 4`
 
+### 78. BL-069 Provider Availability/Failover Hardening Iteration 1
+
+User objective:
+
+- continue strict mainline progress without drift
+- start `BL-20260325-069` and reduce runtime block caused by provider
+  responses-endpoint `http_502`
+
+Main work areas:
+
+- activated `BL-20260325-069` and mirrored to issue `#131`
+- extended auto-mode compatibility fallback in
+  `dispatcher/worker_runtime.py`:
+  - moved from single responses retry to multi-candidate responses routing
+  - added endpoint/base compatibility helpers for candidate generation
+    (`/v1/responses` and `/responses` path variants)
+- added focused regression in `tests/test_argus_hardening.py`:
+  - `test_call_llm_auto_fallback_tries_response_candidates_until_success`
+- executed two elevated governed replays against approved preview
+  `preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153`:
+  - default retry policy
+  - higher retry policy (`ARGUS_LLM_MAX_RETRIES=6`)
+- executed one additional model-availability probe replay
+  (`OPENAI_MODEL_NAME=gpt-5`) to validate whether `http_502` is model-specific
+- archived evidence under `runtime_archives/bl069/`
+
+Primary output:
+
+- [AUTOMATION_RUNTIME_PROVIDER_AVAILABILITY_FAILOVER_ITERATION1_REPORT.md](/Users/lingguozhong/openclaw-team/AUTOMATION_RUNTIME_PROVIDER_AVAILABILITY_FAILOVER_ITERATION1_REPORT.md)
+
+Key result:
+
+- auto compatibility fallback now attempts multiple responses candidates
+- protocol mismatch (`http_400`) remains non-terminal and no longer the blocker
+- both replays still terminated with provider availability `http_502` at
+  `https://aixj.vip/responses`
+- `BL-20260325-069` remains active (critic handoff still not reached)
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_argus_hardening.py` passed (`18/18`)
+- `python3 scripts/backlog_lint.py` passed after BL-069 activation
+- `python3 scripts/backlog_sync.py` passed with BL-069 mirror to `#131`
+- elevated replay A (default retries) returned:
+  - `status = rejected`
+  - terminal class: `http_502`
+  - terminal endpoint: `https://aixj.vip/responses`
+- elevated replay B (`ARGUS_LLM_MAX_RETRIES=6`) returned:
+  - `status = rejected`
+  - terminal class: `http_502`
+  - terminal endpoint: `https://aixj.vip/responses`
+- elevated replay C (`OPENAI_MODEL_NAME=gpt-5`) returned:
+  - `status = rejected`
+  - terminal class: `http_502`
+  - terminal endpoint: `https://aixj.vip/responses`
+
 ### 77. Automation Runtime Endpoint/Protocol Compatibility Hardening After BL-067 Findings
 
 User objective:
@@ -3966,3 +4022,48 @@ Verification snapshot on 2026-03-25:
   - runtime auto-fallback chat -> responses was triggered
   - terminal class: `http_502`
   - terminal endpoint: `https://aixj.vip/v1/responses`
+
+### 79. BL-069 Completion via Backup Provider Health Check and Governed Replay Pass
+
+User objective:
+
+- retest with updated Desktop file `备用key`
+- verify whether runtime/provider availability blocker can be cleared
+
+Main work areas:
+
+- re-read `~/Desktop/备用key.rtf` and detected updated provider endpoint
+  `https://fast.vpsairobot.com`
+- executed provider health probes on responses API:
+  - `https://fast.vpsairobot.com/v1/responses`
+  - `https://fast.vpsairobot.com/responses`
+  - both returned `200` for `gpt-5.4` and `gpt-5-codex`
+- ran one elevated governed replay on approved preview
+  `preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153` using backup provider
+- archived automation + critic evidence bundle under `runtime_archives/bl069/`
+- updated backlog evidence and marked `BL-20260325-069` as `done`
+
+Primary output:
+
+- [AUTOMATION_RUNTIME_PROVIDER_AVAILABILITY_FAILOVER_COMPLETION_REPORT.md](/Users/lingguozhong/openclaw-team/AUTOMATION_RUNTIME_PROVIDER_AVAILABILITY_FAILOVER_COMPLETION_REPORT.md)
+
+Key result:
+
+- execute replay returned `processed` with `critic_verdict=pass`
+- runtime path reached critic handoff successfully:
+  - automation: `AUTO-20260325-874` (`success`)
+  - critic: `CRITIC-20260325-290` (`success`, verdict `pass`)
+- `BL-20260325-069` done condition is now satisfied
+
+Verification snapshot on 2026-03-25:
+
+- probe:
+  - `gpt-5.4 | https://fast.vpsairobot.com/v1/responses -> 200`
+  - `gpt-5.4 | https://fast.vpsairobot.com/responses -> 200`
+  - `gpt-5-codex | https://fast.vpsairobot.com/v1/responses -> 200`
+  - `gpt-5-codex | https://fast.vpsairobot.com/responses -> 200`
+- elevated replay returned:
+  - `status = done`
+  - `processed = 1`
+  - `rejected = 0`
+  - `decision_reason = critic_verdict=pass`

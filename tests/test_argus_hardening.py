@@ -487,6 +487,69 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertEqual([timeout for _url, timeout in calls], [120, 120])
         self.assertEqual(json.loads(content)["status"], "success")
 
+    def test_call_llm_auto_fallback_tries_response_candidates_until_success(self) -> None:
+        calls: list[tuple[str, int]] = []
+
+        class FakeResponse:
+            def __init__(self, payload: dict[str, Any]) -> None:
+                self._payload = payload
+
+            def __enter__(self) -> "FakeResponse":
+                return self
+
+            def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+                return False
+
+            def read(self) -> bytes:
+                return json.dumps(self._payload).encode("utf-8")
+
+        class AutoWireCandidateOpener:
+            def open(self, req: Any, timeout: int | None = None) -> FakeResponse:
+                calls.append((req.full_url, timeout or 0))
+                if req.full_url.endswith("/chat/completions"):
+                    raise urllib.error.HTTPError(req.full_url, 400, "Bad Request", None, None)
+                if req.full_url.endswith("/v1/responses"):
+                    raise urllib.error.HTTPError(req.full_url, 502, "Bad Gateway", None, None)
+                return FakeResponse(
+                    {
+                        "id": "resp_test_456",
+                        "output_text": json.dumps({"status": "success", "summary": "ok"}),
+                    }
+                )
+
+        with mock.patch.object(worker_runtime, "NO_PROXY_OPENER", AutoWireCandidateOpener()):
+            with mock.patch.object(worker_runtime.time, "sleep", return_value=None):
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "ARGUS_LLM_MAX_RETRIES": "2",
+                        "ARGUS_LLM_FALLBACK_RESPONSE_URLS": "https://provider.invalid/responses",
+                    },
+                    clear=False,
+                ):
+                    content = worker_runtime.call_llm(
+                        "system",
+                        "user",
+                        "automation",
+                        {
+                            "api_key": "key",
+                            "api_base": "https://provider.invalid/v1",
+                            "chat_url": "https://provider.invalid/v1/chat/completions",
+                            "model_name": "demo-model",
+                        },
+                    )
+
+        self.assertEqual(
+            [url for url, _timeout in calls],
+            [
+                "https://provider.invalid/v1/chat/completions",
+                "https://provider.invalid/v1/responses",
+                "https://provider.invalid/responses",
+            ],
+        )
+        self.assertEqual([timeout for _url, timeout in calls], [120, 120, 120])
+        self.assertEqual(json.loads(content)["status"], "success")
+
     def test_get_llm_settings_supports_responses_wire_api(self) -> None:
         with mock.patch.object(worker_runtime, "read_secret", return_value=None):
             with mock.patch.dict(
