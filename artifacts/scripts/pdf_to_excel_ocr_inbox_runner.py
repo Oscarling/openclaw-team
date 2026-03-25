@@ -105,9 +105,22 @@ def has_strong_delegate_success_evidence(delegate_report: dict[str, Any] | None)
         failed_count = status_counter.get("failed", 0)
         if isinstance(failed_count, int) and failed_count > 0:
             return False, "Delegate report still records failed file outcomes."
+        partial_count = status_counter.get("partial", 0)
+        if isinstance(partial_count, int) and partial_count > 0:
+            return False, "Delegate report still records partial file outcomes."
 
     if bool(delegate_report.get("dry_run", False)):
         return False, "Delegate reported dry-run mode, so wrapper success would overclaim execution."
+
+    if delegate_report.get("excel_written") is not True:
+        return False, "Delegate report did not attest excel_written=true."
+
+    if delegate_report.get("output_exists") is not True:
+        return False, "Delegate report did not attest output_exists=true."
+
+    output_size_bytes = delegate_report.get("output_size_bytes")
+    if not isinstance(output_size_bytes, int) or output_size_bytes < 1:
+        return False, "Delegate report did not attest a non-empty output_size_bytes value."
 
     return True, None
 

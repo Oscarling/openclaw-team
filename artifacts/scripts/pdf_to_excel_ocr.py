@@ -268,12 +268,21 @@ def main() -> int:
     if not pdf_files:
         emit_report(
             {
-                "status": "failed",
-                "error": f"No PDF files found under {input_dir}",
+                "status": "partial",
+                "input_dir": str(input_dir),
+                "output_xlsx": str(output_xlsx),
+                "ocr_mode": args.ocr,
+                "total_files": 0,
+                "status_counter": {},
+                "dry_run": bool(args.dry_run),
+                "excel_written": False,
+                "output_exists": False,
+                "output_size_bytes": 0,
+                "notes": [f"No PDF files found under {input_dir}"],
             },
             args.report_json,
         )
-        return 2
+        return 0
 
     ocr_runtime, missing = detect_ocr_runtime_status()
     results: list[FileResult] = []
@@ -306,8 +315,15 @@ def main() -> int:
     for item in results:
         status_counter[item.status] = status_counter.get(item.status, 0) + 1
 
+    failed_count = status_counter.get("failed", 0)
+    partial_count = status_counter.get("partial", 0)
+    if failed_count == 0 and partial_count == 0:
+        aggregate_status = "success"
+    else:
+        aggregate_status = "partial"
+
     report = {
-        "status": "success" if status_counter.get("failed", 0) == 0 else "partial",
+        "status": aggregate_status,
         "input_dir": str(input_dir),
         "output_xlsx": str(output_xlsx),
         "ocr_mode": args.ocr,
@@ -316,6 +332,9 @@ def main() -> int:
         "total_files": len(results),
         "status_counter": status_counter,
         "dry_run": bool(args.dry_run),
+        "excel_written": False,
+        "output_exists": False,
+        "output_size_bytes": 0,
     }
 
     if args.dry_run:
@@ -324,11 +343,19 @@ def main() -> int:
 
     try:
         write_excel(results, output_xlsx)
+        report["output_exists"] = output_xlsx.exists() and output_xlsx.is_file()
+        if report["output_exists"]:
+            report["output_size_bytes"] = int(output_xlsx.stat().st_size)
+        report["excel_written"] = bool(report["output_exists"] and report["output_size_bytes"] > 0)
         emit_report(report, args.report_json)
         return 0
     except Exception as e:
         report["status"] = "failed"
         report["error"] = str(e)
+        report["output_exists"] = output_xlsx.exists() and output_xlsx.is_file()
+        if report["output_exists"]:
+            report["output_size_bytes"] = int(output_xlsx.stat().st_size)
+        report["excel_written"] = bool(report["output_exists"] and report["output_size_bytes"] > 0)
         emit_report(report, args.report_json)
         return 3
 

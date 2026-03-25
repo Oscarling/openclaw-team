@@ -1388,6 +1388,63 @@ Verification snapshot on 2026-03-25:
   - `runtime_archives/bl035/state/`
   - `runtime_archives/bl035/tmp/`
 
+### 44. Source-Side Semantic Contract Alignment After BL-035
+
+User objective:
+
+- continue directly after `BL-20260325-035` without mixing a new live governed
+  run into the same phase
+- close the semantic mismatch cluster identified by critic:
+  - zero-input status semantics
+  - aggregate status truthfulness for partial outcomes
+  - explicit delegate output-write attestation fields
+- keep changes minimal, source-side, and test-backed
+
+Main work areas:
+
+- activated `BL-20260325-036` and mirrored it to GitHub issue `#65`
+- updated `artifacts/scripts/pdf_to_excel_ocr.py`:
+  - no-PDF branch now reports reviewable `partial` instead of hard `failed`
+  - no-PDF path now includes canonical output evidence defaults:
+    - `excel_written=false`
+    - `output_exists=false`
+    - `output_size_bytes=0`
+  - aggregate status now reports `success` only when:
+    - `failed == 0`
+    - `partial == 0`
+  - canonical report now emits output-write evidence fields across paths
+- updated `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`:
+  - strengthened success gate to require delegate attestation:
+    - no partial file outcomes
+    - `excel_written=true`
+    - `output_exists=true`
+    - `output_size_bytes > 0`
+- expanded `tests/test_pdf_to_excel_ocr_delegate.py` with focused semantic
+  regressions and output-evidence assertions
+- recorded next fresh governed validation phase as `BL-20260325-037`
+
+Primary output:
+
+- [SEMANTIC_CONTRACT_ALIGNMENT_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/SEMANTIC_CONTRACT_ALIGNMENT_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-036` completed as a source-side hardening phase
+- delegate/wrapper semantic contract is now tighter on:
+  - zero-input reviewable partial semantics
+  - aggregate status truthfulness when partial files exist
+  - explicit output-write evidence in delegate canonical report
+- runtime closure is intentionally deferred to governed validation phase
+  `BL-20260325-037`
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_delegate.py` passed
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_inbox_runner.py` passed
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with `BL-20260325-036` mirrored to
+  issue `#65`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:
