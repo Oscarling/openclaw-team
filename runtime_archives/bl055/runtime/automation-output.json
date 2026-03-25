@@ -1,0 +1,25 @@
+{
+  "task_id": "AUTO-20260325-868",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated exactly one runnable helper script artifact that wraps the reviewed PDF-to-Excel delegate with portable path resolution, preflight PDF discovery, dry-run/zero-input partial handling, explicit timeout control, stdout/sidecar JSON report parsing, success evidence gates, and structured reviewable summary output.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-25T08:27:16.821051Z",
+  "duration_ms": 98478,
+  "notes": [
+    "The script is parameter-driven and uses the provided input_dir and output_xlsx values as defaults while remaining overridable from the CLI.",
+    "It preserves readonly/best-effort reviewable semantics by delegating only to the reviewed repository script when available and by keeping dry-run or zero-PDF discovery outcomes as partial.",
+    "It enforces stronger success attestation than subprocess exit code plus output existence alone."
+  ],
+  "metadata": {
+    "task_id": "AUTO-20260325-868",
+    "worker": "automation",
+    "artifact_count": 1,
+    "expected_output_path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py"
+  }
+}

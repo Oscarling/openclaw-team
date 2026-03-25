@@ -979,8 +979,8 @@ Allowed enum values:
 ### BL-20260325-055
 - title: Validate BL-20260325-054 automation timeout/runtime reliability hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-054
@@ -988,7 +988,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-054, runs one explicit approval plus one real execute, and records whether runtime now reaches critic dispatch without timeout exhaustion
 - source: `AUTOMATION_TIMEOUT_RUNTIME_RELIABILITY_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation under real execute conditions
 - link: /Users/lingguozhong/openclaw-team/POST_AUTOMATION_TIMEOUT_RUNTIME_RELIABILITY_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-054 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/102
+- evidence: `POST_AUTOMATION_TIMEOUT_RUNTIME_RELIABILITY_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl055-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-206313e36a04`; elevated execute reached both automation (`AUTO-20260325-868`) and critic (`CRITIC-20260325-284`) without terminal timeout exhaustion, validating BL-054 progression, while final verdict remained `needs_revision` on wrapper dry-run propagation semantics
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-056
+- title: Harden wrapper dry-run delegate propagation semantics after BL-20260325-055 critic needs_revision verdict
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-055
+- start_when: `BL-20260325-055` confirms timeout/runtime reliability hardening reaches critic dispatch, and critic returns `needs_revision` that wrapper/delegate dry-run semantics are not preserved end-to-end
+- done_when: Source-side wrapper hardening ensures dry-run semantics are propagated consistently to the reviewed delegate path, and one blocker report records mitigation with focused tests
+- source: `POST_AUTOMATION_TIMEOUT_RUNTIME_RELIABILITY_VALIDATION_REPORT.md` on 2026-03-25 records critic verdict `needs_revision` citing missing dry-run forwarding in the wrapper/delegate pair
+- link: /Users/lingguozhong/openclaw-team/WRAPPER_DRYRUN_DELEGATE_PROPAGATION_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-055 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

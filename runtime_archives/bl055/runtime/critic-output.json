@@ -1,0 +1,23 @@
+{
+  "task_id": "CRITIC-20260325-284",
+  "worker": "critic",
+  "status": "success",
+  "summary": "Reviewed the inbox runner and paired delegate together as an end-to-end readonly smoke path. The pair is generally well-structured and evidence-oriented, but there is a material contract mismatch: the wrapper does not forward --dry-run to the delegate, so the wrapper/delegate pair does not preserve dry-run semantics end-to-end. Verdict: needs_revision.",
+  "artifacts": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "timestamp": "2026-03-25T08:27:47.280678Z",
+  "duration_ms": 30069,
+  "metadata": {
+    "verdict": "needs_revision",
+    "task_id": "CRITIC-20260325-284",
+    "worker": "critic",
+    "review_scope": [
+      "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "artifacts/scripts/pdf_to_excel_ocr.py"
+    ]
+  }
+}
