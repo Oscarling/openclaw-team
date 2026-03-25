@@ -1,0 +1,25 @@
+{
+  "task_id": "AUTO-20260325-864",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated one runnable helper wrapper script at artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py. The script is parameter-driven, prefers the reviewed delegate artifacts/scripts/pdf_to_excel_ocr.py, resolves relative paths portably from repository/script location, preserves traceability context, enforces honest XLSX semantics, uses recursive PDF discovery aligned with delegated execution, supports dry-run partial short-circuit, parses delegate JSON from stdout and/or --report-json sidecar, applies explicit success evidence gates, preserves delegate partial outcomes with limitations/next-step guidance, and bounds delegate execution with a timeout.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-25T07:03:46.033444Z",
+  "duration_ms": 85869,
+  "notes": [
+    "Produced exactly one script artifact as requested.",
+    "Script emits a structured JSON summary to stdout for reviewability.",
+    "Wrapper defaults are populated from the provided task parameters but remain overrideable via CLI.",
+    "Success is never claimed from exit code plus file existence alone; structured delegate evidence is required."
+  ],
+  "metadata": {
+    "task_id": "AUTO-20260325-864",
+    "worker": "automation",
+    "task_type": "generate_script"
+  }
+}
