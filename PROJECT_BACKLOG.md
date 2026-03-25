@@ -996,8 +996,8 @@ Allowed enum values:
 ### BL-20260325-056
 - title: Harden wrapper dry-run delegate propagation semantics after BL-20260325-055 critic needs_revision verdict
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-055
@@ -1005,7 +1005,24 @@ Allowed enum values:
 - done_when: Source-side wrapper hardening ensures dry-run semantics are propagated consistently to the reviewed delegate path, and one blocker report records mitigation with focused tests
 - source: `POST_AUTOMATION_TIMEOUT_RUNTIME_RELIABILITY_VALIDATION_REPORT.md` on 2026-03-25 records critic verdict `needs_revision` citing missing dry-run forwarding in the wrapper/delegate pair
 - link: /Users/lingguozhong/openclaw-team/WRAPPER_DRYRUN_DELEGATE_PROPAGATION_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260325-055 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/104
+- evidence: `WRAPPER_DRYRUN_DELEGATE_PROPAGATION_HARDENING_REPORT.md` records source-side hardening in `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` that forwards `--dry-run` through the delegate path and preserves partial semantics from delegate dry-run evidence, with focused regression coverage in `tests/test_pdf_to_excel_ocr_inbox_runner.py`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-057
+- title: Validate BL-20260325-056 wrapper dry-run delegate propagation hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-056
+- start_when: `BL-20260325-056` is merged so a fresh same-origin governed run can verify whether critic no longer flags wrapper/delegate dry-run propagation semantics
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-056, runs one explicit approval plus one real execute, and records whether critic findings move away from dry-run propagation concerns
+- source: `WRAPPER_DRYRUN_DELEGATE_PROPAGATION_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation under real execute conditions
+- link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_DRYRUN_DELEGATE_PROPAGATION_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-056 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

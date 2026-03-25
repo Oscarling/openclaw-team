@@ -2315,6 +2315,45 @@ Verification snapshot on 2026-03-25:
   - `execution.status = rejected`
   - `execution.executed = true`
   - `execution.attempts = 2`
+
+### 64. Wrapper Dry-Run Delegate Propagation Hardening After BL-055 Critic Blocker
+
+User objective:
+
+- continue next blocker phase without drift
+- harden wrapper/delegate dry-run propagation semantics after BL-055 critic
+  `needs_revision` finding
+
+Main work areas:
+
+- activated `BL-20260325-056` and mirrored it to issue `#104`
+- updated `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`:
+  - removed dry-run early return before delegation
+  - now forwards `--dry-run` to delegate command when dry-run is requested
+  - keeps wrapper dry-run outcome conservative (`partial`) with explicit
+    delegate dry-run attestation notes
+- updated focused regression in `tests/test_pdf_to_excel_ocr_inbox_runner.py`:
+  - `test_dry_run_forwards_flag_to_delegate_and_returns_partial`
+- produced blocker hardening report and prepared next governed validation item
+  (`BL-20260325-057`)
+
+Primary output:
+
+- [WRAPPER_DRYRUN_DELEGATE_PROPAGATION_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/WRAPPER_DRYRUN_DELEGATE_PROPAGATION_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-056` is complete as a source-side blocker-hardening phase
+- dry-run intent now propagates through wrapper -> reviewed delegate path with
+  explicit semantics
+- next phase `BL-20260325-057` is defined as fresh governed validation
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_inbox_runner.py` passed
+  `10/10`
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with BL-056 issue mirror to `#104`
 - automation worker:
   - task `AUTO-20260325-854`
   - `status = success`
