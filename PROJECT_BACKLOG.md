@@ -554,8 +554,8 @@ Allowed enum values:
 ### BL-20260325-030
 - title: Fix wrapper/delegate report-handoff CLI mismatch exposed by BL-20260325-029
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-029
@@ -563,7 +563,24 @@ Allowed enum values:
 - done_when: Wrapper/delegate integration no longer passes unsupported CLI arguments, evidence handoff remains reviewable and deterministic (stdout JSON and/or sidecar path contract clearly aligned), focused tests cover the agreed contract, and one phase report records the implementation outcome
 - source: `POST_CONTRACT_ALIGNMENT_VALIDATION_REPORT.md` on 2026-03-25 confirms the post-BL-20260325-028 governed run still fails review because wrapper and delegate report-handoff CLI contracts are incompatible
 - link: /Users/lingguozhong/openclaw-team/RUNNER_DELEGATE_CLI_ALIGNMENT_FIX_REPORT.md
-- issue: deferred:phase=next until BL-20260325-029 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/53
+- evidence: `RUNNER_DELEGATE_CLI_ALIGNMENT_FIX_REPORT.md` records the delegate-side compatibility fix that adds optional `--report-json` support to `artifacts/scripts/pdf_to_excel_ocr.py`, unifies report emission via `emit_report(...)` across success/failure paths, adds focused regressions in `tests/test_pdf_to_excel_ocr_delegate.py`, and updates usage documentation so wrapper/delegate report handoff no longer relies on an undeclared CLI argument
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-031
+- title: Validate BL-20260325-030 CLI alignment on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-030
+- start_when: `BL-20260325-030` is merged so a fresh same-origin governed run can verify whether the delegate-side CLI alignment removes the remaining wrapper/delegate report-handoff rejection pattern under real execute
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-030, runs one explicit approval plus one real execute, and records whether automation/critic outcome now clears the `--report-json` compatibility blocker isolated in BL-20260325-029
+- source: `RUNNER_DELEGATE_CLI_ALIGNMENT_FIX_REPORT.md` on 2026-03-25 concludes the next required step is governed runtime validation rather than assuming source-side fix success without live evidence
+- link: /Users/lingguozhong/openclaw-team/POST_CLI_ALIGNMENT_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-030 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

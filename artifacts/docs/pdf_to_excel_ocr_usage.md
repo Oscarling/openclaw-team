@@ -32,6 +32,7 @@ python3 artifacts/scripts/pdf_to_excel_ocr.py \
   - `on`: force OCR path.
   - `off`: do not invoke OCR.
 - `--dry-run`: no Excel file write, prints summary only.
+- `--report-json`: optional sidecar JSON output path. Writes the same report emitted to stdout.
 
 ## OCR Dependency Prerequisites
 - Python packages:

@@ -80,6 +80,11 @@ def parse_args() -> argparse.Namespace:
         default=50,
         help="In auto mode, run OCR when extracted text chars < this threshold.",
     )
+    parser.add_argument(
+        "--report-json",
+        default="",
+        help="Optional sidecar path for writing the same JSON report emitted to stdout.",
+    )
     return parser.parse_args()
 
 
@@ -239,6 +244,16 @@ def write_excel(results: list[FileResult], output_xlsx: Path) -> None:
         detail_df.to_excel(writer, sheet_name="files", index=False)
 
 
+def emit_report(report: dict[str, Any], report_json: str) -> None:
+    rendered = json.dumps(report, ensure_ascii=False, indent=2)
+    print(rendered)
+    if not report_json:
+        return
+    out_path = Path(report_json).expanduser().resolve()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(rendered + "\n", encoding="utf-8")
+
+
 def main() -> int:
     args = parse_args()
     input_dir = Path(args.input_dir).expanduser().resolve()
@@ -247,19 +262,16 @@ def main() -> int:
     try:
         pdf_files = discover_pdfs(input_dir)
     except Exception as e:
-        print(json.dumps({"status": "failed", "error": str(e)}, ensure_ascii=False, indent=2))
+        emit_report({"status": "failed", "error": str(e)}, args.report_json)
         return 2
 
     if not pdf_files:
-        print(
-            json.dumps(
-                {
-                    "status": "failed",
-                    "error": f"No PDF files found under {input_dir}",
-                },
-                ensure_ascii=False,
-                indent=2,
-            )
+        emit_report(
+            {
+                "status": "failed",
+                "error": f"No PDF files found under {input_dir}",
+            },
+            args.report_json,
         )
         return 2
 
@@ -307,17 +319,17 @@ def main() -> int:
     }
 
     if args.dry_run:
-        print(json.dumps(report, ensure_ascii=False, indent=2))
+        emit_report(report, args.report_json)
         return 0
 
     try:
         write_excel(results, output_xlsx)
-        print(json.dumps(report, ensure_ascii=False, indent=2))
+        emit_report(report, args.report_json)
         return 0
     except Exception as e:
         report["status"] = "failed"
         report["error"] = str(e)
-        print(json.dumps(report, ensure_ascii=False, indent=2))
+        emit_report(report, args.report_json)
         return 3
 
 

@@ -1065,6 +1065,47 @@ Verification snapshot on 2026-03-25:
   - `runtime_archives/bl029/state/`
   - `runtime_archives/bl029/tmp/`
 
+### 38. Delegate CLI Alignment Fix For Report-Handoff Compatibility
+
+User objective:
+
+- continue immediately after `BL-20260325-029` without losing SDLC cadence
+- fix the confirmed wrapper/delegate CLI mismatch around `--report-json`
+- keep the fix minimal, test-backed, and explicitly documented
+
+Main work areas:
+
+- activated `BL-20260325-030` and mirrored it to GitHub issue `#53`
+- updated reviewed delegate script `artifacts/scripts/pdf_to_excel_ocr.py` to:
+  - accept optional `--report-json`
+  - preserve stdout JSON output
+  - write the same JSON report to sidecar path when provided
+  - emit reports consistently for discovery failure, empty input, dry-run,
+    normal success, and write failure paths
+- added focused regression coverage:
+  - `tests/test_pdf_to_excel_ocr_delegate.py`
+  - verifies sidecar report creation and stdout/sidecar parity for dry-run and
+    write-failure flows
+- updated usage documentation:
+  - `artifacts/docs/pdf_to_excel_ocr_usage.md`
+- recorded the next governed validation phase as `BL-20260325-031`
+
+Primary output:
+
+- [RUNNER_DELEGATE_CLI_ALIGNMENT_FIX_REPORT.md](/Users/lingguozhong/openclaw-team/RUNNER_DELEGATE_CLI_ALIGNMENT_FIX_REPORT.md)
+
+Key result:
+
+- the reviewed delegate no longer rejects wrappers that pass `--report-json`
+- report handoff is now explicit and deterministic at the delegate boundary
+- this phase is a source-side fix phase; live governed runtime validation is
+  intentionally deferred to `BL-20260325-031`
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_delegate.py` passed
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_inbox_runner.py` passed
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:
