@@ -2949,3 +2949,64 @@ Verification snapshot on 2026-03-25:
   `10/10`
 - `python3 scripts/backlog_lint.py` passed
 - `python3 scripts/backlog_sync.py` passed with BL-050 issue mirror to `#92`
+
+### 59. Fresh Governed Validation After BL-050 Wrapper Provenance/Path Hardening
+
+User objective:
+
+- continue phase-by-phase without drift
+- validate BL-050 wrapper provenance/path traceability hardening on one fresh
+  same-origin governed candidate
+
+Main work areas:
+
+- activated `BL-20260325-051` and mirrored it to issue `#94`
+- executed governed validation pipeline with token
+  `regen-20260325-bl051-001`:
+  - sandbox Trello smoke (captured network-policy block evidence)
+  - elevated Trello smoke (live pass + mapped preview)
+  - ingest once -> fresh preview
+    `preview-trello-69c24cd3c1a2359ddd7a1bf8-58e83a71aacc`
+  - explicit approval write
+  - sandbox execute (captured Docker init block evidence)
+  - elevated replay A (secrets profile) reached automation but failed pre-critic
+    on `http_520`
+  - elevated replay B (controlled OpenAI primary override) remained pre-critic
+    on `http_401`
+- archived runtime/state/tmp evidence under `runtime_archives/bl051/`
+- produced validation report and recorded next blocker due pre-critic runtime
+  failure conditions
+
+Primary output:
+
+- [POST_WRAPPER_PROVENANCE_PATH_TRACEABILITY_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_WRAPPER_PROVENANCE_PATH_TRACEABILITY_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-051` is complete as a governed validation phase
+- validation reached real automation execution but could not reach critic
+  dispatch, so BL-050 critic-shift outcome is inconclusive in this run
+- dominant blocker in this phase is now automation endpoint/auth runtime
+  resilience (`http_520` / `http_401`) before critic
+- next backlog item set to `BL-20260325-052`
+
+Verification snapshot on 2026-03-25:
+
+- `python3 scripts/backlog_lint.py` passed after BL-051 activation
+- `python3 scripts/backlog_sync.py` passed with BL-051 issue mirror to `#94`
+- sandbox smoke evidence captured as blocked (`ConnectionError` /
+  `NameResolutionError`)
+- elevated smoke passed with `read_count = 1`
+- `python3 skills/ingest_tasks.py --once --test-mode success` returned:
+  - `processed = 1`
+  - `duplicate_skipped = 0`
+  - `preview_created = 1`
+- elevated execute replay A rejection reason:
+  - `LLM call exhausted ... class=http_520 ... fast.vpsairobot.com`
+- elevated execute replay B rejection reason:
+  - `LLM call exhausted ... class=http_401 ... api.openai.com`
+- final preview state:
+  - `approved = true`
+  - `execution.status = rejected`
+  - `execution.executed = true`
+  - `execution.attempts = 3`

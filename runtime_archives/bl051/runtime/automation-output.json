@@ -1,0 +1,13 @@
+{
+  "task_id": "AUTO-20260325-866",
+  "worker": "automation",
+  "status": "failed",
+  "summary": "Worker execution failed",
+  "artifacts": [],
+  "errors": [
+    "LLM call exhausted (attempts=1/3, class=http_401, endpoint=https://api.openai.com/v1/chat/completions, retryable=False): HTTP Error 401: Unauthorized"
+  ],
+  "metadata": {},
+  "duration_ms": 681,
+  "timestamp": "2026-03-25T07:51:57.738570Z"
+}
