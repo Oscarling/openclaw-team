@@ -1,0 +1,13 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "failed",
+  "summary": "Worker execution failed",
+  "artifacts": [],
+  "errors": [
+    "LLM call exhausted (attempts=2/2, class=http_524, endpoint=https://fast.vpsairobot.com/responses, retryable=True): HTTP Error 524: <none>"
+  ],
+  "metadata": {},
+  "duration_ms": 251749,
+  "timestamp": "2026-03-25T23:48:02.185721Z"
+}

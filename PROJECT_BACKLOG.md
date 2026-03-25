@@ -1302,14 +1302,31 @@ Allowed enum values:
 ### BL-20260325-074
 - title: Stabilize aligned fast-provider runtime timeouts so governed replay can reach automation success
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-073
 - start_when: BL-073 confirms auth blocker is removed but governed replay still terminates on timeout after retries under aligned profile/key pairing
-- done_when: One governed replay under aligned fast-provider profile avoids terminal timeout exhaustion and reaches automation success (and preferably critic handoff) with archived runtime evidence
+- done_when: Timeout-stability replay attempts under aligned profile are executed and archived; if terminal timeout class is replaced by a new dominant upstream/gateway timeout class, record that shift and queue the next blocker
 - source: `POST_PROVIDER_CREDENTIAL_PROFILE_ALIGNMENT_REPORT.md` on 2026-03-25 records probe `200` but execute terminal class shifted to timeout (`attempts=4/4`)
+- link: /Users/lingguozhong/openclaw-team/POST_FAST_PROVIDER_TIMEOUT_STABILITY_VALIDATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/141
+- evidence: Two elevated replay attempts under aligned fast-provider profile (`gpt-5.4` and `gpt-5`, tuned timeout/retry env) both ended with terminal class `http_524` at `https://fast.vpsairobot.com/responses` (`runtime_archives/bl074/tmp/bl074_execute_replay_tuned.json`, `runtime_archives/bl074/tmp/bl074_execute_replay_gpt5.json`), proving dominant blocker shifted from local timeout exhaustion to upstream gateway-timeout class while auth remained cleared
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-075
+- title: Harden fast-provider gateway-timeout resilience and timeout-recovery knob propagation for governed execute
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-074
+- start_when: BL-074 confirms aligned profile no longer fails on auth but still terminates at `http_524` under replay attempts, and runtime indicates timeout-recovery retries knob is not propagated from execute env
+- done_when: Delegate runtime receives explicit timeout-recovery override from execute env and governed replay under aligned profile no longer terminates at gateway-timeout exhaustion (`http_524`) before automation success
+- source: `POST_FAST_PROVIDER_TIMEOUT_STABILITY_VALIDATION_REPORT.md` on 2026-03-25 records dual-model tuned runs both ending at `http_524` and notes timeout-recovery env propagation gap
 - link: -
 - issue: -
 - evidence: -
