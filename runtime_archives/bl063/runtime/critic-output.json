@@ -1,0 +1,29 @@
+{
+  "task_id": "CRITIC-20260325-288",
+  "worker": "critic",
+  "status": "success",
+  "summary": "Reviewed the inbox runner and paired delegate together as an end-to-end readonly smoke path. Generated the required markdown review artifact with an explicit verdict. Verdict: needs_revision.",
+  "artifacts": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "timestamp": "2026-03-25T10:08:08.645116Z",
+  "duration_ms": 44181,
+  "notes": [
+    "Review is grounded in the provided artifact snapshots for both scripts.",
+    "Assessment covers wrapper/delegate interaction, readonly contract handling, evidence gating, and result semantics."
+  ],
+  "metadata": {
+    "verdict": "needs_revision",
+    "task_id": "CRITIC-20260325-288",
+    "worker": "critic",
+    "review_scope": [
+      "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "artifacts/scripts/pdf_to_excel_ocr.py"
+    ],
+    "primary_artifact": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+    "paired_artifact": "artifacts/scripts/pdf_to_excel_ocr.py"
+  }
+}
