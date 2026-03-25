@@ -430,6 +430,57 @@ def llm_candidate_urls(llm_settings):
     return deduped
 
 
+def endpoint_api_base(endpoint_url):
+    base = str(endpoint_url or "").strip().rstrip("/")
+    if base.endswith("/chat/completions"):
+        return base[: -len("/chat/completions")]
+    if base.endswith("/responses"):
+        return base[: -len("/responses")]
+    return base
+
+
+def response_api_base_variants(base):
+    normalized = str(base or "").strip().rstrip("/")
+    if not normalized:
+        return []
+    variants = [normalized]
+    if normalized.endswith("/v1"):
+        trimmed = normalized[: -len("/v1")].rstrip("/")
+        if trimmed:
+            variants.append(trimmed)
+    else:
+        variants.append(f"{normalized}/v1")
+    return variants
+
+
+def compatibility_response_urls(endpoint_url, llm_settings):
+    candidates = [normalize_responses_endpoint(endpoint_url)]
+    configured_responses_url = llm_settings.get("responses_url")
+    if configured_responses_url:
+        candidates.append(normalize_responses_endpoint(configured_responses_url))
+    candidates.extend(llm_fallback_response_urls())
+    candidates.extend(normalize_responses_endpoint(base) for base in llm_fallback_api_bases())
+
+    base_candidates = []
+    for value in (
+        endpoint_api_base(endpoint_url),
+        llm_settings.get("api_base"),
+        endpoint_api_base(configured_responses_url),
+    ):
+        base_candidates.extend(response_api_base_variants(value))
+    candidates.extend(normalize_responses_endpoint(base) for base in base_candidates)
+
+    deduped = []
+    seen = set()
+    for url in candidates:
+        value = str(url or "").strip()
+        if not value or value in seen:
+            continue
+        seen.add(value)
+        deduped.append(value)
+    return deduped
+
+
 def infer_wire_api_for_endpoint(endpoint, configured_wire_api):
     if configured_wire_api in {"chat_completions", "responses"}:
         return configured_wire_api
@@ -614,20 +665,21 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
                 and wire_api == "chat_completions"
                 and error_class == "http_400"
             ):
-                responses_url = normalize_responses_endpoint(endpoint_url)
-                if responses_url != endpoint_url:
+                response_payload = build_responses_payload(
+                    llm_settings["model_name"], system_prompt, user_prompt
+                )
+                response_candidates = compatibility_response_urls(endpoint_url, llm_settings)
+                if response_candidates:
                     log(
                         worker,
                         "INFO",
                         (
-                            "Chat-completions returned http_400; retrying once with "
-                            f"responses wire API (endpoint={responses_url})."
+                            "Chat-completions returned http_400; retrying with "
+                            f"responses wire API candidates (count={len(response_candidates)})."
                         ),
                     )
+                for responses_url in response_candidates:
                     try:
-                        response_payload = build_responses_payload(
-                            llm_settings["model_name"], system_prompt, user_prompt
-                        )
                         return call_llm_once(
                             endpoint_url=responses_url,
                             wire_api="responses",

@@ -1,0 +1,35 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-25T12:42:43.517460Z
+finished_at: 2026-03-25T12:43:45.881635Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-25T12:42:43.750026Z] [automation] [INFO] Worker started using endpoint https://aixj.vip/v1/chat/completions (wire_api=auto, timeout=120s, attempts=6, timeout_recovery_retries=1)
+[2026-03-25T12:42:44.202041Z] [automation] [INFO] Chat-completions returned http_400; retrying with responses wire API candidates (count=2).
+[2026-03-25T12:42:46.973192Z] [automation] [WARN] LLM call failed attempt 1/6 (endpoint=https://aixj.vip/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:42:46.973429Z] [automation] [INFO] Retrying LLM call in 1s (next_endpoint=https://aixj.vip/v1/chat/completions)
+[2026-03-25T12:42:48.440001Z] [automation] [INFO] Chat-completions returned http_400; retrying with responses wire API candidates (count=2).
+[2026-03-25T12:42:51.313117Z] [automation] [WARN] LLM call failed attempt 2/6 (endpoint=https://aixj.vip/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:42:51.313189Z] [automation] [INFO] Retrying LLM call in 2s (next_endpoint=https://aixj.vip/v1/chat/completions)
+[2026-03-25T12:42:54.097502Z] [automation] [INFO] Chat-completions returned http_400; retrying with responses wire API candidates (count=2).
+[2026-03-25T12:42:58.857904Z] [automation] [WARN] LLM call failed attempt 3/6 (endpoint=https://aixj.vip/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:42:58.858104Z] [automation] [INFO] Retrying LLM call in 4s (next_endpoint=https://aixj.vip/v1/chat/completions)
+[2026-03-25T12:43:05.101039Z] [automation] [INFO] Chat-completions returned http_400; retrying with responses wire API candidates (count=2).
+[2026-03-25T12:43:11.041561Z] [automation] [WARN] LLM call failed attempt 4/6 (endpoint=https://aixj.vip/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:43:11.041637Z] [automation] [INFO] Retrying LLM call in 8s (next_endpoint=https://aixj.vip/v1/chat/completions)
+[2026-03-25T12:43:19.639681Z] [automation] [INFO] Chat-completions returned http_400; retrying with responses wire API candidates (count=2).
+[2026-03-25T12:43:24.979687Z] [automation] [WARN] LLM call failed attempt 5/6 (endpoint=https://aixj.vip/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:43:24.979768Z] [automation] [INFO] Retrying LLM call in 16s (next_endpoint=https://aixj.vip/v1/chat/completions)
+[2026-03-25T12:43:42.601888Z] [automation] [INFO] Chat-completions returned http_400; retrying with responses wire API candidates (count=2).
+[2026-03-25T12:43:45.720207Z] [automation] [WARN] LLM call failed attempt 6/6 (endpoint=https://aixj.vip/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:43:45.720489Z] [automation] [ERROR] Task failed AUTO-20260325-874: LLM call exhausted (attempts=6/6, class=http_502, endpoint=https://aixj.vip/responses, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-25T12:43:45.727721Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+
