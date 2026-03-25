@@ -1633,6 +1633,55 @@ Verification snapshot on 2026-03-25:
   - `runtime_archives/bl039/state/`
   - `runtime_archives/bl039/tmp/`
 
+### 48. Wrapper Success-Evidence Contract Hardening After BL-039
+
+User objective:
+
+- continue after `BL-20260325-039` without mixing a new governed runtime run
+  into the same phase
+- harden source-side contract guidance so generated wrapper success cannot be
+  overclaimed without explicit delegate output-write attestation consistency
+- keep the hardening minimal and test-backed
+
+Main work areas:
+
+- activated `BL-20260325-040` and mirrored it to GitHub issue `#73`
+- updated `adapters/local_inbox_adapter.py`:
+  - strengthened `delegate_success_evidence` contract hint from generic wording
+    to field-level attestation requirements:
+    - `status=success`
+    - `total_files>=1`
+    - `dry_run=false`
+    - `status_counter.failed=0`
+    - `status_counter.partial=0`
+    - `excel_written=true`
+    - `output_exists=true`
+    - `output_size_bytes>0`
+  - added explicit constraint-level success gate with the same required fields
+  - added explicit acceptance criterion for wrapper success attestation fields
+- expanded `tests/test_local_inbox_adapter.py` with focused assertions for the
+  new field-level contract language
+- recorded next fresh governed validation phase as `BL-20260325-041`
+
+Primary output:
+
+- [WRAPPER_SUCCESS_EVIDENCE_CONTRACT_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/WRAPPER_SUCCESS_EVIDENCE_CONTRACT_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-040` completed as a source-side blocker-hardening phase
+- adapter-side wrapper success guidance is now explicit at the field level
+  instead of relying on broad wording
+- runtime closure is intentionally deferred to governed validation phase
+  `BL-20260325-041`
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_local_inbox_adapter.py` passed
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with `BL-20260325-040` mirrored to
+  issue `#73`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:

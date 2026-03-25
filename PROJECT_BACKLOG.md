@@ -724,8 +724,8 @@ Allowed enum values:
 ### BL-20260325-040
 - title: Harden generated wrapper success-evidence contract after BL-20260325-039 runtime findings
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-039
@@ -733,7 +733,24 @@ Allowed enum values:
 - done_when: Source-side/runtime contract hardening ensures generated wrapper success semantics cannot overclaim without explicit delegate output-write attestation consistency, focused tests cover the targeted semantics, and one blocker report records the hardening outcome
 - source: `POST_AUTOMATION_SSL_RELIABILITY_VALIDATION_REPORT.md` on 2026-03-25 records that runtime progressed to critic review and shifted blocker to wrapper evidence-contract semantics
 - link: /Users/lingguozhong/openclaw-team/WRAPPER_SUCCESS_EVIDENCE_CONTRACT_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260325-039 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/73
+- evidence: `WRAPPER_SUCCESS_EVIDENCE_CONTRACT_HARDENING_REPORT.md` records source-side contract hardening in `adapters/local_inbox_adapter.py` to require explicit delegate success attestation fields (`excel_written`, `output_exists`, `output_size_bytes`, and status-counter gates) with focused assertions in `tests/test_local_inbox_adapter.py`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-041
+- title: Validate BL-20260325-040 wrapper success-evidence contract hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-040
+- start_when: `BL-20260325-040` is merged so a fresh same-origin governed run can verify whether strengthened wrapper success-evidence contract guidance clears the new critic blocker cluster under real execute
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-040, runs one explicit approval plus one real execute, and records whether runtime critic outcome now clears wrapper success-evidence semantics findings from BL-20260325-039
+- source: `WRAPPER_SUCCESS_EVIDENCE_CONTRACT_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming contract hardening success without live evidence
+- link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_SUCCESS_EVIDENCE_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-040 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

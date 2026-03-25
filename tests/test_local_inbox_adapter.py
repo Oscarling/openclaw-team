@@ -101,6 +101,11 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         self.assertIn("Path.cwd()", contract_hints["delegate_resolution"])
         self.assertIn("delegate only to the reviewed repository script", contract_hints["reviewed_delegate_contract"])
         self.assertIn("zero exit code plus output-file existence", contract_hints["delegate_success_evidence"])
+        self.assertIn("status_counter.failed=0", contract_hints["delegate_success_evidence"])
+        self.assertIn("status_counter.partial=0", contract_hints["delegate_success_evidence"])
+        self.assertIn("excel_written=true", contract_hints["delegate_success_evidence"])
+        self.assertIn("output_exists=true", contract_hints["delegate_success_evidence"])
+        self.assertIn("output_size_bytes>0", contract_hints["delegate_success_evidence"])
         self.assertIn("explicit timeout", contract_hints["delegate_timeout"])
         self.assertIn(
             "status/total_files/status_counter/dry_run",
@@ -152,6 +157,12 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         )
         self.assertTrue(
             any(
+                "excel_written=true" in item and "status_counter.partial=0" in item
+                for item in auto_task["constraints"]
+            )
+        )
+        self.assertTrue(
+            any(
                 "emits JSON to stdout" in item
                 for item in auto_task["constraints"]
             )
@@ -184,6 +195,10 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         )
         self.assertIn(
             "Wrapper success requires stronger delegate evidence than zero exit code plus a non-empty output file alone.",
+            auto_task["acceptance_criteria"],
+        )
+        self.assertIn(
+            "Wrapper success attestation requires delegate fields excel_written=true, output_exists=true, output_size_bytes>0, and status_counter.partial/status_counter.failed equal to 0.",
             auto_task["acceptance_criteria"],
         )
         self.assertIn(
