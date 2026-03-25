@@ -1,0 +1,18 @@
+{
+  "status": "done",
+  "processed": 0,
+  "rejected": 1,
+  "skipped": 0,
+  "test_mode": "off",
+  "allow_replay": true,
+  "results": [
+    {
+      "status": "rejected",
+      "decision_reason": "Automation task failed: {\"task_id\": \"AUTO-20260325-865\", \"worker\": \"automation\", \"status\": \"failed\", \"summary\": \"Worker execution failed\", \"artifacts\": [], \"errors\": [\"Missing API key. Checked: openai_api_key, api_key, OPENAI_API_KEY, API_KEY\"], \"metadata\": {}, \"duration_ms\": 1, \"timestamp\": \"2026-03-25T07:31:50.741006Z\"}",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-e33731f048be",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e33731f048be.json",
+      "result_sidecar": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e33731f048be.result.json",
+      "critic_verdict": "needs_revision"
+    }
+  ]
+}

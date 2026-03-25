@@ -1,0 +1,29 @@
+{
+  "task_id": "AUTO-20260325-865",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated the requested single runnable helper script artifact as a parameter-driven wrapper that prefers the reviewed repository delegate, enforces reviewable evidence gates, preserves traceability, uses explicit timeout handling, and reports partial honestly for dry-run/zero-PDF/partial delegate outcomes.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-25T07:33:32.811852Z",
+  "duration_ms": 78715,
+  "notes": [
+    "Produced exactly one script artifact at the expected path.",
+    "The script is designed to reuse artifacts/scripts/pdf_to_excel_ocr.py via a portable path resolution strategy relative to the wrapper/repository, not Path.cwd().",
+    "Wrapper logic is parameter-driven for input_dir and output_xlsx, preserves incoming traceability context, uses --report-json for delegate handoff, parses JSON from stdout directly when available, and applies stronger success evidence gates before claiming success.",
+    "Dry-run short-circuit and zero-PDF discovery are represented as partial with structured summary and no false XLSX success claim.",
+    "Delegate subprocess execution is bounded by an explicit timeout and timeout is reported honestly."
+  ],
+  "metadata": {
+    "task_id": "AUTO-20260325-865",
+    "worker": "automation",
+    "output_contract": "single_json_object",
+    "created_files": [
+      "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py"
+    ]
+  }
+}

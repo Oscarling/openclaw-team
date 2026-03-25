@@ -877,8 +877,8 @@ Allowed enum values:
 ### BL-20260325-049
 - title: Validate BL-20260325-048 delegate OCR/status reporting hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-048
@@ -886,7 +886,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-048, runs one explicit approval plus one real execute, and records whether critic findings shift away from delegate OCR/status/reporting evidence quality
 - source: `DELEGATE_OCR_STATUS_REPORTING_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming delegate-hardening success without live evidence
 - link: /Users/lingguozhong/openclaw-team/POST_DELEGATE_OCR_STATUS_REPORTING_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-048 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/90
+- evidence: `POST_DELEGATE_OCR_STATUS_REPORTING_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl049-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-e33731f048be` with explicit approval and elevated replay; runtime confirmed BL-20260325-048 delegate OCR/status/reporting hardening is active (`AUTO-20260325-865` succeeded) while critic findings shifted away from delegate evidence semantics to wrapper-level provenance/path traceability concerns (`CRITIC-20260325-283`, verdict `needs_revision`)
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-050
+- title: Harden wrapper provenance/path traceability semantics after BL-20260325-049 critic findings
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-049
+- start_when: `BL-20260325-049` confirms delegate-side OCR/status/report semantics are no longer the dominant blocker and critic focus has shifted to wrapper-level provenance/path/readonly traceability concerns under real execute
+- done_when: Source-side wrapper hardening removes path-resolution ambiguity, strengthens provenance and readonly traceability attestations, and one blocker report records mitigation with focused tests
+- source: `POST_DELEGATE_OCR_STATUS_REPORTING_VALIDATION_REPORT.md` on 2026-03-25 records the next required phase as wrapper-level provenance/path traceability hardening after delegate evidence semantics were validated
+- link: /Users/lingguozhong/openclaw-team/WRAPPER_PROVENANCE_PATH_TRACEABILITY_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-049 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

@@ -1,0 +1,30 @@
+{
+  "task_id": "CRITIC-20260325-283",
+  "worker": "critic",
+  "status": "success",
+  "summary": "Reviewed the inbox runner and paired delegate together as an end-to-end readonly smoke path. The pair is generally well-structured and evidence-oriented, but the wrapper's delegate resolution logic is incorrect for its default path and would fail to locate the supplied delegate at runtime in the reviewed repository layout. Verdict: needs_revision.",
+  "artifacts": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "timestamp": "2026-03-25T07:34:15.159929Z",
+  "duration_ms": 41935,
+  "notes": [
+    "Review was grounded in supplied artifact snapshots for both scripts.",
+    "Evaluation covered wrapper and delegate together per review scope.",
+    "Review artifact includes explicit verdict and rationale."
+  ],
+  "metadata": {
+    "task_id": "CRITIC-20260325-283",
+    "worker": "critic",
+    "verdict": "needs_revision",
+    "reviewed_artifacts": [
+      "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "artifacts/scripts/pdf_to_excel_ocr.py"
+    ],
+    "primary_artifact": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+    "paired_artifact": "artifacts/scripts/pdf_to_excel_ocr.py"
+  }
+}
