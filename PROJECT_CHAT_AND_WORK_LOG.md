@@ -1075,6 +1075,54 @@ Verification snapshot on 2026-03-25:
   - verdict `needs_revision`
   - artifact `artifacts/reviews/pdf_to_excel_ocr_inbox_review.md`
 
+### 32. Source-Side Runner Contract Alignment After BL-027
+
+User objective:
+
+- continue after `BL-20260324-027` with backlog-first workflow
+- address the integration-level `needs_revision` drift observed in the fresh
+  governed run, specifically around wrapper reuse, delegate report contract
+  compatibility, and dry-run semantics
+
+Main work areas:
+
+- activated new backlog item `BL-20260325-028` and mirrored it to issue #49
+- strengthened source-side automation task parameters in
+  `adapters/local_inbox_adapter.py`:
+  - added explicit `preferred_wrapper_script`
+  - retained reviewed `preferred_base_script`
+- added new contract hints:
+  - `delegate_report_schema`
+  - `delegate_report_handoff`
+  - `dry_run_semantics`
+- expanded automation constraints and acceptance criteria to enforce:
+  - reviewed wrapper reuse preference
+  - compatibility with delegate JSON schema
+  - stdout JSON handoff support
+  - explicit dry-run delegated/non-delegated behavior
+- updated `tests/test_local_inbox_adapter.py` to verify the new contract
+  requirements
+
+Primary output:
+
+- [RUNNER_CONTRACT_ALIGNMENT_REPORT.md](/Users/lingguozhong/openclaw-team/RUNNER_CONTRACT_ALIGNMENT_REPORT.md)
+
+Key result:
+
+- source-side contract guidance is now more explicit about how generated runners
+  should stay aligned with reviewed repository behavior
+- this phase hardens contract direction; it does not itself prove a new live
+  governed execute outcome
+- next step is a fresh governed validation phase on a new same-origin preview
+  candidate
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_local_inbox_adapter.py` passed
+- `python3 -m unittest -v tests/test_trello_readonly_ingress.py` passed
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed
+
 ### 34. Post-Propagation Runner Gap Hardening
 
 User objective:
