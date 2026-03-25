@@ -642,6 +642,74 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertIn("attempts=1/3", message)
         self.assertEqual(attempts["count"], 1)
 
+    def test_call_llm_quarantines_primary_after_http_403_and_retries_fallback(self) -> None:
+        calls: list[tuple[str, int]] = []
+        fallback_attempts = {"count": 0}
+
+        class FakeResponse:
+            def __enter__(self) -> "FakeResponse":
+                return self
+
+            def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+                return False
+
+            def read(self) -> bytes:
+                payload = {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps({"status": "success", "summary": "ok"})
+                            }
+                        }
+                    ]
+                }
+                return json.dumps(payload).encode("utf-8")
+
+        class MixedFailureOpener:
+            def open(self, req: Any, timeout: int | None = None) -> FakeResponse:
+                calls.append((req.full_url, timeout or 0))
+                if "primary.invalid" in req.full_url:
+                    raise urllib.error.HTTPError(req.full_url, 403, "Forbidden", None, None)
+                fallback_attempts["count"] += 1
+                if fallback_attempts["count"] == 1:
+                    raise urllib.error.URLError(
+                        "[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol"
+                    )
+                return FakeResponse()
+
+        with mock.patch.object(worker_runtime, "NO_PROXY_OPENER", MixedFailureOpener()):
+            with mock.patch.object(worker_runtime.time, "sleep", return_value=None):
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "ARGUS_LLM_MAX_RETRIES": "3",
+                        "ARGUS_LLM_FALLBACK_CHAT_URLS": "https://fallback.invalid/v1/chat/completions",
+                    },
+                    clear=False,
+                ):
+                    content = worker_runtime.call_llm(
+                        "system",
+                        "user",
+                        "automation",
+                        {
+                            "api_key": "key",
+                            "api_base": "https://primary.invalid/v1",
+                            "chat_url": "https://primary.invalid/v1/chat/completions",
+                            "model_name": "demo-model",
+                        },
+                    )
+
+        self.assertEqual(
+            [url for url, _timeout in calls],
+            [
+                "https://primary.invalid/v1/chat/completions",
+                "https://fallback.invalid/v1/chat/completions",
+                "https://fallback.invalid/v1/chat/completions",
+            ],
+        )
+        self.assertEqual([timeout for _url, timeout in calls], [120, 120, 120])
+        self.assertEqual(json.loads(content)["status"], "success")
+
     def test_call_llm_raises_classified_tls_error_after_exhaustion(self) -> None:
         class AlwaysFailOpener:
             def open(self, req: Any, timeout: int | None = None) -> Any:  # noqa: ARG002

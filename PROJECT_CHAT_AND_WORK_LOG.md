@@ -1867,6 +1867,52 @@ Verification snapshot on 2026-03-25:
   - `runtime_archives/bl043/state/`
   - `runtime_archives/bl043/tmp/`
 
+### 52. Multi-Endpoint Policy Hardening After BL-043 Mixed Failure
+
+User objective:
+
+- continue from `BL-20260325-043` without forcing another live replay in the
+  same phase
+- harden source-side endpoint policy so auth-fallback calls do not rotate back
+  to a known `http_403` primary endpoint during the same retry cycle
+- keep the hardening bounded, deterministic, and test-backed
+
+Main work areas:
+
+- activated and completed `BL-20260325-044` as a source-side blocker-hardening
+  phase
+- updated `dispatcher/worker_runtime.py`:
+  - added `remove_endpoint_for_current_call(...)`
+  - in `call_llm(...)`, when `http_401/http_403` triggers bounded auth-fallback
+    retry, current failed endpoint is quarantined for the remainder of that call
+  - added explicit log for endpoint quarantine activation
+- expanded `tests/test_argus_hardening.py` with focused mixed-failure coverage:
+  - new test asserts call sequence
+    `[primary(http_403), fallback(tls_eof), fallback(success)]`
+  - verifies primary endpoint is not retried again within the same call after
+    quarantine
+- recorded next governed validation phase as `BL-20260325-045`
+
+Primary output:
+
+- [AUTOMATION_MULTI_ENDPOINT_POLICY_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/AUTOMATION_MULTI_ENDPOINT_POLICY_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-044` completed as a source-side hardening phase
+- runtime retry behavior now avoids same-call re-entry to authorization-failed
+  primary endpoints once auth-fallback path is activated
+- live runtime effectiveness remains intentionally deferred to fresh governed
+  validation phase `BL-20260325-045`
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_argus_hardening.py` passed
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with no phase=now actionable issue
+  mirroring required
+- `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:

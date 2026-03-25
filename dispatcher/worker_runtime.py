@@ -389,6 +389,15 @@ def should_retry_auth_failure_on_fallback(error_class, attempt, max_attempts, ch
     return current_url != next_url
 
 
+def remove_endpoint_for_current_call(chat_urls, blocked_url):
+    if len(chat_urls) <= 1:
+        return chat_urls
+    filtered = [url for url in chat_urls if url != blocked_url]
+    if not filtered:
+        return chat_urls
+    return filtered
+
+
 # ==========================================
 # LLM Call with retry
 # ==========================================
@@ -458,6 +467,14 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
                 ) from e
             if auth_fallback_retry:
                 log(worker, "INFO", "Authorization failure detected; retrying once on fallback endpoint.")
+                next_chat_urls = remove_endpoint_for_current_call(chat_urls, chat_url)
+                if next_chat_urls != chat_urls:
+                    chat_urls = next_chat_urls
+                    log(
+                        worker,
+                        "INFO",
+                        f"Quarantined endpoint for current call due to authorization failure: {chat_url}",
+                    )
             delay_seconds = 2 ** attempt
             next_url = chat_urls[(attempt + 1) % len(chat_urls)]
             log(worker, "INFO", f"Retrying LLM call in {delay_seconds}s (next_endpoint={next_url})")

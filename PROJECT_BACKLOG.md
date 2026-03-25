@@ -792,8 +792,8 @@ Allowed enum values:
 ### BL-20260325-044
 - title: Harden multi-endpoint automation runtime policy after BL-20260325-043 mixed auth/transport blocker
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-043
@@ -801,7 +801,24 @@ Allowed enum values:
 - done_when: Automation endpoint policy/runtime handling is hardened so governed execute has at least one reliable authorized endpoint path (with deterministic endpoint-order policy and explicit diagnostics), focused tests cover the mixed auth/transport failure path, and one blocker report records the mitigation
 - source: `POST_HTTP403_HARDENING_VALIDATION_REPORT.md` on 2026-03-25 records the new mixed blocker pattern (`primary=http_403`, `fallback=tls_eof`) after BL-20260325-042 behavior activation
 - link: /Users/lingguozhong/openclaw-team/AUTOMATION_MULTI_ENDPOINT_POLICY_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260325-043 lands on main
+- issue: -
+- evidence: `AUTOMATION_MULTI_ENDPOINT_POLICY_HARDENING_REPORT.md` records source-side hardening in `dispatcher/worker_runtime.py` that quarantines authorization-failed endpoints for the remainder of a call after auth-fallback activation, preventing deterministic retry rotation back to known-`http_403` primary endpoints, with focused mixed-failure regression coverage in `tests/test_argus_hardening.py`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-045
+- title: Validate BL-20260325-044 multi-endpoint runtime policy hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-044
+- start_when: `BL-20260325-044` is merged so a fresh same-origin governed run can verify whether endpoint quarantine policy prevents same-call return to known-`http_403` primary endpoint and improves progression toward artifact generation and critic dispatch
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-044, runs one explicit approval plus one real execute, and records whether runtime now avoids same-call primary-endpoint `http_403` re-entry after auth-fallback activation
+- source: `AUTOMATION_MULTI_ENDPOINT_POLICY_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation under real execute conditions
+- link: /Users/lingguozhong/openclaw-team/POST_MULTI_ENDPOINT_POLICY_HARDENING_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-044 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
