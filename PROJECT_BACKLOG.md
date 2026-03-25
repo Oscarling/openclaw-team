@@ -758,8 +758,8 @@ Allowed enum values:
 ### BL-20260325-042
 - title: Harden automation endpoint authorization/runtime access after BL-20260325-041 HTTP 403 blocker
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-041
@@ -767,7 +767,24 @@ Allowed enum values:
 - done_when: Automation LLM path handles or avoids endpoint authorization/runtime-access blockers (credential/endpoint policy hardening with explicit diagnostics and deterministic behavior), focused tests cover the new behavior, and one blocker report records the implemented mitigation
 - source: `POST_WRAPPER_SUCCESS_EVIDENCE_VALIDATION_REPORT.md` on 2026-03-25 records automation failure class `http_403` at `https://fast.vpsairobot.com/v1/chat/completions` as the active blocker that prevented runtime validation closure of BL-20260325-040
 - link: /Users/lingguozhong/openclaw-team/AUTOMATION_ENDPOINT_HTTP403_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260325-041 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/77
+- evidence: `AUTOMATION_ENDPOINT_HTTP403_HARDENING_REPORT.md` records source-side hardening in `dispatcher/worker_runtime.py` that allows one bounded fallback-endpoint retry for primary-endpoint `http_401/http_403` authorization failures when fallback endpoints are configured, with focused regressions in `tests/test_argus_hardening.py`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-043
+- title: Validate BL-20260325-042 HTTP 403 authorization hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-042
+- start_when: `BL-20260325-042` is merged so a fresh same-origin governed run can verify whether authorization-fallback hardening restores automation artifact generation and critic dispatch under real execute
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-042, runs one explicit approval plus one real execute, and records whether runtime now clears the `http_403` automation blocker observed in BL-20260325-041
+- source: `AUTOMATION_ENDPOINT_HTTP403_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming source-side auth-fallback hardening success without live evidence
+- link: /Users/lingguozhong/openclaw-team/POST_HTTP403_HARDENING_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-042 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

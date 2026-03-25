@@ -1748,6 +1748,52 @@ Verification snapshot on 2026-03-25:
   - `runtime_archives/bl041/state/`
   - `runtime_archives/bl041/tmp/`
 
+### 50. Automation HTTP 403 Authorization Hardening After BL-041
+
+User objective:
+
+- continue after `BL-20260325-041` without mixing another governed runtime run
+  into the same phase
+- harden source-side runtime behavior so primary-endpoint authorization failure
+  (`http_401` / `http_403`) can take one bounded fallback endpoint retry when
+  fallback endpoints are configured
+- keep the hardening minimal, deterministic, and test-backed
+
+Main work areas:
+
+- activated `BL-20260325-042` and mirrored it to GitHub issue `#77`
+- updated `dispatcher/worker_runtime.py`:
+  - added `should_retry_auth_failure_on_fallback(...)` gate
+  - updated `call_llm(...)` retry logic to:
+    - allow one bounded fallback retry for primary-endpoint auth failures
+      (`http_401` / `http_403`) when a distinct fallback endpoint exists
+    - preserve non-retry behavior when no fallback endpoint is configured
+    - emit explicit log line when auth-fallback retry is activated
+- expanded `tests/test_argus_hardening.py` with focused assertions:
+  - primary `http_403` rotates to fallback endpoint and succeeds
+  - `http_403` without fallback remains non-retryable and fails on first
+    attempt
+- recorded next fresh governed validation phase as `BL-20260325-043`
+
+Primary output:
+
+- [AUTOMATION_ENDPOINT_HTTP403_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/AUTOMATION_ENDPOINT_HTTP403_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-042` completed as a source-side blocker-hardening phase
+- automation runtime now supports deterministic, bounded authorization-fallback
+  behavior for endpoint-specific `HTTP 401/403` failures
+- runtime closure is intentionally deferred to governed validation phase
+  `BL-20260325-043`
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_argus_hardening.py` passed
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with no phase=now actionable issue
+  mirroring required
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:
