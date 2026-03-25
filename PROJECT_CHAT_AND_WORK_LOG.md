@@ -3731,3 +3731,62 @@ Verification snapshot on 2026-03-25:
 
 - `python3 -m unittest -v tests/test_pdf_to_excel_ocr_script.py tests/test_pdf_to_excel_ocr_inbox_runner.py`
   passed (`20/20`)
+
+### 74. Fresh Governed Validation After BL-064 Output-Boundary + Outcome-Contract Hardening
+
+User objective:
+
+- continue strict backlog mainline without drift
+- validate BL-064 hardening on one fresh same-origin governed candidate
+
+Main work areas:
+
+- activated `BL-20260325-065` and mirrored it to issue `#123`
+- executed governed validation pipeline with token
+  `regen-20260325-bl065-001`:
+  - sandbox Trello smoke (captured network-policy block evidence)
+  - elevated Trello smoke (live pass + mapped preview)
+  - generated regeneration payload and ingest once -> fresh preview
+    `preview-trello-69c24cd3c1a2359ddd7a1bf8-994e5ccbfd0b`
+  - explicit approval write
+  - sandbox execute (captured Docker init block evidence)
+  - elevated replay with runtime env injection reached automation and critic
+- captured and archived runtime evidence:
+  - automation task completed (`AUTO-20260325-873`)
+  - critic task completed (`CRITIC-20260325-289`)
+  - final execute remained `rejected` on critic `needs_revision`
+- produced validation report and queued next blocker phase
+  (`BL-20260325-066`)
+
+Primary output:
+
+- [POST_WRAPPER_DELEGATE_OUTPUT_BOUNDARY_OUTCOME_CONTRACT_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_WRAPPER_DELEGATE_OUTPUT_BOUNDARY_OUTCOME_CONTRACT_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-065` is complete as a governed validation phase
+- critic findings moved away from BL-064 target concerns:
+  - output-boundary enforcement is no longer the dominant blocker
+- new blocker focus shifted to wrapper/delegate execution outcome-contract
+  strictness and diagnostics completeness (`BL-20260325-066`)
+
+Verification snapshot on 2026-03-25:
+
+- `python3 scripts/backlog_lint.py` passed after BL-065 activation
+- `python3 scripts/backlog_sync.py` passed with BL-065 issue mirror to `#123`
+- sandbox smoke evidence captured as blocked (`ConnectionError` /
+  `NameResolutionError`)
+- elevated smoke passed with `read_count = 1`
+- `python3 skills/ingest_tasks.py --once --test-mode success` returned:
+  - `processed = 1`
+  - `duplicate_skipped = 0`
+  - `preview_created = 1`
+- elevated execute replay returned:
+  - `status = rejected`
+  - `decision_reason = critic_verdict=needs_revision`
+  - `critic_verdict = needs_revision`
+- final preview state:
+  - `approved = true`
+  - `execution.status = rejected`
+  - `execution.executed = true`
+  - `execution.attempts = 2`

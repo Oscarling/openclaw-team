@@ -1,0 +1,29 @@
+{
+  "task_id": "AUTO-20260325-873",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated the requested single runnable helper script artifact as a conservative inbox wrapper that reuses the reviewed delegate artifacts/scripts/pdf_to_excel_ocr.py, resolves relative paths portably, enforces sidecar report handoff via --report-json, applies explicit timeout handling, preserves parameter-driven input/output behavior, keeps dry-run and zero-discovery outcomes reviewable/partial, and requires strong delegate evidence before claiming success.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-25T10:44:52.096786Z",
+  "duration_ms": 85830,
+  "notes": [
+    "Produced exactly one script artifact and did not invent extra files.",
+    "Wrapper is designed for readonly Trello smoke semantics: no external writeback is implied; local filesystem output may occur when dry_run=false.",
+    "Wrapper prefers delegate sidecar JSON as canonical evidence and only falls back to stdout JSON parsing if sidecar evidence is unavailable.",
+    "Success is gated on delegate evidence including status=success, total_files>=1, dry_run=false, status_counter.failed=0, status_counter.partial=0, excel_written=true, output_exists=true, and output_size_bytes>0.",
+    "If OCR runtime is reported as blocked/partial while OCR mode is auto/on, wrapper downgrades to partial with explicit limitations."
+  ],
+  "metadata": {
+    "task_id": "AUTO-20260325-873",
+    "worker": "automation",
+    "expected_output_path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+    "script_type": "python",
+    "delegate_path": "artifacts/scripts/pdf_to_excel_ocr.py",
+    "timeout_seconds": 1800
+  }
+}
