@@ -945,8 +945,8 @@ Allowed enum values:
 ### BL-20260325-053
 - title: Validate BL-20260325-052 automation endpoint/auth runtime resilience hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-052
@@ -954,7 +954,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-052, runs one explicit approval plus one real execute, and records whether runtime reaches critic dispatch more reliably
 - source: `AUTOMATION_ENDPOINT_AUTH_RUNTIME_RESILIENCE_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation under real execute conditions
 - link: /Users/lingguozhong/openclaw-team/POST_AUTOMATION_ENDPOINT_AUTH_RUNTIME_RESILIENCE_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-052 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/98
+- evidence: `POST_AUTOMATION_ENDPOINT_AUTH_RUNTIME_RESILIENCE_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl053-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a`; runtime confirmed BL-052 logic is active (`http_520` became retryable with fallback/auth-quarantine flow), but final attempt still failed pre-critic on timeout (`AUTO-20260325-867`), so a timeout-resilience blocker was queued
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-054
+- title: Harden automation timeout/runtime reliability after BL-20260325-053 pre-critic timeout blocker
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-053
+- start_when: `BL-20260325-053` confirms endpoint/auth recovery progresses further but governed execute still ends pre-critic on terminal timeout at the primary endpoint
+- done_when: Source-side automation runtime hardening reduces timeout-induced pre-critic exhaustion and one blocker report records mitigation with focused tests
+- source: `POST_AUTOMATION_ENDPOINT_AUTH_RUNTIME_RESILIENCE_VALIDATION_REPORT.md` on 2026-03-25 records timeout reliability as the dominant unresolved pre-critic blocker after BL-052 activation
+- link: /Users/lingguozhong/openclaw-team/AUTOMATION_TIMEOUT_RUNTIME_RELIABILITY_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-053 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

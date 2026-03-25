@@ -3049,3 +3049,61 @@ Verification snapshot on 2026-03-25:
 - `python3 -m unittest -v tests/test_argus_hardening.py` passed `13/13`
 - `python3 scripts/backlog_lint.py` passed
 - `python3 scripts/backlog_sync.py` passed with BL-052 issue mirror to `#96`
+
+### 61. Fresh Governed Validation After BL-052 Endpoint/Auth Runtime Hardening
+
+User objective:
+
+- continue phase-by-phase without drift
+- validate BL-052 automation endpoint/auth runtime resilience hardening on one
+  fresh same-origin governed candidate
+
+Main work areas:
+
+- activated `BL-20260325-053` and mirrored it to issue `#98`
+- executed governed validation pipeline with token
+  `regen-20260325-bl053-001`:
+  - sandbox Trello smoke (captured network-policy block evidence)
+  - elevated Trello smoke (live pass + mapped preview)
+  - ingest once -> fresh preview
+    `preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a`
+  - explicit approval write
+  - sandbox execute (captured Docker init block evidence)
+  - elevated replay with runtime env injection reached automation execution
+- captured and archived real runtime evidence confirming BL-052 behavior:
+  - attempt1 `http_520` classified retryable
+  - rotated to fallback endpoint
+  - fallback `http_401` triggered auth-fallback quarantine
+  - final primary retry failed on timeout (`attempts=3/3`)
+- produced validation report and queued timeout-reliability blocker as next phase
+
+Primary output:
+
+- [POST_AUTOMATION_ENDPOINT_AUTH_RUNTIME_RESILIENCE_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_AUTOMATION_ENDPOINT_AUTH_RUNTIME_RESILIENCE_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-053` is complete as a governed validation phase
+- BL-052 hardening is validated as active in runtime (no first-hop `http_520`
+  immediate exhaustion)
+- run still ended pre-critic due terminal timeout on primary endpoint, so next
+  blocker moved to timeout/runtime reliability (`BL-20260325-054`)
+
+Verification snapshot on 2026-03-25:
+
+- `python3 scripts/backlog_lint.py` passed after BL-053 activation
+- `python3 scripts/backlog_sync.py` passed with BL-053 issue mirror to `#98`
+- sandbox smoke evidence captured as blocked (`ConnectionError` /
+  `NameResolutionError`)
+- elevated smoke passed with `read_count = 1`
+- `python3 skills/ingest_tasks.py --once --test-mode success` returned:
+  - `processed = 1`
+  - `duplicate_skipped = 0`
+  - `preview_created = 1`
+- elevated execute replay rejection reason:
+  - `LLM call exhausted (attempts=3/3, class=timeout, endpoint=https://fast.vpsairobot.com/v1/chat/completions, retryable=True)`
+- final preview state:
+  - `approved = true`
+  - `execution.status = rejected`
+  - `execution.executed = true`
+  - `execution.attempts = 2`

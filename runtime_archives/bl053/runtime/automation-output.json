@@ -1,0 +1,13 @@
+{
+  "task_id": "AUTO-20260325-867",
+  "worker": "automation",
+  "status": "failed",
+  "summary": "Worker execution failed",
+  "artifacts": [],
+  "errors": [
+    "LLM call exhausted (attempts=3/3, class=timeout, endpoint=https://fast.vpsairobot.com/v1/chat/completions, retryable=True): The read operation timed out"
+  ],
+  "metadata": {},
+  "duration_ms": 232377,
+  "timestamp": "2026-03-25T08:10:32.267917Z"
+}
