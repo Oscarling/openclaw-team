@@ -1,0 +1,26 @@
+{
+  "task_id": "AUTO-20260325-869",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated one runnable helper wrapper script artifact that reuses the reviewed PDF-to-Excel delegate with portable path resolution, structured delegate-report parsing, timeout handling, honest partial/failure outcomes, and success evidence gates aligned to the provided contract.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-25T08:58:12.456707Z",
+  "duration_ms": 89619,
+  "notes": [
+    "Produced exactly one script artifact as requested.",
+    "The wrapper is parameter-driven and avoids hardcoded input/output defaults when explicit arguments are provided at runtime.",
+    "It prefers the reviewed delegate artifacts/scripts/pdf_to_excel_ocr.py, resolves relative delegate paths from the repository/script location, uses --report-json for sidecar handoff, parses JSON from stdout when available, and enforces stronger success evidence before claiming success.",
+    "Dry-run short-circuits to partial with execution.delegated=false, and zero-PDF discovery also resolves to partial."
+  ],
+  "metadata": {
+    "task_id": "AUTO-20260325-869",
+    "worker": "automation",
+    "output_contract": "single_json_object",
+    "generated_files": 1
+  }
+}

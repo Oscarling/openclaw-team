@@ -1,0 +1,28 @@
+{
+  "task_id": "CRITIC-20260325-285",
+  "worker": "critic",
+  "status": "success",
+  "summary": "Reviewed the inbox runner and paired delegate together as an end-to-end readonly smoke path. Verdict: needs_revision due to wrapper/delegate CLI contract mismatch and evidence-loss risk when both stdout JSON and sidecar JSON are present.",
+  "artifacts": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "timestamp": "2026-03-25T08:58:46.896406Z",
+  "duration_ms": 34038,
+  "notes": [
+    "Scope included both artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py and artifacts/scripts/pdf_to_excel_ocr.py as a single readonly pair.",
+    "Review is grounded in the supplied artifact snapshots.",
+    "A review artifact markdown file is provided via file_contents for the expected path."
+  ],
+  "metadata": {
+    "verdict": "needs_revision",
+    "task_id": "CRITIC-20260325-285",
+    "worker": "critic",
+    "reviewed_artifacts": [
+      "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "artifacts/scripts/pdf_to_excel_ocr.py"
+    ]
+  }
+}
