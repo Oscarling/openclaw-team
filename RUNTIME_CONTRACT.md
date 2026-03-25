@@ -316,3 +316,41 @@ Trello Card
 Argus 当前已经从“只讨论架构”推进到：
 
 > **目录、契约、任务类型、任务样本都已可落盘；下一步应直接用模拟 Trello 卡片跑第一次标准任务转译。**
+
+---
+
+## 13. Provider Profile 选择契约（BL-071）
+
+为避免每次执行都手工从桌面文件提取 provider base/key，delegate 层现在支持
+显式 provider profile 选择：
+
+- 选择变量：`ARGUS_PROVIDER_PROFILE`
+- profile 文件：`ARGUS_PROVIDER_PROFILES_FILE`
+  - 未设置时默认读取：`contracts/provider_profiles.json`
+  - 可参考模板：`contracts/provider_profiles.example.json`
+
+### profile JSON 约定
+
+支持两种结构：
+
+- 顶层直接是 profile map
+- 顶层 `{ "profiles": { ... } }`
+
+每个 profile 可配置：
+
+- `api_base` / `openai_api_base` / `base_url`
+- `model_name` / `openai_model_name` / `model`
+- `wire_api`
+- `fallback_chat_urls`
+- `fallback_response_urls`
+- `fallback_api_bases`
+- API key 任选其一：
+  - `api_key`（不推荐明文）
+  - `api_key_env`（推荐）
+  - `api_key_secret`（容器 secret）
+
+### 运行规则
+
+1. 未设置 `ARGUS_PROVIDER_PROFILE` 时，保持旧版环境变量解析行为不变。  
+2. 设置了 profile 时，profile 中给出的值覆盖默认环境解析结果。  
+3. profile 引用的 `api_key_env` / `api_key_secret` 缺失时，fail-closed 并报错，避免静默回落到错误 provider。  

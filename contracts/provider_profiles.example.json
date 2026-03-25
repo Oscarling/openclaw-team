@@ -1,0 +1,19 @@
+{
+  "profiles": {
+    "primary_openai": {
+      "api_base": "https://api.openai.com/v1",
+      "model_name": "gpt-5-codex",
+      "wire_api": "responses",
+      "api_key_env": "OPENAI_API_KEY"
+    },
+    "aixj_vip_backup": {
+      "api_base": "https://aixj.vip/v1",
+      "model_name": "gpt-5-codex",
+      "wire_api": "responses",
+      "api_key_env": "OPENAI_API_KEY_AIXJ_VIP",
+      "fallback_api_bases": [
+        "https://aixj.vip"
+      ]
+    }
+  }
+}

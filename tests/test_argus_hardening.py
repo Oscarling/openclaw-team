@@ -18,7 +18,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from argus_contracts import validate_output  # noqa: E402
 from dispatcher import worker_runtime  # noqa: E402
-from skills.delegate_task import delegate_task  # noqa: E402
+from skills.delegate_task import build_worker_env, delegate_task  # noqa: E402
 
 WORKER_TASK_TYPES = {
     "architect": "design_architecture",
@@ -185,6 +185,108 @@ class ArgusHardeningTests(unittest.TestCase):
 
     def _client(self, behaviors: dict[str, dict[str, Any]]) -> FakeDockerClient:
         return FakeDockerClient(self.tmpdir, behaviors)
+
+    def test_build_worker_env_uses_selected_provider_profile(self) -> None:
+        profiles_path = self.tmpdir / "contracts" / "provider_profiles.json"
+        profiles_path.parent.mkdir(parents=True, exist_ok=True)
+        profiles_path.write_text(
+            json.dumps(
+                {
+                    "profiles": {
+                        "backup": {
+                            "api_base": "https://backup-provider.invalid/v1",
+                            "model_name": "gpt-5-codex",
+                            "wire_api": "responses",
+                            "api_key_env": "OPENAI_API_KEY_BACKUP",
+                            "fallback_response_urls": [
+                                "https://backup-provider.invalid/v1/responses",
+                                "https://backup-provider.invalid/responses",
+                            ],
+                            "fallback_api_bases": ["https://backup-provider.invalid/v1"],
+                        }
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        with mock.patch.dict(
+            os.environ,
+            {
+                "ARGUS_PROVIDER_PROFILE": "backup",
+                "OPENAI_API_KEY": "primary-key",
+                "OPENAI_API_KEY_BACKUP": "backup-key",
+                "OPENAI_API_BASE": "https://primary-provider.invalid/v1",
+                "OPENAI_MODEL_NAME": "primary-model",
+            },
+            clear=False,
+        ):
+            env = build_worker_env("automation")
+
+        self.assertEqual(env["OPENAI_API_KEY"], "backup-key")
+        self.assertEqual(env["OPENAI_API_BASE"], "https://backup-provider.invalid/v1")
+        self.assertEqual(env["OPENAI_MODEL_NAME"], "gpt-5-codex")
+        self.assertEqual(env["ARGUS_LLM_WIRE_API"], "responses")
+        self.assertEqual(
+            env["ARGUS_LLM_FALLBACK_RESPONSE_URLS"],
+            "https://backup-provider.invalid/v1/responses,https://backup-provider.invalid/responses",
+        )
+        self.assertEqual(env["ARGUS_LLM_FALLBACK_API_BASES"], "https://backup-provider.invalid/v1")
+        self.assertEqual(env["ARGUS_PROVIDER_PROFILE"], "backup")
+        self.assertEqual(Path(env["ARGUS_PROVIDER_PROFILES_FILE"]).resolve(), profiles_path.resolve())
+
+    def test_build_worker_env_profile_key_env_missing_raises(self) -> None:
+        profiles_path = self.tmpdir / "contracts" / "provider_profiles.json"
+        profiles_path.parent.mkdir(parents=True, exist_ok=True)
+        profiles_path.write_text(
+            json.dumps(
+                {
+                    "profiles": {
+                        "backup": {
+                            "api_base": "https://backup-provider.invalid/v1",
+                            "model_name": "gpt-5-codex",
+                            "wire_api": "responses",
+                            "api_key_env": "OPENAI_API_KEY_BACKUP_MISSING",
+                        }
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        with mock.patch.dict(
+            os.environ,
+            {
+                "ARGUS_PROVIDER_PROFILE": "backup",
+                "OPENAI_API_KEY": "primary-key",
+                "OPENAI_API_BASE": "https://primary-provider.invalid/v1",
+                "OPENAI_MODEL_NAME": "primary-model",
+            },
+            clear=False,
+        ):
+            with self.assertRaises(RuntimeError) as ctx:
+                build_worker_env("automation")
+
+        self.assertIn("OPENAI_API_KEY_BACKUP_MISSING", str(ctx.exception))
+
+    def test_build_worker_env_without_profile_keeps_legacy_env_resolution(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {
+                "OPENAI_API_KEY": "primary-key",
+                "OPENAI_API_BASE": "https://primary-provider.invalid/v1",
+                "OPENAI_MODEL_NAME": "primary-model",
+                "ARGUS_LLM_WIRE_API": "chat_completions",
+            },
+            clear=False,
+        ):
+            env = build_worker_env("automation")
+
+        self.assertEqual(env["OPENAI_API_KEY"], "primary-key")
+        self.assertEqual(env["OPENAI_API_BASE"], "https://primary-provider.invalid/v1")
+        self.assertEqual(env["OPENAI_MODEL_NAME"], "primary-model")
+        self.assertEqual(env["ARGUS_LLM_WIRE_API"], "chat_completions")
+        self.assertNotIn("ARGUS_PROVIDER_PROFILE", env)
 
     def test_failed_status_is_taken_from_output_not_exit_code(self) -> None:
         task = build_task(
