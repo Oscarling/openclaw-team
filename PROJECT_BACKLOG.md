@@ -741,8 +741,8 @@ Allowed enum values:
 ### BL-20260325-041
 - title: Validate BL-20260325-040 wrapper success-evidence contract hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-040
@@ -750,7 +750,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-040, runs one explicit approval plus one real execute, and records whether runtime critic outcome now clears wrapper success-evidence semantics findings from BL-20260325-039
 - source: `WRAPPER_SUCCESS_EVIDENCE_CONTRACT_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming contract hardening success without live evidence
 - link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_SUCCESS_EVIDENCE_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-040 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/75
+- evidence: `POST_WRAPPER_SUCCESS_EVIDENCE_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl041-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-c19150aca7c7` with explicit approval and one elevated real execute replay; runtime remained blocked by automation endpoint authorization failure (`AUTO-20260325-861`, class `http_403`, `HTTP 403: Forbidden`) before critic dispatch, so BL-20260325-040 runtime effect remained unverified
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-042
+- title: Harden automation endpoint authorization/runtime access after BL-20260325-041 HTTP 403 blocker
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-041
+- start_when: `BL-20260325-041` has completed and confirmed governed replay is blocked by automation endpoint authorization failure (`HTTP 403: Forbidden`) before artifact generation and critic dispatch
+- done_when: Automation LLM path handles or avoids endpoint authorization/runtime-access blockers (credential/endpoint policy hardening with explicit diagnostics and deterministic behavior), focused tests cover the new behavior, and one blocker report records the implemented mitigation
+- source: `POST_WRAPPER_SUCCESS_EVIDENCE_VALIDATION_REPORT.md` on 2026-03-25 records automation failure class `http_403` at `https://fast.vpsairobot.com/v1/chat/completions` as the active blocker that prevented runtime validation closure of BL-20260325-040
+- link: /Users/lingguozhong/openclaw-team/AUTOMATION_ENDPOINT_HTTP403_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-041 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
