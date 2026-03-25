@@ -1,0 +1,24 @@
+{
+  "task_id": "CRITIC-20260325-280",
+  "worker": "critic",
+  "status": "success",
+  "summary": "Reviewed the inbox runner and paired delegate together as an end-to-end readonly smoke path. The wrapper is generally well-structured, preserves readonly delegation, emits reviewable JSON summaries, and avoids overstating success without delegate evidence. The delegate supports batch PDF discovery, per-file isolation, OCR fallback, dry-run reporting, and structured JSON output. However, there is a material evidence-handling issue in the wrapper: when the delegate reports aggregate status=\"success\", the wrapper may still mark final_status=\"success\" without verifying that an Excel artifact was actually written or that delegate report fields such as excel_written/output_exists/output_size_bytes support the claim. This weakens the stated contract of stronger success evidence and could permit unsupported success classification if the delegate emits inconsistent JSON. Verdict: needs_revision.",
+  "artifacts": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "timestamp": "2026-03-25T04:56:42.758607Z",
+  "duration_ms": 29215,
+  "notes": [
+    "Review was grounded on the supplied artifact snapshots for both scripts.",
+    "Scope was evaluated jointly for wrapper plus delegate, per instruction.",
+    "Primary concern is success-evidence validation rather than readonly or structural safety."
+  ],
+  "metadata": {
+    "task_id": "CRITIC-20260325-280",
+    "worker": "critic",
+    "verdict": "needs_revision"
+  }
+}

@@ -1567,6 +1567,72 @@ Verification snapshot on 2026-03-25:
 - `python3 scripts/backlog_sync.py` passed with `BL-20260325-038` mirrored to
   issue `#69`
 
+### 47. Fresh Governed Validation After BL-038 Transport Hardening
+
+User objective:
+
+- continue from `BL-20260325-038` with one fresh same-origin governed runtime
+  validation
+- verify whether transport hardening clears SSL EOF-driven early automation
+  failure under real execute
+- preserve runtime evidence and keep workflow-gated delivery
+
+Main work areas:
+
+- activated `BL-20260325-039` and mirrored it to GitHub issue `#71`
+- ran live Trello read-only smoke for origin
+  `trello:69c24cd3c1a2359ddd7a1bf8`
+  - first sandboxed call blocked by DNS policy
+  - elevated rerun passed with `read_count=1`
+- generated one regeneration token:
+  - `regen-20260325-bl039-001`
+- created inbox payload from `smoke_read.mapped_preview`, ingested once, and
+  created fresh preview:
+  - `preview-trello-69c24cd3c1a2359ddd7a1bf8-055bd74afff8`
+- wrote explicit approval and ran real execute in `test_mode=off`
+  - first sandboxed execute blocked before dispatch due Docker client access
+  - elevated replay (`--allow-replay`) reached full automation + critic flow
+- archived runtime outputs under `runtime_archives/bl039/` before restoring
+  tracked `artifacts/` baselines
+- recorded next blocker phase as `BL-20260325-040`
+
+Primary output:
+
+- [POST_AUTOMATION_SSL_RELIABILITY_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_AUTOMATION_SSL_RELIABILITY_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-039` completed as a governed validation phase
+- prior transport blocker did not recur:
+  - automation task `AUTO-20260325-860` succeeded
+  - critic task `CRITIC-20260325-280` executed normally
+- final decision remained `critic_verdict=needs_revision`, but dominant blocker
+  shifted to generated wrapper success-evidence semantics instead of transport
+  instability
+- backlog updates from this phase:
+  - `BL-20260325-039` marked done with evidence
+  - new blocker `BL-20260325-040` added for wrapper success-evidence contract
+    hardening
+
+Verification snapshot on 2026-03-25:
+
+- smoke (elevated) returned `status=pass` with `read_count=1`
+- `python3 skills/ingest_tasks.py --once` returned:
+  - `processed = 1`
+  - `preview_created = 1`
+- sandboxed execute returned Docker-client initialization rejection
+- elevated replay execute returned:
+  - `status = rejected`
+  - `decision_reason = critic_verdict=needs_revision`
+- worker outcomes:
+  - automation `AUTO-20260325-860`: `success`
+  - critic `CRITIC-20260325-280`: `success` with verdict `needs_revision`
+- runtime archive preserved under:
+  - `runtime_archives/bl039/artifacts/`
+  - `runtime_archives/bl039/runtime/`
+  - `runtime_archives/bl039/state/`
+  - `runtime_archives/bl039/tmp/`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:

@@ -1,0 +1,90 @@
+{
+  "status": "done",
+  "fixture": "/Users/lingguozhong/openclaw-team/adapters/samples/trello_card_fixture.json",
+  "mapped_output": "/private/tmp/bl039_mapped.json",
+  "required_env": {
+    "credentials": [
+      "TRELLO_API_KEY",
+      "TRELLO_API_TOKEN"
+    ],
+    "credentials_aliases": [
+      "TRELLO_KEY",
+      "TRELLO_TOKEN"
+    ],
+    "credentials_priority": [
+      "TRELLO_API_KEY/TRELLO_API_TOKEN",
+      "TRELLO_KEY/TRELLO_TOKEN"
+    ],
+    "scope": [
+      "TRELLO_BOARD_ID",
+      "TRELLO_LIST_ID"
+    ],
+    "scope_rule": [
+      "TRELLO_BOARD_ID or TRELLO_LIST_ID (either one)"
+    ]
+  },
+  "smoke_read": {
+    "status": "pass",
+    "read_count": 1,
+    "scope": {
+      "board_id": "69be462743bfa0038ca10f7a",
+      "list_id": null
+    },
+    "scope_kind": "board",
+    "mapped_preview": {
+      "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+      "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+      "description": "Purpose:\n\n  Controlled Trello live preview smoke for openclaw-team.\n\n‌\n\n  Expected behavior:\n\n- read-only Trello ingest\n\n- preview creation smoke only\n\n- no business execution claim\n\n- no Trello writeback expected in this step\n\n‌\n\n  Traceability:\n\n- backlog: BL-20260324-014\n\n- blocker context: BL-20260324-015\n\n- created_by: Oscarling\n\n- created_at: 2026-03-24 Asia/Shanghai\n\n‌\n\n  Note:\n\n  This card is only for governed smoke verification and should remain open until the smoke is finished.\n\nExecution contract: treat this as a best-effort, evidence-backed PDF extraction/conversion attempt. Do not claim OCR success without evidence. If full OCR/Excel conversion is not honestly achievable, return reviewable intermediate artifacts, explicit limitations, and next-step guidance. Keep behavior deterministic and limited to declared local artifacts.",
+      "labels": [
+        "best_effort",
+        "evidence_backed",
+        "readonly",
+        "reviewable",
+        "trello"
+      ],
+      "metadata": {
+        "source_system": "trello",
+        "card_id": "69c24cd3c1a2359ddd7a1bf8",
+        "card_short_id": 7,
+        "board_id": "69be462743bfa0038ca10f7a",
+        "list_id": "69be462743bfa0038ca10f8f",
+        "date_last_activity": "2026-03-24T08:35:56.234Z",
+        "readonly_mapped_at": "2026-03-25T04:54:11.471876Z",
+        "contract_profile": "best_effort_evidence_backed",
+        "ocr_claim_policy": "do_not_claim_success_without_evidence",
+        "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable"
+      },
+      "source": {
+        "provider": "trello",
+        "mode": "readonly",
+        "card_id": "69c24cd3c1a2359ddd7a1bf8",
+        "board_id": "69be462743bfa0038ca10f7a",
+        "list_id": "69be462743bfa0038ca10f8f"
+      },
+      "request_type": "pdf_to_excel_ocr",
+      "input": {
+        "input_dir": "~/Desktop/pdf样本",
+        "output_xlsx": "artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx",
+        "ocr": "auto",
+        "dry_run": false
+      }
+    },
+    "auth_env": {
+      "selected_names": {
+        "key": "TRELLO_API_KEY",
+        "token": "TRELLO_API_TOKEN"
+      },
+      "priority": "TRELLO_API_* first, fallback to TRELLO_*",
+      "presence": {
+        "TRELLO_API_KEY": "set",
+        "TRELLO_KEY": "set",
+        "TRELLO_API_TOKEN": "set",
+        "TRELLO_TOKEN": "set",
+        "TRELLO_BOARD_ID": "set",
+        "TRELLO_LIST_ID": "missing"
+      }
+    },
+    "note": "Read-only GET only. No write operations performed."
+  },
+  "mode": "trello_readonly_prep"
+}

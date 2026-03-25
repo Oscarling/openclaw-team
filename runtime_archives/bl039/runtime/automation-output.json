@@ -1,0 +1,28 @@
+{
+  "task_id": "AUTO-20260325-860",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated the requested single runnable helper script artifact as a reviewed-wrapper-style inbox runner that preserves parameter-driven behavior, resolves the reviewed delegate portably, enforces timeout-bounded delegation, parses delegate JSON from stdout and/or --report-json sidecar, keeps zero-input/dry-run outcomes reviewably partial, and avoids claiming success without strong delegate evidence.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-25T04:56:13.142928Z",
+  "duration_ms": 69802,
+  "notes": [
+    "The artifact is a single Python script only, per contract.",
+    "It is designed to wrap the reviewed delegate artifacts/scripts/pdf_to_excel_ocr.py rather than re-implement PDF extraction/conversion.",
+    "It preserves traceability context from the incoming request in its structured summary output.",
+    "It does not hardcode the provided input directory; input_dir and output_xlsx are runtime parameters.",
+    "It treats dry-run and zero-PDF discovery as partial outcomes and uses explicit delegate timeout handling."
+  ],
+  "metadata": {
+    "task_id": "AUTO-20260325-860",
+    "worker": "automation",
+    "created_files": [
+      "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py"
+    ]
+  }
+}

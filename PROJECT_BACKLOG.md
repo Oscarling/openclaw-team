@@ -707,8 +707,8 @@ Allowed enum values:
 ### BL-20260325-039
 - title: Validate BL-20260325-038 automation transport hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-038
@@ -716,7 +716,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-038, runs one explicit approval plus one real execute, and records whether runtime now reaches artifact generation and critic dispatch without transport-side SSL EOF blocker
 - source: `AUTOMATION_ENDPOINT_SSL_RELIABILITY_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming transport hardening success without live evidence
 - link: /Users/lingguozhong/openclaw-team/POST_AUTOMATION_SSL_RELIABILITY_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-038 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/71
+- evidence: `POST_AUTOMATION_SSL_RELIABILITY_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl039-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-055bd74afff8` with explicit approval and one elevated real execute replay; automation (`AUTO-20260325-860`) and critic (`CRITIC-20260325-280`) both completed, SSL EOF early-failure blocker did not recur, and dominant blocker shifted to generated wrapper success-evidence semantics
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-040
+- title: Harden generated wrapper success-evidence contract after BL-20260325-039 runtime findings
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-039
+- start_when: `BL-20260325-039` has completed and confirmed transport reliability blocker is cleared but runtime critic still returns `needs_revision` on generated wrapper success-evidence handling semantics
+- done_when: Source-side/runtime contract hardening ensures generated wrapper success semantics cannot overclaim without explicit delegate output-write attestation consistency, focused tests cover the targeted semantics, and one blocker report records the hardening outcome
+- source: `POST_AUTOMATION_SSL_RELIABILITY_VALIDATION_REPORT.md` on 2026-03-25 records that runtime progressed to critic review and shifted blocker to wrapper evidence-contract semantics
+- link: /Users/lingguozhong/openclaw-team/WRAPPER_SUCCESS_EVIDENCE_CONTRACT_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-039 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
