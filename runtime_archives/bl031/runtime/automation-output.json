@@ -1,0 +1,27 @@
+{
+  "task_id": "AUTO-20260325-856",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated one runnable local helper wrapper script at artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py. The script is parameter-driven, preserves XLSX semantics by delegating only to the reviewed base script, resolves relative delegate paths portably, supports explicit timeout handling, parses delegate JSON from stdout or sidecar, uses delegate report fields status/total_files/status_counter/dry_run as canonical evidence, and reports partial honestly for dry-run or zero-PDF discovery.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-25T02:20:11.881898Z",
+  "duration_ms": 70898,
+  "notes": [
+    "Produced exactly one script artifact as requested.",
+    "The wrapper defaults are aligned to the provided task parameters but remain overrideable via CLI flags.",
+    "Success requires stronger delegate evidence than exit code plus output existence alone."
+  ],
+  "metadata": {
+    "task_id": "AUTO-20260325-856",
+    "worker": "automation",
+    "task_type": "generate_script",
+    "delegate_timeout_seconds": 1800,
+    "preferred_wrapper_script": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+    "preferred_base_script": "artifacts/scripts/pdf_to_excel_ocr.py"
+  }
+}

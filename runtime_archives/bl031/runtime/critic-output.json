@@ -1,0 +1,29 @@
+{
+  "task_id": "CRITIC-20260325-277",
+  "worker": "critic",
+  "status": "partial",
+  "summary": "Reviewed the inbox runner and paired delegate together as an end-to-end readonly smoke path. Verdict: needs_revision. The wrapper shows good intent around deterministic invocation, readonly metadata capture, JSON summary generation, and delegate report validation, but the paired implementation has a blocking CLI contract mismatch and incomplete evidence from the truncated runner snapshot. As written, the wrapper invokes the delegate with --report-file, while the delegate only defines --report-json, which would cause argument parsing failure and break the intended path. Additional concerns include wrapper/delegate PDF discovery inconsistency and inability to fully validate runner terminal behavior due to truncated snapshot.",
+  "artifacts": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "timestamp": "2026-03-25T02:20:45.198653Z",
+  "duration_ms": 32910,
+  "errors": [
+    "Blocking interface mismatch: wrapper passes `--report-file` to delegate, but delegate defines `--report-json`; end-to-end execution would fail at argument parsing.",
+    "Primary artifact snapshot for `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` is truncated, so final control flow and emitted summary/exit behavior cannot be fully verified.",
+    "Wrapper discovers PDFs with non-recursive `iterdir()` while delegate discovers recursively with `rglob()`, creating inconsistent preflight vs execution behavior."
+  ],
+  "metadata": {
+    "task_id": "CRITIC-20260325-277",
+    "worker": "critic",
+    "verdict": "needs_revision",
+    "reviewed_artifacts": [
+      "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "artifacts/scripts/pdf_to_excel_ocr.py"
+    ],
+    "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8"
+  }
+}
