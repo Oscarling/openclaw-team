@@ -1445,6 +1445,70 @@ Verification snapshot on 2026-03-25:
 - `python3 scripts/backlog_sync.py` passed with `BL-20260325-036` mirrored to
   issue `#65`
 
+### 45. Fresh Governed Validation After BL-036 Semantic Hardening
+
+User objective:
+
+- continue from `BL-20260325-036` with one fresh same-origin governed runtime
+  validation
+- confirm whether semantic contract hardening actually clears the new
+  `needs_revision` blocker cluster under real execute
+- preserve full runtime evidence and keep workflow-gated delivery
+
+Main work areas:
+
+- activated `BL-20260325-037` and mirrored it to GitHub issue `#67`
+- ran live Trello read-only smoke for origin
+  `trello:69c24cd3c1a2359ddd7a1bf8`
+  - first sandboxed call blocked by DNS policy
+  - elevated rerun passed with `read_count=1`
+- generated one regeneration token:
+  - `regen-20260325-bl037-001`
+- created inbox payload from `smoke_read.mapped_preview`, ingested once, and
+  created fresh preview:
+  - `preview-trello-69c24cd3c1a2359ddd7a1bf8-ad8052fe53ac`
+- wrote explicit approval and ran real execute in `test_mode=off`
+  - first sandboxed execute blocked before dispatch due Docker client access
+  - elevated replay (`--allow-replay`) reached automation dispatch
+- archived runtime outputs under `runtime_archives/bl037/`
+- recorded next blocker phase as `BL-20260325-038`
+
+Primary output:
+
+- [POST_SEMANTIC_CONTRACT_ALIGNMENT_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_SEMANTIC_CONTRACT_ALIGNMENT_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-037` completed as a governed validation phase
+- this run did not reach semantic-review closure because automation failed before
+  artifact generation:
+  - task `AUTO-20260325-859`
+  - transport error:
+    `SSL: UNEXPECTED_EOF_WHILE_READING`
+- no critic task was dispatched in the elevated replay
+- backlog updates from this phase:
+  - `BL-20260325-037` marked done with evidence
+  - new blocker `BL-20260325-038` added for automation endpoint transport
+    reliability hardening
+
+Verification snapshot on 2026-03-25:
+
+- smoke (elevated) returned `status=pass` with `read_count=1`
+- `python3 skills/ingest_tasks.py --once` returned:
+  - `processed = 1`
+  - `preview_created = 1`
+- sandboxed execute returned Docker-client initialization rejection
+- elevated replay execute returned:
+  - `status = rejected`
+  - `decision_reason = Automation task failed ... SSL EOF ...`
+- automation worker output:
+  - `AUTO-20260325-859`: `failed`
+  - no generated runner artifact
+- runtime archive preserved under:
+  - `runtime_archives/bl037/runtime/`
+  - `runtime_archives/bl037/state/`
+  - `runtime_archives/bl037/tmp/`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:
