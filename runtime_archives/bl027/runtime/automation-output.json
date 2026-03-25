@@ -1,0 +1,26 @@
+{
+  "task_id": "AUTO-20260325-854",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated a single runnable helper script artifact that wraps the reviewed repository PDF-to-Excel script with portable delegate resolution, explicit timeout, parameter-driven paths, honest partial/failed handling, and structured runtime summary output.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-25T01:26:15.630058Z",
+  "duration_ms": 63256,
+  "notes": [
+    "The script is intentionally a thin wrapper around artifacts/scripts/pdf_to_excel_ocr.py per reuse preference.",
+    "It avoids hardcoding the input directory and preserves the incoming traceability description in its emitted summary.",
+    "It treats dry-run and zero-PDF discovery as partial outcomes and does not claim success from delegate exit code plus output existence alone.",
+    "It bounds delegate execution with an explicit timeout and reports timeout honestly."
+  ],
+  "metadata": {
+    "task_id": "AUTO-20260325-854",
+    "worker": "automation",
+    "task_type": "generate_script",
+    "expected_output_path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py"
+  }
+}

@@ -1003,6 +1003,78 @@ Verification snapshot on 2026-03-24:
   - verdict: `needs_revision`
   - artifact: `artifacts/reviews/pdf_to_excel_ocr_inbox_review.md`
 
+### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
+
+User objective:
+
+- activate `BL-20260324-027`
+- verify whether `BL-20260324-026` timeout mitigation actually allows governed
+  real execution to reach artifact generation and critic review on a fresh
+  same-origin preview candidate
+
+Main work areas:
+
+- promoted `BL-20260324-027` to active and mirrored it to GitHub issue #47
+- ran one live Trello read-only smoke for origin
+  `trello:69c24cd3c1a2359ddd7a1bf8`
+- generated one new regeneration token:
+  - `regen-20260325-bl027-001`
+- generated inbox payload from live `smoke_read.mapped_preview` and ingested
+  once
+- created fresh preview candidate:
+  - `preview-trello-69c24cd3c1a2359ddd7a1bf8-4ce6c1cce934`
+- wrote one explicit approval file and ran real execute in `test_mode=off`
+- captured one environment-side blocker run (non-elevated docker client access)
+  and then one elevated replay run (`--allow-replay`) to complete the governed
+  validation intent
+- archived runtime artifacts under `runtime_archives/bl027/` before cleanup of
+  tracked generated files
+
+Primary output:
+
+- [POST_TIMEOUT_HARDENING_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_TIMEOUT_HARDENING_VALIDATION_REPORT.md)
+
+Key result:
+
+- the timeout-hardened runtime reached both:
+  - automation artifact generation
+  - critic review artifact generation
+- automation and critic runtime logs both show:
+  - `timeout=120s`
+  - `attempts=3`
+- the final governed decision remained `critic_verdict=needs_revision`, but this
+  run no longer failed early at the prior read-timeout blocker
+- `BL-20260324-027` completed its validation goal
+
+Verification snapshot on 2026-03-25:
+
+- live Trello read-only smoke passed (`read_count=1`) after elevated network run
+- `python3 skills/ingest_tasks.py --once` returned:
+  - `processed = 1`
+  - `rejected = 0`
+  - `duplicate_skipped = 0`
+  - `preview_created = 1`
+- approval file:
+  - `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-4ce6c1cce934.json`
+- final result sidecar:
+  - `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-4ce6c1cce934.result.json`
+  - `status = rejected`
+  - `decision_reason = critic_verdict=needs_revision`
+- final preview state:
+  - `approved = true`
+  - `execution.status = rejected`
+  - `execution.executed = true`
+  - `execution.attempts = 2`
+- automation worker:
+  - task `AUTO-20260325-854`
+  - `status = success`
+  - artifact `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`
+- critic worker:
+  - task `CRITIC-20260325-275`
+  - `status = success`
+  - verdict `needs_revision`
+  - artifact `artifacts/reviews/pdf_to_excel_ocr_inbox_review.md`
+
 ### 34. Post-Propagation Runner Gap Hardening
 
 User objective:

@@ -1,0 +1,24 @@
+{
+  "task_id": "CRITIC-20260325-275",
+  "worker": "critic",
+  "status": "success",
+  "summary": "Reviewed the inbox runner and paired delegate together as an end-to-end readonly smoke path. Verdict: needs_revision. The wrapper is aligned with the evidence-backed/read-only intent and avoids overstating success, but the delegate report schema does not match the wrapper’s success-classification expectations, causing successful runs to be downgraded to partial. Additional issues include no explicit pass-through of --dry-run to the delegate, weak report discovery/parsing assumptions, and delegate status semantics that can mark runs successful even when per-file partial results exist.",
+  "artifacts": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "timestamp": "2026-03-25T01:26:42.289198Z",
+  "duration_ms": 26246,
+  "notes": [
+    "Used supplied artifact snapshots as grounded review evidence.",
+    "Evaluated wrapper and delegate together rather than narrowing scope to one file.",
+    "Review artifact content generated at the required path."
+  ],
+  "metadata": {
+    "task_id": "CRITIC-20260325-275",
+    "worker": "critic",
+    "verdict": "needs_revision"
+  }
+}

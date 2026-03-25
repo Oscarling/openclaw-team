@@ -1,0 +1,173 @@
+{
+  "task_id": "AUTO-20260325-854",
+  "worker": "automation",
+  "status": "success",
+  "created_at": "2026-03-25T01:25:12.050969Z",
+  "updated_at": "2026-03-25T01:26:15.819003Z",
+  "retries": 0,
+  "max_retries": 0,
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "success",
+      "retryable": false,
+      "error": null,
+      "runtime_log": "/Users/lingguozhong/openclaw-team/workspaces/automation/AUTO-20260325-854/runtime.attempt-1.log",
+      "exit_code": 0,
+      "timed_out": false,
+      "wait_error": null,
+      "output_path": "/Users/lingguozhong/openclaw-team/workspaces/automation/AUTO-20260325-854/output.json",
+      "started_at": "2026-03-25T01:25:12.052182Z",
+      "finished_at": "2026-03-25T01:26:15.789026Z"
+    }
+  ],
+  "task_dir": "/Users/lingguozhong/openclaw-team/workspaces/automation/AUTO-20260325-854",
+  "payload": {
+    "task_id": "AUTO-20260325-854",
+    "worker": "automation",
+    "task_type": "generate_script",
+    "objective": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt). Generate exactly one runnable local helper script artifact for a best-effort PDF extraction/conversion attempt using the provided parameters. Prefer reusing the repository's existing PDF-to-Excel implementation when it already satisfies the request instead of re-implementing the pipeline from scratch.",
+    "inputs": {
+      "params": {
+        "input_dir": "~/Desktop/pdf样本",
+        "output_xlsx": "artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx",
+        "ocr": "auto",
+        "dry_run": false,
+        "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+        "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+        "description": "Purpose: | Controlled Trello live preview smoke for openclaw-team. | Expected behavior: | - read-only Trello ingest | - preview creation smoke only | - no business execution claim | - no Trello writeback expected in this step | Traceability: | - backlog: BL-20260324-014 | - blocker context: BL-20260324-015 | - created_by: Oscarling | - created_at: 2026-03-24 Asia/Shanghai | Note: | This card is only for governed smoke verification and should remain open until the smoke is finished.",
+        "labels": [
+          "best_effort",
+          "evidence_backed",
+          "readonly",
+          "reviewable",
+          "trello"
+        ],
+        "preferred_base_script": "artifacts/scripts/pdf_to_excel_ocr.py",
+        "reference_docs": [
+          "artifacts/docs/pdf_to_excel_ocr_usage.md",
+          "artifacts/reviews/pdf_to_excel_ocr_review.md"
+        ],
+        "contract_hints": {
+          "output_format_fidelity": "If output_xlsx ends with .xlsx, produce a real XLSX workbook container or fail honestly before writing mismatched text/XML/CSV content to a .xlsx path.",
+          "path_portability": "Use the provided input_dir parameter as runtime input. Do not hardcode a user-home or absolute input path when params already declare the path.",
+          "traceability": "Preserve meaningful description context from the external input; do not collapse it to a heading fragment such as Purpose:.",
+          "reuse_preference": "Prefer a thin wrapper around artifacts/scripts/pdf_to_excel_ocr.py when compatible so workbook semantics and OCR behavior stay aligned with existing repo evidence.",
+          "outcome_status_model": "Use the reviewable status model success/partial/failed. Dry-run requests or zero-PDF discovery should resolve to partial rather than claiming success without an output artifact.",
+          "delegate_resolution": "If preferred_base_script is relative, resolve it from the repository or script location instead of Path.cwd() so behavior stays portable across shells and CI.",
+          "reviewed_delegate_contract": "For readonly reviewable preview flows, delegate only to the reviewed repository script artifacts/scripts/pdf_to_excel_ocr.py or fail honestly instead of broadening behavior through an arbitrary helper.",
+          "delegate_success_evidence": "Do not treat zero exit code plus output-file existence as sufficient wrapper success evidence on their own. Prefer a structured delegate report that confirms a real success outcome with at least one processed input and no failed-file counterexamples before the wrapper claims success.",
+          "delegate_timeout": "Bound delegate subprocess execution with an explicit timeout and report timeout as an honest failed/partial outcome instead of allowing smoke automation to hang indefinitely.",
+          "runtime_summary": "The generated script should emit a structured summary of what it produced so later review can inspect behavior without guessing."
+        }
+      }
+    },
+    "expected_outputs": [
+      {
+        "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+        "type": "script"
+      }
+    ],
+    "constraints": [
+      "Follow the local inbox normalized request",
+      "Do not claim unsupported runtime dependencies",
+      "Keep output deterministic and executable",
+      "Produce only the expected script artifact",
+      "Prefer honest, reviewable intermediate behavior over unsupported OCR claims",
+      "If the requested output path ends with .xlsx, do not write non-XLSX text/XML/CSV content to that path.",
+      "Do not hardcode an input directory when the task params already provide input_dir.",
+      "Preserve meaningful traceability from the incoming description instead of collapsing it to a heading fragment.",
+      "Prefer wrapping or adapting artifacts/scripts/pdf_to_excel_ocr.py when that existing repo script already matches the requested behavior.",
+      "If dry_run is true or no PDFs are discovered, report a reviewable partial outcome instead of claiming success without an XLSX artifact.",
+      "Resolve relative delegate script paths from the repository or script location, not from Path.cwd().",
+      "For readonly reviewable preview flows, only delegate to the reviewed repository script artifacts/scripts/pdf_to_excel_ocr.py unless failing honestly.",
+      "Do not claim wrapper success from exit code plus output existence alone when the reviewed delegate report does not provide strong enough success evidence.",
+      "Use an explicit timeout on delegate subprocess execution so the smoke wrapper cannot hang indefinitely."
+    ],
+    "priority": "medium",
+    "source": {
+      "kind": "local_inbox",
+      "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+      "inbox_file": "trello-69c24cd3c1a2359ddd7a1bf8-regen-20260325-bl027-001.json",
+      "received_at": "2026-03-25T01:23:57.060726Z",
+      "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+      "labels": [
+        "best_effort",
+        "evidence_backed",
+        "readonly",
+        "reviewable",
+        "trello"
+      ],
+      "provider": "trello",
+      "mode": "readonly",
+      "card_id": "69c24cd3c1a2359ddd7a1bf8",
+      "board_id": "69be462743bfa0038ca10f7a",
+      "list_id": "69be462743bfa0038ca10f8f",
+      "regeneration_token": "regen-20260325-bl027-001"
+    },
+    "acceptance_criteria": [
+      "Produce the expected script artifact at expected_outputs[0].path",
+      "Script behavior remains runnable, deterministic, and reviewable",
+      "If output_xlsx ends with .xlsx, the artifact must preserve true XLSX output semantics or fail honestly before writing a mismatched format.",
+      "Artifact behavior remains parameter-driven for input_dir and output_xlsx rather than hardcoding unrelated local defaults.",
+      "Dry-run or zero-input behavior is represented as a reviewable partial outcome instead of artifact-production success.",
+      "Relative preferred_base_script resolution remains portable and does not depend on Path.cwd().",
+      "Wrapper success requires stronger delegate evidence than zero exit code plus a non-empty output file alone.",
+      "Delegate execution is bounded by an explicit timeout and reports timeout honestly."
+    ],
+    "metadata": {
+      "integration_phase": "8B",
+      "pipeline": "inbox->adapter->manager->automation->critic",
+      "request_type": "pdf_to_excel_ocr",
+      "payload_hash": "4ce6c1cce9345906362dca1781af0479d47f99e5036ea479b9bb329f1825dab5",
+      "regeneration_token": "regen-20260325-bl027-001",
+      "labels": [
+        "best_effort",
+        "evidence_backed",
+        "readonly",
+        "reviewable",
+        "trello"
+      ],
+      "external_metadata": {
+        "source_system": "trello",
+        "card_id": "69c24cd3c1a2359ddd7a1bf8",
+        "card_short_id": 7,
+        "board_id": "69be462743bfa0038ca10f7a",
+        "list_id": "69be462743bfa0038ca10f8f",
+        "date_last_activity": "2026-03-24T08:35:56.234Z",
+        "readonly_mapped_at": "2026-03-25T01:23:49.884911Z",
+        "contract_profile": "best_effort_evidence_backed",
+        "ocr_claim_policy": "do_not_claim_success_without_evidence",
+        "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable",
+        "regeneration_token": "regen-20260325-bl027-001"
+      },
+      "automation_contract_profile": "narrow_script_artifact_with_repo_reuse_and_reviewable_runner_contract"
+    }
+  },
+  "result": {
+    "task_id": "AUTO-20260325-854",
+    "worker": "automation",
+    "status": "success",
+    "summary": "Generated a single runnable helper script artifact that wraps the reviewed repository PDF-to-Excel script with portable delegate resolution, explicit timeout, parameter-driven paths, honest partial/failed handling, and structured runtime summary output.",
+    "artifacts": [
+      {
+        "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+        "type": "script"
+      }
+    ],
+    "timestamp": "2026-03-25T01:26:15.630058Z",
+    "duration_ms": 63256,
+    "notes": [
+      "The script is intentionally a thin wrapper around artifacts/scripts/pdf_to_excel_ocr.py per reuse preference.",
+      "It avoids hardcoding the input directory and preserves the incoming traceability description in its emitted summary.",
+      "It treats dry-run and zero-PDF discovery as partial outcomes and does not claim success from delegate exit code plus output existence alone.",
+      "It bounds delegate execution with an explicit timeout and reports timeout honestly."
+    ],
+    "metadata": {
+      "task_id": "AUTO-20260325-854",
+      "worker": "automation",
+      "task_type": "generate_script",
+      "expected_output_path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py"
+    }
+  }
+}
