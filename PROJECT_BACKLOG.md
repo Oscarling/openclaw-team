@@ -1183,8 +1183,8 @@ Allowed enum values:
 ### BL-20260325-067
 - title: Validate BL-20260325-066 execution outcome-contract and diagnostics hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-066
@@ -1192,6 +1192,23 @@ Allowed enum values:
 - done_when: One governed validation run (smoke -> regeneration -> preview -> approval -> real execute) records whether critic findings no longer cite wrapper non-zero/partial semantics mismatches and diagnostics completeness gaps
 - source: `WRAPPER_DELEGATE_EXECUTION_OUTCOME_DIAGNOSTIC_CONTRACT_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation
 - link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_DELEGATE_EXECUTION_OUTCOME_DIAGNOSTIC_CONTRACT_VALIDATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/127
+- evidence: `POST_WRAPPER_DELEGATE_EXECUTION_OUTCOME_DIAGNOSTIC_CONTRACT_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl067-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153`; execution remained `rejected` because automation (`AUTO-20260325-874`) failed before critic dispatch with endpoint compatibility `http_400` at `https://aixj.vip/v1/chat/completions`, so BL-066 target finding shift stayed runtime-unverified
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-068
+- title: Harden automation runtime endpoint/protocol compatibility for provider-backed LLM execution after BL-067 failures
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-067
+- start_when: `BL-20260325-067` confirms governed execution is blocked before critic handoff by provider endpoint compatibility failures (`http_400`) in automation runtime
+- done_when: Runtime/config hardening ensures automation worker can complete one real LLM call against declared provider settings (base URL + protocol + model mapping) without `http_400` contract mismatch, with focused tests and one blocker report
+- source: `POST_WRAPPER_DELEGATE_EXECUTION_OUTCOME_DIAGNOSTIC_CONTRACT_VALIDATION_REPORT.md` on 2026-03-25 records endpoint/protocol/model compatibility as the next blocker class
+- link: /Users/lingguozhong/openclaw-team/AUTOMATION_RUNTIME_ENDPOINT_PROTOCOL_COMPATIBILITY_HARDENING_REPORT.md
 - issue: -
 - evidence: -
 - last_reviewed_at: 2026-03-25

@@ -1,0 +1,19 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-25T12:10:53.688378Z
+finished_at: 2026-03-25T12:10:54.603729Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-25T12:10:53.953870Z] [automation] [INFO] Worker started using endpoint https://aixj.vip/v1/chat/completions (timeout=120s, attempts=3, timeout_recovery_retries=1)
+[2026-03-25T12:10:54.490152Z] [automation] [WARN] LLM call failed attempt 1/3 (endpoint=https://aixj.vip/v1/chat/completions, class=http_400, retryable=False): HTTP Error 400: Bad Request
+[2026-03-25T12:10:54.490305Z] [automation] [ERROR] Task failed AUTO-20260325-874: LLM call exhausted (attempts=1/3, class=http_400, endpoint=https://aixj.vip/v1/chat/completions, retryable=False): HTTP Error 400: Bad Request
+[2026-03-25T12:10:54.494993Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+
