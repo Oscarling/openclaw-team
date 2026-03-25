@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "bl072_fast_override": {
+      "api_base": "https://fast.vpsairobot.com/v1",
+      "model_name": "gpt-5-codex",
+      "wire_api": "responses",
+      "api_key_env": "OPENAI_API_KEY",
+      "fallback_response_urls": [
+        "https://fast.vpsairobot.com/responses"
+      ]
+    }
+  }
+}

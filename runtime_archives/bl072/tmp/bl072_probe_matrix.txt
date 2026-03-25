@@ -1,0 +1,10 @@
+https://aixj.vip/v1 | gpt-5-codex -> 502
+https://aixj.vip/v1 | gpt-5 -> 502
+https://fast.vpsairobot.com/v1 | gpt-5-codex -> 401
+https://fast.vpsairobot.com/v1 | gpt-5 -> 401
+https://fast.vpsairobot.com | gpt-5-codex -> 401
+https://fast.vpsairobot.com | gpt-5 -> 401
+https://aixj.vip/v1 | gpt-5-codex -> 502
+https://aixj.vip/v1 | gpt-5 -> 502
+https://aixj.vip | gpt-5-codex -> 502
+https://aixj.vip | gpt-5 -> 502
