@@ -503,16 +503,16 @@ Allowed enum values:
 ### BL-20260324-027
 - title: Validate BL-20260324-026 timeout mitigation on a fresh same-origin preview candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260324-026
 - start_when: `BL-20260324-026` is merged so the relaxed default timeout policy can be exercised through the normal governed preview pipeline under real execution
 - done_when: One governed validation creates a fresh same-origin preview candidate after the timeout hardening, runs one explicit approval plus one real execute, and records whether automation now reaches artifact generation and critic review under the new timeout policy
 - source: `AUTOMATION_TIMEOUT_HARDENING_REPORT.md` on 2026-03-24 concludes the next correct step is a fresh governed validation rather than a same-preview replay
-- link: /Users/lingguozhong/openclaw-team/AUTOMATION_TIMEOUT_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260324-026 lands on main
-- evidence: -
-- last_reviewed_at: 2026-03-24
+- link: /Users/lingguozhong/openclaw-team/POST_TIMEOUT_HARDENING_VALIDATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/47
+- evidence: `POST_TIMEOUT_HARDENING_VALIDATION_REPORT.md` records one fresh same-origin regeneration (`regen-20260325-bl027-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-4ce6c1cce934`, explicit approval, and one governed real execute where automation `AUTO-20260325-854` and critic `CRITIC-20260325-275` both completed with runtime logs showing `timeout=120s, attempts=3`, confirming the timeout mitigation now reaches artifact generation and critic review
+- last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-24
