@@ -1013,8 +1013,8 @@ Allowed enum values:
 ### BL-20260325-057
 - title: Validate BL-20260325-056 wrapper dry-run delegate propagation hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-056
@@ -1022,7 +1022,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-056, runs one explicit approval plus one real execute, and records whether critic findings move away from dry-run propagation concerns
 - source: `WRAPPER_DRYRUN_DELEGATE_PROPAGATION_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation under real execute conditions
 - link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_DRYRUN_DELEGATE_PROPAGATION_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-056 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/107
+- evidence: `POST_WRAPPER_DRYRUN_DELEGATE_PROPAGATION_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl057-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-d472aab5e3bf`; runtime reached automation (`AUTO-20260325-869`) and critic (`CRITIC-20260325-285`) without pre-critic timeout blockers, but critic still returned `needs_revision` citing unresolved wrapper/delegate contract gaps (dry-run propagation recurrence plus stdout-over-sidecar evidence precedence risk)
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-058
+- title: Harden wrapper/delegate evidence handoff contract to eliminate dry-run propagation recurrence and sidecar precedence risk
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-057
+- start_when: `BL-20260325-057` confirms governed runtime reaches critic dispatch but critic still reports `needs_revision` on wrapper/delegate dry-run semantics recurrence and stdout-over-sidecar report precedence risk
+- done_when: Source-side hardening ensures reviewed wrapper behavior is preserved under governed generation (dry-run delegate propagation and sidecar-first evidence handoff), and one blocker report records mitigation with focused tests
+- source: `POST_WRAPPER_DRYRUN_DELEGATE_PROPAGATION_VALIDATION_REPORT.md` on 2026-03-25 records critic `needs_revision` persisted on wrapper/delegate contract handling despite BL-056 source merge
+- link: /Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_EVIDENCE_HANDOFF_CONTRACT_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-057 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

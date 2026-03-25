@@ -1,0 +1,19 @@
+task_id: AUTO-20260325-869
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-869
+worker_image: argus-worker:latest
+started_at: 2026-03-25T08:56:42.585645Z
+finished_at: 2026-03-25T08:58:12.605551Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-25T08:56:42.837970Z] [automation] [INFO] Worker started using endpoint https://fast.vpsairobot.com/v1/chat/completions (timeout=120s, attempts=3, timeout_recovery_retries=1)
+[2026-03-25T08:58:12.456099Z] [automation] [INFO] Artifact written: artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py
+[2026-03-25T08:58:12.457318Z] [automation] [INFO] Task completed AUTO-20260325-869 with status success
+[2026-03-25T08:58:12.458675Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-869
+
+=== stderr ===
+

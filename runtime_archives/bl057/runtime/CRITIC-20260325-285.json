@@ -1,0 +1,200 @@
+{
+  "task_id": "CRITIC-20260325-285",
+  "worker": "critic",
+  "status": "success",
+  "created_at": "2026-03-25T08:58:12.642590Z",
+  "updated_at": "2026-03-25T08:58:47.039261Z",
+  "retries": 0,
+  "max_retries": 0,
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "success",
+      "retryable": false,
+      "error": null,
+      "runtime_log": "/Users/lingguozhong/openclaw-team/workspaces/critic/CRITIC-20260325-285/runtime.attempt-1.log",
+      "exit_code": 0,
+      "timed_out": false,
+      "wait_error": null,
+      "output_path": "/Users/lingguozhong/openclaw-team/workspaces/critic/CRITIC-20260325-285/output.json",
+      "started_at": "2026-03-25T08:58:12.646230Z",
+      "finished_at": "2026-03-25T08:58:47.011127Z"
+    }
+  ],
+  "task_dir": "/Users/lingguozhong/openclaw-team/workspaces/critic/CRITIC-20260325-285",
+  "payload": {
+    "task_id": "CRITIC-20260325-285",
+    "worker": "critic",
+    "task_type": "review_artifact",
+    "objective": "Review the generated inbox runner together with its reviewed delegate script from the local inbox pipeline and provide a structured verdict using one of: pass, fail, needs_revision. Always output a review markdown artifact and include verdict in metadata.",
+    "inputs": {
+      "artifacts": [
+        {
+          "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+          "type": "script"
+        },
+        {
+          "path": "artifacts/scripts/pdf_to_excel_ocr.py",
+          "type": "script"
+        }
+      ],
+      "params": {
+        "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+        "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+        "description": "Purpose:\n\n  Controlled Trello live preview smoke for openclaw-team.\n\n‌\n\n  Expected behavior:\n\n- read-only Trello ingest\n\n- preview creation smoke only\n\n- no business execution claim\n\n- no Trello writeback expected in this step\n\n‌\n\n  Traceability:\n\n- backlog: BL-20260324-014\n\n- blocker context: BL-20260324-015\n\n- created_by: Oscarling\n\n- created_at: 2026-03-24 Asia/Shanghai\n\n‌\n\n  Note:\n\n  This card is only for governed smoke verification and should remain open until the smoke is finished.\n\nExecution contract: treat this as a best-effort, evidence-backed PDF extraction/conversion attempt. Do not claim OCR success without evidence. If full OCR/Excel conversion is not honestly achievable, return reviewable intermediate artifacts, explicit limitations, and next-step guidance. Keep behavior deterministic and limited to declared local artifacts.",
+        "labels": [
+          "best_effort",
+          "evidence_backed",
+          "readonly",
+          "reviewable",
+          "trello"
+        ],
+        "review_scope": {
+          "primary_artifact": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+          "paired_artifacts": [
+            "artifacts/scripts/pdf_to_excel_ocr.py"
+          ],
+          "goal": "Audit the wrapper and the reviewed delegate together so the review evidence can speak to the end-to-end readonly smoke path."
+        },
+        "artifact_snapshots": [
+          {
+            "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+            "available": true,
+            "content": "#!/usr/bin/env python3\n\"\"\"Reviewable inbox-style wrapper for the reviewed PDF-to-Excel OCR delegate.\n\nThis helper prefers repository reuse over reimplementation. It performs:\n- portable delegate resolution relative to repository/script location\n- honest preflight PDF discovery aligned to recursive semantics\n- dry-run short-circuit as partial without delegate execution\n- bounded delegate execution with explicit timeout\n- delegate JSON report handoff via stdout and --report-json sidecar\n- success gating based on structured evidence, not only exit code/output existence\n\nIt is intentionally best-effort and reviewable for readonly smoke usage.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport argparse\nimport json\nimport os\nimport subprocess\nimport sys\nimport tempfile\nfrom pathlib import Path\nfrom typing import Any, Dict, List, Optional\n\nDEFAULT_INPUT_DIR = \"~/Desktop/pdf样本\"\nDEFAULT_OUTPUT_XLSX = \"artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx\"\nDEFAULT_OCR = \"auto\"\nDEFAULT_TIMEOUT_SECONDS = 300\nDEFAULT_ORIGIN_ID = \"trello:69c24cd3c1a2359ddd7a1bf8\"\nDEFAULT_TITLE = \"BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)\"\nDEFAULT_DESCRIPTION = (\n    \"Purpose:\\n\"\n    \"Controlled Trello live preview smoke for openclaw-team.\\n\"\n    \"Expected behavior:\\n\"\n    \"- read-only Trello ingest\\n\"\n    \"- preview creation smoke only\\n\"\n    \"- no business execution claim\\n\"\n    \"- no Trello writeback expected in this step\\n\"\n    \"Traceability:\\n\"\n    \"- backlog: BL-20260324-014\\n\"\n    \"- blocker context: BL-20260324-015\\n\"\n    \"- created_by: Oscarling\\n\"\n    \"- created_at: 2026-03-24 Asia/Shanghai\\n\"\n    \"Note:\\n\"\n    \"This card is only for governed smoke verification and should remain open until the smoke is finished.\"\n)\nDEFAULT_LABELS = [\"best_effort\", \"evidence_backed\", \"readonly\", \"reviewable\", \"trello\"]\nDEFAULT_PREFERRED_BASE = \"artifacts/scripts/pdf_to_excel_ocr.py\"\n\n\ndef _expand(path_text: str) -> Path:\n    return Path(os.path.expanduser(path_text)).resolve()\n\n\ndef _repo_root() -> Path:\n    here = Path(__file__).resolve()\n    for candidate in [here.parent, *here.parents]:\n        if (candidate / \"artifacts\").exists():\n            return candidate\n    return here.parent.parent.parent\n\n\ndef _resolve_delegate(preferred: str) -> Path:\n    candidate = Path(preferred)\n    if candidate.is_absolute():\n        return candidate\n    root = _repo_root()\n    from_script_dir = (Path(__file__).resolve().parent / candidate).resolve()\n    from_root = (root / candidate).resolve()\n    if from_root.exists():\n        return from_root\n    return from_script_dir\n\n\ndef _discover_pdfs(input_dir: Path) -> List[Path]:\n    if not input_dir.exists() or not input_dir.is_dir():\n        return []\n    return sorted(\n        [\n            p for p in input_dir.rglob(\"*\")\n            if p.is_file() and p.suffix.lower() == \".pdf\"\n        ],\n        key=lambda p: str(p).lower(),\n    )\n\n\ndef _extract_json_object(text: str) -> Optional[Dict[str, Any]]:\n    text = text.strip()\n    if not text:\n        return None\n    try:\n        value = json.loads(text)\n        if isinstance(value, dict):\n            return value\n    except json.JSONDecodeError:\n        pass\n    start = text.find(\"{\")\n    while start != -1:\n        for end in range(len(text), start, -1):\n            chunk = text[start:end].strip()\n            if not chunk.endswith(\"}\"):\n                continue\n            try:\n                value = json.loads(chunk)\n                if isinstance(value, dict):\n                    return value\n            except json.JSONDecodeError:\n                continue\n        start = text.find(\"{\", start + 1)\n    return None\n\n\ndef _load_json_file(path: Path) -> Optional[Dict[str, Any]]:\n    try:\n        if path.exists():\n            data = json.loads(path.read_text(encoding=\"utf-8\"))\n            if isinstance(data, dict):\n                return data\n    except Exception:\n        return None\n    return None\n\n\ndef _output_attestation(path: Path) -> Dict[str, Any]:\n    exists = path.exists()\n    size = path.stat().st_size if exists and path.is_file() else 0\n    return {\n        \"excel_written\": bool(exists and path.suffix.lower() == \".xlsx\" and size > 0),\n        \"output_exists\": bool(exists),\n        \"output_size_bytes\": int(size),\n        \"output_path\": str(path),\n    }\n\n\ndef _normalize_counter(value: Any) -> Dict[str, int]:\n    if not isinstance(value, dict):\n        return {\"success\": 0, \"partial\": 0, \"failed\": 0}\n    return {\n        \"success\": int(value.get(\"success\", 0) or 0),\n        \"partial\": int(value.get(\"partial\", 0) or 0),\n        \"failed\": int(value.get(\"failed\", 0) or 0),\n    }\n\n\ndef _build_parser() -> argparse.ArgumentParser:\n    parser = argparse.ArgumentParser(description=\"Reviewable PDF-to-Excel OCR inbox runner\")\n    parser.add_argument(\"--input-dir\", default=DEFAULT_INPUT_DIR)\n    parser.add_argument(\"--output-xlsx\", default=DEFAULT_OUTPUT_XLSX)\n    parser.add_argument(\"--ocr\", default=DEFAULT_OCR)\n    parser.add_argument(\"--dry-run\", action=\"store_true\")\n    parser.add_argument(\"--origin-id\", default=DEFAULT_ORIGIN_ID)\n    parser.add_argument(\"--title\", default=DEFAULT_TITLE)\n    parser.add_argument(\"--description\", default=DEFAULT_DESCRIPTION)\n    parser.add_argument(\"--label\", action=\"append\", dest=\"labels\")\n    parser.add_argument(\"--preferred-base-script\", default=DEFAULT_PREFERRED_BASE)\n    parser.add_argument(\"--timeout-seconds\", type=int, default=DEFAULT_TIMEOUT_SECONDS)\n    return parser\n\n\ndef main() -> int:\n    args = _build_parser().parse_args()\n    labels = args.labels if args.labels else list(DEFAULT_LABELS)\n    input_dir = _expand(args.input_dir)\n    output_xlsx = _expand(args.output_xlsx)\n    delegate_path = _resolve_delegate(args.preferred_base_script)\n    discovered_pdfs = _discover_pdfs(input_dir)\n\n    result: Dict[str, Any] = {\n        \"status\": \"failed\",\n        \"summary\": \"\",\n        \"request\": {\n            \"origin_id\": args.origin_id,\n            \"title\": args.title,\n            \"description\": args.description,\n            \"labels\": labels,\n            \"ocr\": args.ocr,\n            \"dry_run\": bool(args.dry_run),\n            \"input_dir\": str(input_dir),\n            \"output_xlsx\": str(output_xlsx),\n        },\n        \"preflight\": {\n            \"delegate_path\": str(delegate_path),\n            \"delegate_exists\": delegate_path.exists(),\n            \"input_dir_exists\": input_dir.exists(),\n            \"input_dir_is_dir\": input_dir.is_dir(),\n            \"pdf_discovery_mode\": \"recursive\",\n            \"discovered_pdf_count\": len(discovered_pdfs),\n            \"discovered_pdfs\": [str(p) for p in discovered_pdfs],\n        },\n        \"execution\": {\n            \"delegated\": False,\n            \"timeout_seconds\": int(args.timeout_seconds),\n        },\n        \"delegate\": None,\n        \"output_attestation\": _output_attestation(output_xlsx),\n        \"limitations\": [],\n        \"next_steps\": [],\n    }\n\n    if output_xlsx.suffix.lower() != \".xlsx\":\n        result[\"status\"] = \"failed\"\n        result[\"summary\"] = \"Requested output path does not end with .xlsx; refusing mismatched output semantics.\"\n        result[\"limitations\"].append(\"Output path must end with .xlsx for workbook semantics.\")\n        print(json.dumps(result, ensure_ascii=False, indent=2))\n        return 1\n\n    if not delegate_path.exists():\n        result[\"status\"] = \"failed\"\n        result[\"summary\"] = \"Reviewed delegate script was not found; wrapper refuses to broaden behavior.\"\n        result[\"limitations\"].append(\"Delegate missing: only reviewed repository delegate is allowed for readonly preview flows.\")\n        result[\"next_steps\"].append(\"Restore or provide artifacts/scripts/pdf_to_excel_ocr.py at the expected repository location.\")\n        print(json.dumps(result, ensure_ascii=False, indent=2))\n        return 1\n\n    if args.dry_run:\n        result[\"status\"] = \"partial\"\n        result[\"summary\"] = \"Dry-run requested; wrapper performed preflight only and did not delegate execution.\"\n        result[\"limitations\"].append(\"No XLSX artifact is produced during wrapper short-circuit dry-run.\")\n        result[\"next_steps\"].append(\"Run without --dry-run to attempt reviewed delegate conversion.\")\n        print(json.dumps(result, ensure_ascii=False, indent=2))\n        return 0\n\n    if len(discovered_pdfs) == 0:\n        result[\"status\"] = \"partial\"\n        result[\"summary\"] = \"No PDF files were discovered under the provided input directory.\"\n        result[\"limitations\"].append(\"No candidate PDFs found for conversion, so no XLSX was produced.\")\n        result[\"next_steps\"].append(\"Place one or more PDF files in the input directory and rerun the helper.\")\n        print(json.dumps(result, ensure_ascii=False, indent=2))\n        return 0\n\n    output_xlsx.parent.mkdir(parents=True, exist_ok=True)\n\n    with tempfile.TemporaryDirectory(prefix=\"pdf_to_excel_delegate_\") as tmp_dir:\n        report_json = Path(tmp_dir) / \"delegate_report.json\"\n        cmd = [\n            sys.executable,\n            str(delegate_path),\n            \"--input-dir\",\n            str(input_dir),\n            \"--output-xlsx\",\n            str(output_xlsx),\n            \"--ocr\",\n            str(args.ocr),\n            \"--report-json\",\n            str(report_json),\n        ]\n\n        result[\"execution\"][\"delegated\"] = True\n        result[\"execution\"][\"command\"] = cmd\n\n        try:\n            completed = subprocess.run(\n                cmd,\n                capture_output=True,\n                text=True,\n                timeout=max(1, int(args.timeout_seconds)),\n                check=False,\n            )\n            stdout_json = _extract_json_object(completed.stdout or \"\")\n            sidecar_json = _load_json_file(report_json)\n            delegate_report = stdout_json or sidecar_json or {}\n            result[\"delegate\"] = {\n                \"returncode\": int(completed.returncode),\n                \"stdout\": completed.stdout,\n                \"stderr\": completed.stderr,\n                \"report_source\": (\n                    \"stdout_json\" if stdout_json is not None else\n                    \"sidecar_json\" if sidecar_json is not None else\n                    \"none\"\n                ),\n                \"report\": delegate_report,\n            }\n        except subprocess.TimeoutExpired as exc:\n            result[\"status\"] = \"failed\"\n            result[\"summary\"] = f\"Delegate execution timed out after {int(args.timeout_seconds)} seconds.\"\n            result[\"delegate\"] = {\n                \"timeout\": True,\n                \"stdout\": exc.stdout,\n                \"stderr\": exc.stderr,\n                \"report_source\": \"none\",\n                \"report\": {},\n            }\n            result[\"limitations\"].append(\"Delegate subprocess did not complete within the explicit timeout.\")\n            result[\"next_steps\"].append(\"Retry with a larger --timeout-seconds value or reduce the input set.\")\n            result[\"output_attestation\"] = _output_attestation(output_xlsx)\n            print(json.dumps(result, ensure_ascii=False, indent=2))\n            return 1\n\n    report = result[\"delegate\"].get(\"report\") if isinstance(result.get(\"delegate\"), dict) else {}\n    if not isinstance(report, dict):\n        report = {}\n\n    delegate_status = report.get(\"status\")\n    delegate_total_files = int(report.get(\"total_files\", 0) or 0)\n    delegate_dry_run = bool(report.get(\"dry_run\", False))\n    status_counter = _normalize_counter(report.get(\"status_counter\"))\n\n    attestation = _output_attestation(output_xlsx)\n    report_excel_written = report.get(\"excel_written\")\n    report_output_exists = report.get(\"output_exists\")\n    report_output_size_bytes = report.get(\"output_size_bytes\")\n    if isinstance(report_excel_written, bool):\n        attestation[\"excel_written\"] = report_excel_written\n    if isinstance(report_output_exists, bool):\n        attestation[\"output_exists\"] = report_output_exists\n    if isinstance(report_output_size_bytes, int):\n        attestation[\"output_size_bytes\"] = report_output_size_bytes\n    result[\"output_attestation\"] = attestation\n\n    success_gates = all([\n        delegate_status == \"success\",\n        delegate_total_files >= 1,\n        delegate_dry_run is False,\n        status_counter.get(\"failed\", 0) == 0,\n        status_counter.get(\"partial\", 0) == 0,\n        attestation.get(\"excel_written\") is True,\n        attestation.get(\"output_exists\") is True,\n        int(attestation.get(\"output_size_bytes\", 0) or 0) > 0,\n    ])\n\n    if success_gates:\n        result[\"status\"] = \"success\"\n        result[\"summary\"] = \"Reviewed delegate reported success with sufficient structured evidence and a real XLSX output attestation.\"\n        print(json.dumps(result, ensure_ascii=False, indent=2))\n        return 0\n\n    if delegate_status == \"partial\":\n        result[\"status\"] = \"partial\"\n        result[\"summary\"] = \"Delegate returned a structured partial outcome; preserving partial status for reviewable best-effort flow.\"\n        result[\"limitations\"].append(\"Success-only evidence gates were not fully satisfied by the delegate report.\")\n        result[\"next_steps\"].append(\"Review delegate stdout/stderr and report details to determine whether OCR support, PDF quality, or dependencies limited extraction.\")\n        result[\"next_steps\"].append(\"If needed, rerun against a smaller known-good sample set or verify the reviewed delegate runtime prerequisites.\")\n        print(json.dumps(result, ensure_ascii=False, indent=2))\n        return 0\n\n    result[\"status\"] = \"failed\"\n    result[\"summary\"] = \"Delegate did not provide sufficient structured evidence for success, and no contract-compliant partial outcome was established.\"\n    result[\"limitations\"].append(\"Wrapper will not treat exit code plus output-file existence alone as sufficient success evidence.\")\n    if delegate_status is None:\n        result[\"limitations\"].append(\"No canonical delegate JSON report was available from stdout or sidecar.\")\n    else:\n        result[\"limitations\"].append(f\"Delegate status was {delegate_status!r}, which did not satisfy success gates.\")\n    result[\"next_steps\"].append(\"Inspect the reviewed delegate CLI compatibility and JSON report fields status/total_files/status_counter/dry_run.\")\n    result[\"next_steps\"].append(\"Ensure the delegate emits or writes contract-compliant JSON via stdout or --report-json sidecar.\")\n    print(json.dumps(result, ensure_ascii=False, indent=2))\n    return 1\n\n\nif __name__ == \"__main__\":\n    raise SystemExit(main())\n",
+            "truncated": false
+          },
+          {
+            "path": "artifacts/scripts/pdf_to_excel_ocr.py",
+            "available": true,
+            "content": "#!/usr/bin/env python3\n\"\"\"\nBatch PDF -> Excel extractor with optional OCR fallback.\n\nDesign goals:\n- Batch processing with per-file isolation (single file failure must not stop the batch)\n- OCR mode: auto | on | off\n- Chinese-friendly OCR defaults (chi_sim+eng)\n- Dry-run support for pilot validation when dependencies are unavailable\n\"\"\"\n\nfrom __future__ import annotations\n\nimport argparse\nimport json\nimport shutil\nimport sys\nfrom dataclasses import asdict, dataclass\nfrom pathlib import Path\nfrom typing import Any\n\n\ntry:\n    from pypdf import PdfReader  # type: ignore\nexcept Exception:\n    PdfReader = None\n\ntry:\n    import pandas as pd  # type: ignore\nexcept Exception:\n    pd = None\n\ntry:\n    import pytesseract  # type: ignore\nexcept Exception:\n    pytesseract = None\n\ntry:\n    from pdf2image import convert_from_path  # type: ignore\nexcept Exception:\n    convert_from_path = None\n\n\n@dataclass\nclass FileResult:\n    file_name: str\n    file_path: str\n    status: str\n    extract_method: str\n    page_count: int\n    text_chars: int\n    text_preview: str\n    warnings: str\n    error: str\n\n\ndef parse_args() -> argparse.Namespace:\n    parser = argparse.ArgumentParser(description=\"Batch PDF to Excel extractor with OCR fallback.\")\n    parser.add_argument(\"--input-dir\", required=True, help=\"Directory containing PDF files.\")\n    parser.add_argument(\"--output-xlsx\", required=True, help=\"Output Excel path.\")\n    parser.add_argument(\n        \"--ocr\",\n        choices=(\"auto\", \"on\", \"off\"),\n        default=\"auto\",\n        help=\"OCR mode. auto=use OCR when plain text extraction is weak.\",\n    )\n    parser.add_argument(\n        \"--dry-run\",\n        action=\"store_true\",\n        help=\"Do not write Excel file. Print execution summary only.\",\n    )\n    parser.add_argument(\n        \"--ocr-lang\",\n        default=\"chi_sim+eng\",\n        help=\"OCR language pack for pytesseract, default supports Chinese + English.\",\n    )\n    parser.add_argument(\n        \"--auto-ocr-min-chars\",\n        type=int,\n        default=50,\n        help=\"In auto mode, run OCR when extracted text chars < this threshold.\",\n    )\n    parser.add_argument(\n        \"--report-json\",\n        default=\"\",\n        help=\"Optional sidecar path for writing the same JSON report emitted to stdout.\",\n    )\n    return parser.parse_args()\n\n\ndef discover_pdfs(input_dir: Path) -> list[Path]:\n    if not input_dir.exists():\n        raise FileNotFoundError(f\"Input directory does not exist: {input_dir}\")\n    if not input_dir.is_dir():\n        raise NotADirectoryError(f\"Input path is not a directory: {input_dir}\")\n    files = sorted([p for p in input_dir.rglob(\"*\") if p.is_file() and p.suffix.lower() == \".pdf\"])\n    return files\n\n\ndef detect_ocr_runtime_status() -> tuple[str, list[str]]:\n    missing: list[str] = []\n    present: list[str] = []\n\n    if pytesseract is None:\n        missing.append(\"python module pytesseract\")\n    else:\n        present.append(\"python module pytesseract\")\n    if convert_from_path is None:\n        missing.append(\"python module pdf2image\")\n    else:\n        present.append(\"python module pdf2image\")\n    if shutil.which(\"tesseract\") is None:\n        missing.append(\"binary tesseract\")\n    else:\n        present.append(\"binary tesseract\")\n    if shutil.which(\"pdftoppm\") is None:\n        missing.append(\"binary pdftoppm (poppler)\")\n    else:\n        present.append(\"binary pdftoppm (poppler)\")\n\n    if not missing:\n        return \"available\", []\n    if present:\n        return \"partial\", missing\n    return \"blocked\", missing\n\n\ndef extract_text_pypdf(pdf_path: Path) -> tuple[str, int]:\n    if PdfReader is None:\n        raise RuntimeError(\"pypdf not installed\")\n    reader = PdfReader(str(pdf_path))\n    page_texts: list[str] = []\n    for page in reader.pages:\n        text = page.extract_text() or \"\"\n        page_texts.append(text)\n    return \"\\n\".join(page_texts), len(reader.pages)\n\n\ndef extract_text_ocr(pdf_path: Path, ocr_lang: str) -> str:\n    if pytesseract is None:\n        raise RuntimeError(\"pytesseract not installed\")\n    if convert_from_path is None:\n        raise RuntimeError(\"pdf2image not installed\")\n    if shutil.which(\"tesseract\") is None:\n        raise RuntimeError(\"tesseract binary not found\")\n    if shutil.which(\"pdftoppm\") is None:\n        raise RuntimeError(\"pdftoppm binary not found (install poppler)\")\n\n    images = convert_from_path(str(pdf_path), dpi=220)\n    chunks: list[str] = []\n    for image in images:\n        chunks.append(pytesseract.image_to_string(image, lang=ocr_lang))\n    return \"\\n\".join(chunks)\n\n\ndef compact_preview(text: str, limit: int = 160) -> str:\n    single_line = \" \".join(text.split())\n    if len(single_line) <= limit:\n        return single_line\n    return single_line[: limit - 3] + \"...\"\n\n\ndef process_one_pdf(\n    pdf_path: Path,\n    ocr_mode: str,\n    ocr_lang: str,\n    auto_ocr_min_chars: int,\n) -> FileResult:\n    warnings: list[str] = []\n    errors: list[str] = []\n    method = \"none\"\n    text = \"\"\n    page_count = 0\n\n    try:\n        text, page_count = extract_text_pypdf(pdf_path)\n        method = \"text\"\n    except Exception as e:\n        warnings.append(f\"text extraction unavailable: {e}\")\n\n    needs_ocr = False\n    if ocr_mode == \"on\":\n        needs_ocr = True\n    elif ocr_mode == \"auto\" and len(text.strip()) < auto_ocr_min_chars:\n        needs_ocr = True\n\n    if needs_ocr:\n        try:\n            ocr_text = extract_text_ocr(pdf_path, ocr_lang).strip()\n            if ocr_text:\n                if text.strip():\n                    text = f\"{text.strip()}\\n\\n[OCR Fallback]\\n{ocr_text}\"\n                    method = \"text+ocr\"\n                else:\n                    text = ocr_text\n                    method = \"ocr\"\n            else:\n                warnings.append(\"OCR returned empty text\")\n        except Exception as e:\n            errors.append(f\"OCR failed: {e}\")\n\n    if not text.strip():\n        if errors:\n            status = \"failed\"\n        else:\n            status = \"partial\"\n            warnings.append(\"No extractable text captured\")\n    else:\n        if errors:\n            status = \"partial\"\n            warnings.append(\"Text was extracted, but one or more extraction attempts failed; review errors\")\n        else:\n            status = \"success\"\n\n    return FileResult(\n        file_name=pdf_path.name,\n        file_path=str(pdf_path),\n        status=status,\n        extract_method=method,\n        page_count=page_count,\n        text_chars=len(text),\n        text_preview=compact_preview(text),\n        warnings=\" | \".join(warnings),\n        error=\" | \".join(errors),\n    )\n\n\ndef write_excel(results: list[FileResult], output_xlsx: Path) -> None:\n    if pd is None:\n        raise RuntimeError(\"pandas is required to write Excel output\")\n    output_xlsx.parent.mkdir(parents=True, exist_ok=True)\n\n    rows = [asdict(r) for r in results]\n    detail_df = pd.DataFrame(rows)\n\n    summary_rows: list[dict[str, Any]] = []\n    by_status = detail_df.groupby(\"status\").size().to_dict()\n    by_method = detail_df.groupby(\"extract_method\").size().to_dict()\n    for key, value in sorted(by_status.items()):\n        summary_rows.append({\"metric\": \"status_count\", \"name\": key, \"value\": int(value)})\n    for key, value in sorted(by_method.items()):\n        summary_rows.append({\"metric\": \"method_count\", \"name\": key, \"value\": int(value)})\n    summary_rows.append({\"metric\": \"total_files\", \"name\": \"all\", \"value\": int(len(results))})\n    summary_df = pd.DataFrame(summary_rows)\n\n    with pd.ExcelWriter(output_xlsx) as writer:\n        summary_df.to_excel(writer, sheet_name=\"summary\", index=False)\n        detail_df.to_excel(writer, sheet_name=\"files\", index=False)\n\n\ndef emit_report(report: dict[str, Any], report_json: str) -> None:\n    rendered = json.dumps(report, ensure_ascii=False, indent=2)\n    print(rendered)\n    if not report_json:\n        return\n    out_path = Path(report_json).expanduser().resolve()\n    out_path.parent.mkdir(parents=True, exist_ok=True)\n    out_path.write_text(rendered + \"\\n\", encoding=\"utf-8\")\n\n\ndef main() -> int:\n    args = parse_args()\n    input_dir = Path(args.input_dir).expanduser().resolve()\n    output_xlsx = Path(args.output_xlsx).expanduser().resolve()\n\n    try:\n        pdf_files = discover_pdfs(input_dir)\n    except Exception as e:\n        emit_report({\"status\": \"failed\", \"error\": str(e)}, args.report_json)\n        return 2\n\n    if not pdf_files:\n        emit_report(\n            {\n                \"status\": \"partial\",\n                \"input_dir\": str(input_dir),\n                \"output_xlsx\": str(output_xlsx),\n                \"ocr_mode\": args.ocr,\n                \"total_files\": 0,\n                \"files\": [],\n                \"status_counter\": {},\n                \"dry_run\": bool(args.dry_run),\n                \"excel_written\": False,\n                \"output_exists\": False,\n                \"output_size_bytes\": 0,\n                \"notes\": [f\"No PDF files found under {input_dir}\"],\n                \"next_steps\": [\n                    \"Add one or more .pdf files under the input directory and rerun.\",\n                ],\n            },\n            args.report_json,\n        )\n        return 0\n\n    ocr_runtime, missing = detect_ocr_runtime_status()\n    results: list[FileResult] = []\n    for pdf in pdf_files:\n        try:\n            results.append(\n                process_one_pdf(\n                    pdf,\n                    ocr_mode=args.ocr,\n                    ocr_lang=args.ocr_lang,\n                    auto_ocr_min_chars=args.auto_ocr_min_chars,\n                )\n            )\n        except Exception as e:\n            results.append(\n                FileResult(\n                    file_name=pdf.name,\n                    file_path=str(pdf),\n                    status=\"failed\",\n                    extract_method=\"none\",\n                    page_count=0,\n                    text_chars=0,\n                    text_preview=\"\",\n                    warnings=\"\",\n                    error=f\"Unhandled processing exception: {e}\",\n                )\n            )\n\n    status_counter: dict[str, int] = {}\n    for item in results:\n        status_counter[item.status] = status_counter.get(item.status, 0) + 1\n\n    files_payload = [asdict(item) for item in results]\n    failed_count = status_counter.get(\"failed\", 0)\n    partial_count = status_counter.get(\"partial\", 0)\n    if failed_count == 0 and partial_count == 0:\n        aggregate_status = \"success\"\n    else:\n        aggregate_status = \"partial\"\n\n    notes: list[str] = []\n    next_steps: list[str] = []\n    if ocr_runtime != \"available\":\n        notes.append(f\"OCR runtime status is {ocr_runtime}; missing dependencies: {', '.join(missing) or 'none'}\")\n        next_steps.append(\"Install missing OCR runtime dependencies if OCR fallback is required.\")\n    if partial_count > 0:\n        notes.append(f\"{partial_count} file(s) reported partial status.\")\n        next_steps.append(\"Inspect per-file partial records in `files` and address listed warnings/errors.\")\n    if failed_count > 0:\n        notes.append(f\"{failed_count} file(s) reported failed status.\")\n        next_steps.append(\"Inspect per-file failures in `files` and resolve the extraction or OCR error causes.\")\n\n    report = {\n        \"status\": aggregate_status,\n        \"input_dir\": str(input_dir),\n        \"output_xlsx\": str(output_xlsx),\n        \"ocr_mode\": args.ocr,\n        \"ocr_runtime_status\": ocr_runtime,\n        \"ocr_missing_dependencies\": missing,\n        \"total_files\": len(results),\n        \"files\": files_payload,\n        \"status_counter\": status_counter,\n        \"dry_run\": bool(args.dry_run),\n        \"excel_written\": False,\n        \"output_exists\": False,\n        \"output_size_bytes\": 0,\n        \"notes\": notes,\n        \"next_steps\": next_steps,\n    }\n\n    if args.dry_run:\n        emit_report(report, args.report_json)\n        return 0\n\n    try:\n        write_excel(results, output_xlsx)\n        report[\"output_exists\"] = output_xlsx.exists() and output_xlsx.is_file()\n        if report[\"output_exists\"]:\n            report[\"output_size_bytes\"] = int(output_xlsx.stat().st_size)\n        report[\"excel_written\"] = bool(report[\"output_exists\"] and report[\"output_size_bytes\"] > 0)\n        emit_report(report, args.report_json)\n        return 0\n    except Exception as e:\n        report[\"status\"] = \"failed\"\n        report[\"error\"] = str(e)\n        report[\"output_exists\"] = output_xlsx.exists() and output_xlsx.is_file()\n        if report[\"output_exists\"]:\n            report[\"output_size_bytes\"] = int(output_xlsx.stat().st_size)\n        report[\"excel_written\"] = bool(report[\"output_exists\"] and report[\"output_size_bytes\"] > 0)\n        report[\"notes\"] = report.get(\"notes\", []) + [\"Excel write step failed after extraction.\"]\n        report[\"next_steps\"] = report.get(\"next_steps\", []) + [\"Check pandas/openpyxl availability and output path permissions.\"]\n        emit_report(report, args.report_json)\n        return 3\n\n\nif __name__ == \"__main__\":\n    raise SystemExit(main())\n",
+            "truncated": false
+          }
+        ],
+        "review_contract": {
+          "required_status": [
+            "success",
+            "partial",
+            "failed"
+          ],
+          "required_verdict_values": [
+            "fail",
+            "needs_revision",
+            "pass"
+          ],
+          "required_metadata_key": "verdict",
+          "must_write_review_artifact_to": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+          "artifact_policy": "Always include either `file_contents` for the review artifact path or `artifacts` referencing that exact path.",
+          "fallback_policy": "If evidence is insufficient, return `status=partial`, include explicit `errors`, still generate review artifact content, and set verdict=needs_revision."
+        },
+        "review_template": {
+          "title": "Review: <artifact name>",
+          "sections": [
+            "Scope",
+            "Findings",
+            "Verdict",
+            "Rationale"
+          ],
+          "verdict_required": true
+        }
+      }
+    },
+    "expected_outputs": [
+      {
+        "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+        "type": "review"
+      }
+    ],
+    "constraints": [
+      "Review must be grounded in produced automation artifact",
+      "When both wrapper and reviewed delegate snapshots are supplied, evaluate them as one end-to-end readonly pair instead of ignoring the delegate evidence.",
+      "Do not invent missing artifact content",
+      "Return a clear verdict: pass, fail, or needs_revision",
+      "Include metadata.verdict in output",
+      "Generate review artifact markdown for expected_outputs[0].path",
+      "Use artifact_snapshots when provided; avoid claiming access problems if snapshot content exists.",
+      "When both the generated wrapper and reviewed delegate snapshots are provided, review them together rather than silently narrowing scope to one file.",
+      "Return metadata.verdict with one of: pass, fail, needs_revision.",
+      "Always generate review artifact content for expected_outputs[0].path.",
+      "If evidence is insufficient, use partial + errors + verdict=needs_revision, but still output review artifact."
+    ],
+    "priority": "medium",
+    "source": {
+      "kind": "local_inbox",
+      "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+      "inbox_file": "trello-69c24cd3c1a2359ddd7a1bf8-regen-20260325-bl057-001.json",
+      "received_at": "2026-03-25T08:53:07.470167Z",
+      "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+      "labels": [
+        "best_effort",
+        "evidence_backed",
+        "readonly",
+        "reviewable",
+        "trello"
+      ],
+      "provider": "trello",
+      "mode": "readonly",
+      "card_id": "69c24cd3c1a2359ddd7a1bf8",
+      "board_id": "69be462743bfa0038ca10f7a",
+      "list_id": "69be462743bfa0038ca10f8f",
+      "regeneration_token": "regen-20260325-bl057-001"
+    },
+    "acceptance_criteria": [
+      "Produce a review artifact with explicit verdict (pass/fail/needs_revision)"
+    ],
+    "metadata": {
+      "integration_phase": "8B",
+      "pipeline": "inbox->adapter->manager->automation->critic",
+      "request_type": "pdf_to_excel_ocr",
+      "payload_hash": "d472aab5e3bfd5e47ecb7dfc9ffffda4d8721a5ad56b9dd611be066645a67b40",
+      "regeneration_token": "regen-20260325-bl057-001",
+      "labels": [
+        "best_effort",
+        "evidence_backed",
+        "readonly",
+        "reviewable",
+        "trello"
+      ],
+      "external_metadata": {
+        "source_system": "trello",
+        "card_id": "69c24cd3c1a2359ddd7a1bf8",
+        "card_short_id": 7,
+        "board_id": "69be462743bfa0038ca10f7a",
+        "list_id": "69be462743bfa0038ca10f8f",
+        "date_last_activity": "2026-03-24T08:35:56.234Z",
+        "readonly_mapped_at": "2026-03-25T08:52:30.351021Z",
+        "contract_profile": "best_effort_evidence_backed",
+        "ocr_claim_policy": "do_not_claim_success_without_evidence",
+        "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable",
+        "regeneration_token": "regen-20260325-bl057-001"
+      }
+    }
+  },
+  "result": {
+    "task_id": "CRITIC-20260325-285",
+    "worker": "critic",
+    "status": "success",
+    "summary": "Reviewed the inbox runner and paired delegate together as an end-to-end readonly smoke path. Verdict: needs_revision due to wrapper/delegate CLI contract mismatch and evidence-loss risk when both stdout JSON and sidecar JSON are present.",
+    "artifacts": [
+      {
+        "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+        "type": "review"
+      }
+    ],
+    "timestamp": "2026-03-25T08:58:46.896406Z",
+    "duration_ms": 34038,
+    "notes": [
+      "Scope included both artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py and artifacts/scripts/pdf_to_excel_ocr.py as a single readonly pair.",
+      "Review is grounded in the supplied artifact snapshots.",
+      "A review artifact markdown file is provided via file_contents for the expected path."
+    ],
+    "metadata": {
+      "verdict": "needs_revision",
+      "task_id": "CRITIC-20260325-285",
+      "worker": "critic",
+      "reviewed_artifacts": [
+        "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+        "artifacts/scripts/pdf_to_excel_ocr.py"
+      ]
+    }
+  }
+}

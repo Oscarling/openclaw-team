@@ -2354,6 +2354,69 @@ Verification snapshot on 2026-03-25:
   `10/10`
 - `python3 scripts/backlog_lint.py` passed
 - `python3 scripts/backlog_sync.py` passed with BL-056 issue mirror to `#104`
+
+### 65. Fresh Governed Validation After BL-056 Wrapper Dry-Run Propagation Hardening
+
+User objective:
+
+- continue phase-by-phase without drift
+- validate BL-056 wrapper dry-run delegate propagation hardening on one fresh
+  same-origin governed candidate
+
+Main work areas:
+
+- activated `BL-20260325-057` and mirrored it to issue `#107`
+- executed governed validation pipeline with token
+  `regen-20260325-bl057-001`:
+  - sandbox Trello smoke (captured network-policy block evidence)
+  - elevated Trello smoke (live pass + mapped preview)
+  - generated regeneration payload and ingest once -> fresh preview
+    `preview-trello-69c24cd3c1a2359ddd7a1bf8-d472aab5e3bf`
+  - explicit approval write
+  - sandbox execute (captured Docker init block evidence)
+  - elevated replay with runtime env injection reached automation and critic
+- captured and archived runtime evidence:
+  - automation task completed (`AUTO-20260325-869`)
+  - critic task completed (`CRITIC-20260325-285`)
+  - final execute still `rejected` on critic `needs_revision`
+- critic finding focus did not move away from wrapper/delegate contract:
+  - dry-run propagation concern recurred
+  - sidecar-vs-stdout report precedence risk also flagged
+- produced validation report and queued next blocker phase
+  (`BL-20260325-058`)
+
+Primary output:
+
+- [POST_WRAPPER_DRYRUN_DELEGATE_PROPAGATION_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_WRAPPER_DRYRUN_DELEGATE_PROPAGATION_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-057` is complete as a governed validation phase
+- pipeline progressed to critic dispatch, but dry-run contract concerns persisted
+  under governed runtime
+- blocker focus moved to enforcing wrapper/delegate evidence handoff contract
+  (`BL-20260325-058`)
+
+Verification snapshot on 2026-03-25:
+
+- `python3 scripts/backlog_lint.py` passed after BL-057 activation
+- `python3 scripts/backlog_sync.py` passed with BL-057 issue mirror to `#107`
+- sandbox smoke evidence captured as blocked (`ConnectionError` /
+  `NameResolutionError`)
+- elevated smoke passed with `read_count = 1`
+- `python3 skills/ingest_tasks.py --once --test-mode success` returned:
+  - `processed = 1`
+  - `duplicate_skipped = 0`
+  - `preview_created = 1`
+- elevated execute replay returned:
+  - `status = rejected`
+  - `decision_reason = critic_verdict=needs_revision`
+  - `critic_verdict = needs_revision`
+- final preview state:
+  - `approved = true`
+  - `execution.status = rejected`
+  - `execution.executed = true`
+  - `execution.attempts = 2`
 - automation worker:
   - task `AUTO-20260325-854`
   - `status = success`
