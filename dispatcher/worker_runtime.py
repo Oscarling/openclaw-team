@@ -82,6 +82,7 @@ def read_int_env(name, default, *, minimum=1):
 # ==========================================
 DEFAULT_LLM_TIMEOUT_SECONDS = 120
 DEFAULT_LLM_MAX_RETRIES = 3
+DEFAULT_LLM_TIMEOUT_RECOVERY_RETRIES = 1
 MAX_ARTIFACT_SIZE = 2 * 1024 * 1024  # 2MB
 NO_PROXY_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 HTTP_USER_AGENT = "Mozilla/5.0"
@@ -158,6 +159,14 @@ def llm_max_retries():
         "ARGUS_LLM_MAX_RETRIES",
         DEFAULT_LLM_MAX_RETRIES,
         minimum=1,
+    )
+
+
+def llm_timeout_recovery_retries():
+    return read_int_env(
+        "ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES",
+        DEFAULT_LLM_TIMEOUT_RECOVERY_RETRIES,
+        minimum=0,
     )
 
 
@@ -404,6 +413,20 @@ def should_retry_auth_failure_on_fallback(error_class, attempt, max_attempts, ch
     return current_url != next_url
 
 
+def should_grant_timeout_recovery_retry(
+    error_class,
+    retryable,
+    attempt,
+    max_attempts,
+    timeout_recovery_retries_remaining,
+):
+    if error_class != "timeout" or not retryable:
+        return False
+    if timeout_recovery_retries_remaining <= 0:
+        return False
+    return attempt >= max_attempts - 1
+
+
 def remove_endpoint_for_current_call(chat_urls, blocked_url):
     if len(chat_urls) <= 1:
         return chat_urls
@@ -419,6 +442,7 @@ def remove_endpoint_for_current_call(chat_urls, blocked_url):
 def call_llm(system_prompt, user_prompt, worker, llm_settings):
     timeout_seconds = llm_timeout_seconds()
     max_attempts = llm_max_retries()
+    timeout_recovery_retries_remaining = llm_timeout_recovery_retries()
     chat_urls = llm_candidate_chat_urls(llm_settings)
     payload = {
         "model": llm_settings["model_name"],
@@ -435,7 +459,8 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
         "Connection": "close",
     }
     auth_fallback_retry_used = False
-    for attempt in range(max_attempts):
+    attempt = 0
+    while attempt < max_attempts:
         chat_url = chat_urls[attempt % len(chat_urls)]
         try:
             req = urllib.request.Request(
@@ -464,6 +489,24 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
                 )
                 if auth_fallback_retry:
                     auth_fallback_retry_used = True
+            if should_grant_timeout_recovery_retry(
+                error_class=error_class,
+                retryable=retryable,
+                attempt=attempt,
+                max_attempts=max_attempts,
+                timeout_recovery_retries_remaining=timeout_recovery_retries_remaining,
+            ):
+                timeout_recovery_retries_remaining -= 1
+                max_attempts += 1
+                log(
+                    worker,
+                    "INFO",
+                    (
+                        "Granted timeout recovery retry; "
+                        f"extended max attempts to {max_attempts} "
+                        f"(remaining={timeout_recovery_retries_remaining})"
+                    ),
+                )
             effective_retryable = retryable or auth_fallback_retry
             log(
                 worker,
@@ -494,6 +537,7 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
             next_url = chat_urls[(attempt + 1) % len(chat_urls)]
             log(worker, "INFO", f"Retrying LLM call in {delay_seconds}s (next_endpoint={next_url})")
             time.sleep(delay_seconds)
+            attempt += 1
     return ""
 
 
@@ -890,7 +934,8 @@ def run_worker(task_dir=None, worker_override=None, base_dir=None, llm_override=
                     "INFO",
                     "Worker started using endpoint "
                     f"{llm_settings['chat_url']} "
-                    f"(timeout={llm_timeout_seconds()}s, attempts={llm_max_retries()})",
+                    f"(timeout={llm_timeout_seconds()}s, attempts={llm_max_retries()}, "
+                    f"timeout_recovery_retries={llm_timeout_recovery_retries()})",
                 )
                 soul = load_soul(worker)
                 user_prompt = build_user_prompt(task)

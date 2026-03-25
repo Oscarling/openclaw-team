@@ -2211,6 +2211,46 @@ Verification snapshot on 2026-03-25:
   - `execution.status = rejected`
   - `execution.executed = true`
   - `execution.attempts = 2`
+
+### 62. Automation Timeout Runtime Reliability Hardening After BL-053 Blocker
+
+User objective:
+
+- continue phase-by-phase without drift
+- harden automation runtime timeout reliability after BL-053 pre-critic timeout
+  exhaustion
+
+Main work areas:
+
+- activated `BL-20260325-054` and mirrored it to issue `#100`
+- updated `dispatcher/worker_runtime.py` to add bounded timeout recovery:
+  - introduced `ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES` (default `1`)
+  - added terminal-timeout recovery guard
+  - switched retry loop to bounded dynamic `while` so one recovery attempt can
+    be granted without unbounded retries
+- kept existing endpoint/auth fallback quarantine semantics unchanged
+- expanded focused regressions in `tests/test_argus_hardening.py`:
+  - `test_call_llm_grants_terminal_timeout_recovery_retry_after_auth_quarantine`
+  - `test_call_llm_can_disable_timeout_recovery_retry`
+- produced blocker hardening report and prepared next governed validation item
+  (`BL-20260325-055`)
+
+Primary output:
+
+- [AUTOMATION_TIMEOUT_RUNTIME_RELIABILITY_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/AUTOMATION_TIMEOUT_RUNTIME_RELIABILITY_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-054` is complete as a source-side blocker-hardening phase
+- runtime now supports one bounded, configurable terminal-timeout recovery
+  retry before exhaustion
+- next phase `BL-20260325-055` is defined as fresh governed validation
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_argus_hardening.py` passed `15/15`
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with BL-054 issue mirror to `#100`
 - automation worker:
   - task `AUTO-20260325-854`
   - `status = success`

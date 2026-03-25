@@ -776,6 +776,139 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertEqual([timeout for _url, timeout in calls], [120, 120, 120])
         self.assertEqual(json.loads(content)["status"], "success")
 
+    def test_call_llm_grants_terminal_timeout_recovery_retry_after_auth_quarantine(self) -> None:
+        calls: list[tuple[str, int]] = []
+        primary_attempts = {"count": 0}
+
+        class FakeResponse:
+            def __enter__(self) -> "FakeResponse":
+                return self
+
+            def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+                return False
+
+            def read(self) -> bytes:
+                payload = {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps({"status": "success", "summary": "ok"})
+                            }
+                        }
+                    ]
+                }
+                return json.dumps(payload).encode("utf-8")
+
+        class TimeoutRecoveryOpener:
+            def open(self, req: Any, timeout: int | None = None) -> FakeResponse:
+                calls.append((req.full_url, timeout or 0))
+                if "primary.invalid" in req.full_url:
+                    primary_attempts["count"] += 1
+                    if primary_attempts["count"] == 1:
+                        raise urllib.error.HTTPError(
+                            req.full_url,
+                            520,
+                            "Web Server Returned an Unknown Error",
+                            None,
+                            None,
+                        )
+                    if primary_attempts["count"] == 2:
+                        raise TimeoutError("The read operation timed out")
+                    return FakeResponse()
+                raise urllib.error.HTTPError(req.full_url, 401, "Unauthorized", None, None)
+
+        with mock.patch.object(worker_runtime, "NO_PROXY_OPENER", TimeoutRecoveryOpener()):
+            with mock.patch.object(worker_runtime.time, "sleep", return_value=None):
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "ARGUS_LLM_MAX_RETRIES": "3",
+                        "ARGUS_LLM_FALLBACK_CHAT_URLS": "https://fallback.invalid/v1/chat/completions",
+                    },
+                    clear=False,
+                ):
+                    content = worker_runtime.call_llm(
+                        "system",
+                        "user",
+                        "automation",
+                        {
+                            "api_key": "key",
+                            "api_base": "https://primary.invalid/v1",
+                            "chat_url": "https://primary.invalid/v1/chat/completions",
+                            "model_name": "demo-model",
+                        },
+                    )
+
+        self.assertEqual(
+            [url for url, _timeout in calls],
+            [
+                "https://primary.invalid/v1/chat/completions",
+                "https://fallback.invalid/v1/chat/completions",
+                "https://primary.invalid/v1/chat/completions",
+                "https://primary.invalid/v1/chat/completions",
+            ],
+        )
+        self.assertEqual([timeout for _url, timeout in calls], [120, 120, 120, 120])
+        self.assertEqual(primary_attempts["count"], 3)
+        self.assertEqual(json.loads(content)["status"], "success")
+
+    def test_call_llm_can_disable_timeout_recovery_retry(self) -> None:
+        calls: list[tuple[str, int]] = []
+        primary_attempts = {"count": 0}
+
+        class TimeoutStillFailsOpener:
+            def open(self, req: Any, timeout: int | None = None) -> Any:
+                calls.append((req.full_url, timeout or 0))
+                if "primary.invalid" in req.full_url:
+                    primary_attempts["count"] += 1
+                    if primary_attempts["count"] == 1:
+                        raise urllib.error.HTTPError(
+                            req.full_url,
+                            520,
+                            "Web Server Returned an Unknown Error",
+                            None,
+                            None,
+                        )
+                    raise TimeoutError("The read operation timed out")
+                raise urllib.error.HTTPError(req.full_url, 401, "Unauthorized", None, None)
+
+        with mock.patch.object(worker_runtime, "NO_PROXY_OPENER", TimeoutStillFailsOpener()):
+            with mock.patch.object(worker_runtime.time, "sleep", return_value=None):
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "ARGUS_LLM_MAX_RETRIES": "3",
+                        "ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES": "0",
+                        "ARGUS_LLM_FALLBACK_CHAT_URLS": "https://fallback.invalid/v1/chat/completions",
+                    },
+                    clear=False,
+                ):
+                    with self.assertRaises(RuntimeError) as ctx:
+                        worker_runtime.call_llm(
+                            "system",
+                            "user",
+                            "automation",
+                            {
+                                "api_key": "key",
+                                "api_base": "https://primary.invalid/v1",
+                                "chat_url": "https://primary.invalid/v1/chat/completions",
+                                "model_name": "demo-model",
+                            },
+                        )
+
+        message = str(ctx.exception)
+        self.assertIn("class=timeout", message)
+        self.assertIn("attempts=3/3", message)
+        self.assertEqual(
+            [url for url, _timeout in calls],
+            [
+                "https://primary.invalid/v1/chat/completions",
+                "https://fallback.invalid/v1/chat/completions",
+                "https://primary.invalid/v1/chat/completions",
+            ],
+        )
+        self.assertEqual([timeout for _url, timeout in calls], [120, 120, 120])
+
     def test_classify_llm_call_error_marks_http_520_as_retryable(self) -> None:
         err = urllib.error.HTTPError("https://primary.invalid/v1/chat/completions", 520, "Unknown Error", None, None)
         error_class, retryable = worker_runtime.classify_llm_call_error(err)

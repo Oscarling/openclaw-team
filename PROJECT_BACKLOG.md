@@ -962,8 +962,8 @@ Allowed enum values:
 ### BL-20260325-054
 - title: Harden automation timeout/runtime reliability after BL-20260325-053 pre-critic timeout blocker
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-053
@@ -971,7 +971,24 @@ Allowed enum values:
 - done_when: Source-side automation runtime hardening reduces timeout-induced pre-critic exhaustion and one blocker report records mitigation with focused tests
 - source: `POST_AUTOMATION_ENDPOINT_AUTH_RUNTIME_RESILIENCE_VALIDATION_REPORT.md` on 2026-03-25 records timeout reliability as the dominant unresolved pre-critic blocker after BL-052 activation
 - link: /Users/lingguozhong/openclaw-team/AUTOMATION_TIMEOUT_RUNTIME_RELIABILITY_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260325-053 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/100
+- evidence: `AUTOMATION_TIMEOUT_RUNTIME_RELIABILITY_HARDENING_REPORT.md` records source-side runtime hardening in `dispatcher/worker_runtime.py` that grants one configurable terminal timeout recovery retry before exhaustion, with focused regressions in `tests/test_argus_hardening.py` covering both default recovery (`520 -> 401 -> timeout -> recovery`) and explicit disable (`ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES=0`)
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-055
+- title: Validate BL-20260325-054 automation timeout/runtime reliability hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-054
+- start_when: `BL-20260325-054` is merged so a fresh same-origin governed run can verify whether timeout-resilience hardening consistently reaches critic dispatch after endpoint/auth recovery
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-054, runs one explicit approval plus one real execute, and records whether runtime now reaches critic dispatch without timeout exhaustion
+- source: `AUTOMATION_TIMEOUT_RUNTIME_RELIABILITY_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation under real execute conditions
+- link: /Users/lingguozhong/openclaw-team/POST_AUTOMATION_TIMEOUT_RUNTIME_RELIABILITY_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-054 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
