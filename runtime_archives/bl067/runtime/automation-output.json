@@ -1,0 +1,13 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "failed",
+  "summary": "Worker execution failed",
+  "artifacts": [],
+  "errors": [
+    "LLM call exhausted (attempts=1/3, class=http_400, endpoint=https://aixj.vip/v1/chat/completions, retryable=False): HTTP Error 400: Bad Request"
+  ],
+  "metadata": {},
+  "duration_ms": 537,
+  "timestamp": "2026-03-25T12:10:54.491158Z"
+}
