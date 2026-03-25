@@ -85,6 +85,9 @@ class PdfToExcelOcrDelegateTests(unittest.TestCase):
         self.assertEqual(sidecar_payload["status"], "success")
         self.assertEqual(sidecar_payload["total_files"], 1)
         self.assertEqual(sidecar_payload["dry_run"], True)
+        self.assertEqual(sidecar_payload["excel_written"], False)
+        self.assertEqual(sidecar_payload["output_exists"], False)
+        self.assertEqual(sidecar_payload["output_size_bytes"], 0)
 
     def test_report_json_is_written_on_write_failure(self) -> None:
         with mock.patch.object(self.delegate, "discover_pdfs", return_value=[self.fake_pdf]), mock.patch.object(
@@ -97,6 +100,60 @@ class PdfToExcelOcrDelegateTests(unittest.TestCase):
         self.assertEqual(stdout_payload, sidecar_payload)
         self.assertEqual(sidecar_payload["status"], "failed")
         self.assertIn("xlsx write failed", str(sidecar_payload.get("error")))
+        self.assertEqual(sidecar_payload["excel_written"], False)
+
+    def test_no_pdf_reports_partial_and_does_not_fail(self) -> None:
+        with mock.patch.object(self.delegate, "discover_pdfs", return_value=[]):
+            exit_code, stdout_payload, sidecar_payload = self._invoke_main()
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(stdout_payload, sidecar_payload)
+        self.assertEqual(sidecar_payload["status"], "partial")
+        self.assertEqual(sidecar_payload["total_files"], 0)
+        self.assertEqual(sidecar_payload["status_counter"], {})
+        self.assertEqual(sidecar_payload["excel_written"], False)
+        self.assertEqual(sidecar_payload["output_exists"], False)
+        self.assertEqual(sidecar_payload["output_size_bytes"], 0)
+
+    def test_aggregate_status_is_partial_when_any_partial_file_exists(self) -> None:
+        def _fake_write_excel(_results, output_xlsx: Path) -> None:
+            output_xlsx.parent.mkdir(parents=True, exist_ok=True)
+            output_xlsx.write_bytes(b"xlsx-bytes")
+
+        with mock.patch.object(self.delegate, "discover_pdfs", return_value=[self.fake_pdf, self.fake_pdf]), mock.patch.object(
+            self.delegate,
+            "process_one_pdf",
+            side_effect=[self._mock_file_result(status="success"), self._mock_file_result(status="partial")],
+        ), mock.patch.object(self.delegate, "write_excel", side_effect=_fake_write_excel):
+            exit_code, stdout_payload, sidecar_payload = self._invoke_main()
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(stdout_payload, sidecar_payload)
+        self.assertEqual(sidecar_payload["status"], "partial")
+        self.assertEqual(sidecar_payload["status_counter"]["success"], 1)
+        self.assertEqual(sidecar_payload["status_counter"]["partial"], 1)
+        self.assertEqual(sidecar_payload["excel_written"], True)
+        self.assertEqual(sidecar_payload["output_exists"], True)
+        self.assertGreater(sidecar_payload["output_size_bytes"], 0)
+
+    def test_success_report_includes_output_write_evidence(self) -> None:
+        def _fake_write_excel(_results, output_xlsx: Path) -> None:
+            output_xlsx.parent.mkdir(parents=True, exist_ok=True)
+            output_xlsx.write_bytes(b"xlsx-bytes")
+
+        with mock.patch.object(self.delegate, "discover_pdfs", return_value=[self.fake_pdf]), mock.patch.object(
+            self.delegate, "process_one_pdf", return_value=self._mock_file_result(status="success")
+        ), mock.patch.object(self.delegate, "write_excel", side_effect=_fake_write_excel):
+            exit_code, stdout_payload, sidecar_payload = self._invoke_main()
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(stdout_payload, sidecar_payload)
+        self.assertEqual(sidecar_payload["status"], "success")
+        self.assertEqual(sidecar_payload["total_files"], 1)
+        self.assertEqual(sidecar_payload["status_counter"]["success"], 1)
+        self.assertEqual(sidecar_payload["excel_written"], True)
+        self.assertEqual(sidecar_payload["output_exists"], True)
+        self.assertGreater(sidecar_payload["output_size_bytes"], 0)
 
 
 if __name__ == "__main__":

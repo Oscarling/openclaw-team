@@ -656,8 +656,8 @@ Allowed enum values:
 ### BL-20260325-036
 - title: Harden wrapper/delegate semantic contract alignment after BL-20260325-035 runtime findings
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-035
@@ -665,7 +665,24 @@ Allowed enum values:
 - done_when: Delegate/wrapper contract is aligned on zero-input semantics and aggregate status truthfulness, delegate report includes explicit output-write evidence fields required for reviewability, focused tests cover the new semantics, and one hardening report records the outcome
 - source: `POST_CRITIC_SNAPSHOT_HARDENING_VALIDATION_REPORT.md` on 2026-03-25 records `needs_revision` due semantic contract drift instead of snapshot truncation
 - link: /Users/lingguozhong/openclaw-team/SEMANTIC_CONTRACT_ALIGNMENT_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260325-035 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/65
+- evidence: `SEMANTIC_CONTRACT_ALIGNMENT_HARDENING_REPORT.md` records source-side hardening in `artifacts/scripts/pdf_to_excel_ocr.py` and `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` to align zero-input partial semantics, aggregate status truthfulness, and explicit output-write attestation (`excel_written`, `output_exists`, `output_size_bytes`), with focused regressions in `tests/test_pdf_to_excel_ocr_delegate.py`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-037
+- title: Validate BL-20260325-036 semantic contract hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-036
+- start_when: `BL-20260325-036` is merged so a fresh same-origin governed run can verify whether semantic contract hardening clears the remaining `needs_revision` blocker cluster under real execute
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-036, runs one explicit approval plus one real execute, and records whether runtime critic outcome now clears semantic contract mismatches found in BL-20260325-035
+- source: `SEMANTIC_CONTRACT_ALIGNMENT_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming semantic hardening success without live evidence
+- link: /Users/lingguozhong/openclaw-team/POST_SEMANTIC_CONTRACT_ALIGNMENT_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-036 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
