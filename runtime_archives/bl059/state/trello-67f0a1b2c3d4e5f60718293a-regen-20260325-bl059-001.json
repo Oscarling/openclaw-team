@@ -1,0 +1,44 @@
+{
+  "origin_id": "trello:67f0a1b2c3d4e5f60718293a",
+  "title": "Prepare PDF to Excel OCR pilot run (best-effort reviewable attempt)",
+  "description": "Use local sample directory to run PDF->Excel conversion and produce review evidence.\n\nExecution contract: treat this as a best-effort, evidence-backed PDF extraction/conversion attempt. Do not claim OCR success without evidence. If full OCR/Excel conversion is not honestly achievable, return reviewable intermediate artifacts, explicit limitations, and next-step guidance. Keep behavior deterministic and limited to declared local artifacts.",
+  "labels": [
+    "best_effort",
+    "evidence_backed",
+    "ocr",
+    "pdf",
+    "pilot",
+    "readonly",
+    "reviewable",
+    "trello"
+  ],
+  "metadata": {
+    "source_system": "trello",
+    "card_id": "67f0a1b2c3d4e5f60718293a",
+    "card_short_id": 128,
+    "board_id": "67f0board000000000000001",
+    "list_id": "67f0list0000000000000002",
+    "date_last_activity": "2026-03-19T10:00:00.000Z",
+    "readonly_mapped_at": "2026-03-25T09:16:52.348674Z",
+    "contract_profile": "best_effort_evidence_backed",
+    "ocr_claim_policy": "do_not_claim_success_without_evidence",
+    "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable",
+    "regeneration_token": "regen-20260325-bl059-001"
+  },
+  "source": {
+    "provider": "trello",
+    "mode": "readonly",
+    "card_id": "67f0a1b2c3d4e5f60718293a",
+    "board_id": "67f0board000000000000001",
+    "list_id": "67f0list0000000000000002",
+    "regeneration_token": "regen-20260325-bl059-001"
+  },
+  "request_type": "pdf_to_excel_ocr",
+  "input": {
+    "input_dir": "~/Desktop/pdf样本",
+    "output_xlsx": "artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx",
+    "ocr": "auto",
+    "dry_run": false
+  },
+  "regeneration_token": "regen-20260325-bl059-001"
+}

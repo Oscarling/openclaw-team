@@ -1,0 +1,23 @@
+{
+  "ingested_at": "2026-03-25T09:23:03.522066Z",
+  "status": "processed",
+  "decision": "preview_created_pending_approval",
+  "decision_reason": "preview_created; waiting_for_explicit_approval",
+  "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+  "payload_hash": "d91793a3e34b5cc09928c60fb602365171d18bc34140da509765985e9c5f65da",
+  "dedupe_keys": [
+    "origin_regeneration:trello:69c24cd3c1a2359ddd7a1bf8:regen-20260325-bl059-001",
+    "hash:d91793a3e34b5cc09928c60fb602365171d18bc34140da509765985e9c5f65da"
+  ],
+  "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+  "labels": [
+    "best_effort",
+    "evidence_backed",
+    "readonly",
+    "reviewable",
+    "trello"
+  ],
+  "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-d91793a3e34b",
+  "preview_file": "/Users/lingguozhong/openclaw-team/preview/preview-trello-69c24cd3c1a2359ddd7a1bf8-d91793a3e34b.json",
+  "regeneration_token": "regen-20260325-bl059-001"
+}
