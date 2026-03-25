@@ -326,9 +326,11 @@ def normalize_local_inbox_payload(
                     "delegate_success_evidence": (
                         "Do not treat zero exit code plus output-file existence as sufficient "
                         "wrapper success evidence on their own. Prefer a structured delegate "
-                        "report that confirms a real success outcome with at least one "
-                        "processed input and no failed-file counterexamples before the wrapper "
-                        "claims success."
+                        "report that confirms a real success outcome before the wrapper claims "
+                        "success. Require delegate status=success, total_files>=1, dry_run=false, "
+                        "status_counter.failed=0, status_counter.partial=0, and explicit output "
+                        "attestation fields excel_written=true, output_exists=true, and "
+                        "output_size_bytes>0."
                     ),
                     "delegate_timeout": (
                         "Bound delegate subprocess execution with an explicit timeout and "
@@ -385,6 +387,7 @@ def normalize_local_inbox_payload(
             "Resolve relative delegate script paths from the repository or script location, not from Path.cwd().",
             "For readonly reviewable preview flows, only delegate to the reviewed repository script artifacts/scripts/pdf_to_excel_ocr.py unless failing honestly.",
             "Do not claim wrapper success from exit code plus output existence alone when the reviewed delegate report does not provide strong enough success evidence.",
+            "When wrapper reports success, enforce delegate evidence gates: status=success, total_files>=1, dry_run=false, status_counter.failed=0, status_counter.partial=0, excel_written=true, output_exists=true, and output_size_bytes>0.",
             "Use delegate report fields status/total_files/status_counter/dry_run as canonical evidence; do not require undeclared per-counter keys.",
             "When delegate emits JSON to stdout, parse that report directly instead of depending only on sidecar report-file discovery.",
             "When wrapper passes a sidecar report path to the reviewed delegate, use --report-json exactly unless the reviewed delegate explicitly supports another alias.",
@@ -402,6 +405,7 @@ def normalize_local_inbox_payload(
             "Dry-run or zero-input behavior is represented as a reviewable partial outcome instead of artifact-production success.",
             "Relative preferred_base_script resolution remains portable and does not depend on Path.cwd().",
             "Wrapper success requires stronger delegate evidence than zero exit code plus a non-empty output file alone.",
+            "Wrapper success attestation requires delegate fields excel_written=true, output_exists=true, output_size_bytes>0, and status_counter.partial/status_counter.failed equal to 0.",
             "Wrapper evidence logic remains compatible with delegate JSON fields status/total_files/status_counter/dry_run.",
             "Delegate report handoff can consume JSON printed to stdout without relying exclusively on report sidecar file discovery.",
             "Wrapper/delegate sidecar report handoff remains CLI-compatible by using --report-json (or another explicitly supported delegate alias).",
