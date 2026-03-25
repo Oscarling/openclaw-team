@@ -104,6 +104,43 @@ class PdfToExcelOcrScriptTests(unittest.TestCase):
         self.assertTrue(any("OCR runtime status" in note for note in report["notes"]))
         self.assertTrue(any("Inspect per-file partial records" in step for step in report["next_steps"]))
 
+    def test_main_discovery_failure_emits_normalized_failed_schema(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="pdf-to-excel-ocr-script-discovery-failed-") as tmp:
+            tmpdir = Path(tmp)
+            output_xlsx = tmpdir / "output.xlsx"
+            args = SimpleNamespace(
+                input_dir=str(tmpdir / "missing-input"),
+                output_xlsx=str(output_xlsx),
+                ocr="auto",
+                dry_run=False,
+                ocr_lang="chi_sim+eng",
+                auto_ocr_min_chars=50,
+                report_json="",
+            )
+
+            stdout = io.StringIO()
+            with mock.patch.object(self.script, "parse_args", return_value=args):
+                with mock.patch.object(
+                    self.script,
+                    "discover_pdfs",
+                    side_effect=FileNotFoundError("Input directory does not exist: /tmp/missing-input"),
+                ):
+                    with contextlib.redirect_stdout(stdout):
+                        exit_code = self.script.main()
+
+        self.assertEqual(exit_code, 2)
+        report = json.loads(stdout.getvalue())
+        self.assertEqual(report["status"], "failed")
+        self.assertEqual(report["total_files"], 0)
+        self.assertEqual(report["status_counter"], {})
+        self.assertFalse(report["excel_written"])
+        self.assertFalse(report["output_exists"])
+        self.assertEqual(report["output_size_bytes"], 0)
+        self.assertEqual(report["ocr_runtime_status"], "unknown")
+        self.assertIn("Input discovery failed", report["notes"][0])
+        self.assertTrue(any("Verify input directory exists" in step for step in report["next_steps"]))
+        self.assertIn("Input directory does not exist", report["error"])
+
 
 if __name__ == "__main__":
     unittest.main()

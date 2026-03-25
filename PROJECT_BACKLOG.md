@@ -1098,8 +1098,8 @@ Allowed enum values:
 ### BL-20260325-062
 - title: Harden wrapper/delegate report-schema robustness and delegate-error surfacing after BL-20260325-061 critic findings
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-061
@@ -1107,7 +1107,24 @@ Allowed enum values:
 - done_when: Source-side hardening normalizes delegate report schema across failure paths and ensures wrapper evidence/notes surface delegate error context explicitly, with focused tests and one blocker report
 - source: `POST_WRAPPER_DELEGATE_READONLY_OCR_SUFFICIENCY_CONTRACT_VALIDATION_REPORT.md` on 2026-03-25 records the next blocker as wrapper/delegate report-schema robustness and diagnostic evidence surfacing
 - link: /Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_REPORT_SCHEMA_DIAGNOSTIC_ROBUSTNESS_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260325-062 activation
+- issue: https://github.com/Oscarling/openclaw-team/issues/117
+- evidence: `WRAPPER_DELEGATE_REPORT_SCHEMA_DIAGNOSTIC_ROBUSTNESS_HARDENING_REPORT.md` records schema normalization in `artifacts/scripts/pdf_to_excel_ocr.py` via shared report template across failure/no-input/normal exits and explicit delegate-error surfacing in `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`, with focused regressions in `tests/test_pdf_to_excel_ocr_script.py` and `tests/test_pdf_to_excel_ocr_inbox_runner.py`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-063
+- title: Validate BL-20260325-062 report-schema diagnostic robustness hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-062
+- start_when: `BL-20260325-062` is merged so one fresh governed candidate can verify critic findings move away from report-schema consistency and delegate-error surfacing gaps
+- done_when: One governed validation run (smoke -> regeneration -> preview -> approval -> real execute) records whether critic findings no longer cite wrapper/delegate report-schema robustness and delegate-error diagnostic surfacing concerns
+- source: `WRAPPER_DELEGATE_REPORT_SCHEMA_DIAGNOSTIC_ROBUSTNESS_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation
+- link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_DELEGATE_REPORT_SCHEMA_DIAGNOSTIC_ROBUSTNESS_VALIDATION_REPORT.md
+- issue: -
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

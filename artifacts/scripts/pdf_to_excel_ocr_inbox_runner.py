@@ -190,6 +190,19 @@ def has_strong_delegate_success_evidence(
     return True, None
 
 
+def extract_delegate_error(delegate_report: dict[str, Any] | None) -> str | None:
+    if not isinstance(delegate_report, dict):
+        return None
+    raw_error = delegate_report.get("error")
+    if raw_error is None:
+        return None
+    if isinstance(raw_error, str):
+        cleaned = raw_error.strip()
+        return cleaned or None
+    cleaned = str(raw_error).strip()
+    return cleaned or None
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Best-effort inbox runner that reuses the repository PDF-to-Excel OCR script."
@@ -405,6 +418,9 @@ def main() -> int:
     stdout_report = parse_delegate_report(completed.stdout)
     delegate_report = sidecar_report or stdout_report
     summary["execution"]["delegate_report"] = delegate_report
+    delegate_error = extract_delegate_error(delegate_report)
+    if delegate_error:
+        summary["notes"].append(f"Delegate reported error: {delegate_error}")
     if isinstance(sidecar_report, dict):
         summary["execution"]["delegate_report_source"] = "sidecar"
         if isinstance(stdout_report, dict) and stdout_report != sidecar_report:
