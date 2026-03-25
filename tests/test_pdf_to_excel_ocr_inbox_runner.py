@@ -336,6 +336,58 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
         self.assertTrue(summary["output"]["exists"])
         self.assertTrue(any("at least one processed PDF file" in note for note in summary["notes"]))
 
+    def test_surfaces_delegate_error_context_in_wrapper_notes(self) -> None:
+        input_dir = self._make_input_dir(with_pdf=True)
+        fake_base = self.tmpdir / "fake_pdf_to_excel_ocr_failed_with_error.py"
+        fake_base.write_text(
+            textwrap.dedent(
+                """\
+                #!/usr/bin/env python3
+                import argparse
+                import json
+                from pathlib import Path
+
+                parser = argparse.ArgumentParser()
+                parser.add_argument("--input-dir", required=True)
+                parser.add_argument("--output-xlsx", required=True)
+                parser.add_argument("--ocr", default="auto")
+                parser.add_argument("--report-json", default="")
+                args = parser.parse_args()
+
+                payload = {
+                    "status": "failed",
+                    "total_files": 0,
+                    "status_counter": {},
+                    "dry_run": False,
+                    "excel_written": False,
+                    "output_exists": False,
+                    "output_size_bytes": 0,
+                    "ocr_runtime_status": "unknown",
+                    "notes": ["Input discovery failed before extraction could start."],
+                    "next_steps": ["Verify input directory exists and is readable, then rerun."],
+                    "error": "Input directory does not exist: /tmp/missing-input",
+                }
+                if args.report_json:
+                    Path(args.report_json).write_text(json.dumps(payload), encoding="utf-8")
+                print(json.dumps(payload))
+                """
+            ),
+            encoding="utf-8",
+        )
+
+        exit_code, summary, _ = self._invoke_main(
+            input_dir=input_dir,
+            extra_args=["--preferred-base-script", str(fake_base)],
+            reviewed_base_script=fake_base,
+        )
+
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(summary["status"], "failed")
+        self.assertEqual(summary["execution"]["delegate_report_source"], "sidecar")
+        self.assertTrue(
+            any("Delegate reported error: Input directory does not exist" in note for note in summary["notes"])
+        )
+
     def test_ocr_runtime_blocked_keeps_wrapper_partial_even_with_success_attestation(self) -> None:
         input_dir = self._make_input_dir(with_pdf=True)
         fake_base = self.tmpdir / "fake_pdf_to_excel_ocr_ocr_blocked.py"

@@ -3571,3 +3571,50 @@ Verification snapshot on 2026-03-25:
   - `execution.status = rejected`
   - `execution.executed = true`
   - `execution.attempts = 2`
+
+### 71. Wrapper/Delegate Report-Schema + Delegate-Error Diagnostic Hardening After BL-061 Findings
+
+User objective:
+
+- continue strict backlog mainline without drift
+- close blocker on wrapper/delegate report-schema consistency and diagnostic
+  error surfacing
+
+Main work areas:
+
+- implemented delegate schema normalization in
+  `artifacts/scripts/pdf_to_excel_ocr.py`:
+  - added shared `build_report_template(...)`
+  - made discovery-failure and no-input exits emit full normalized report keys
+  - aligned normal run report construction to the same schema template
+- implemented wrapper diagnostic surfacing in
+  `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`:
+  - added `extract_delegate_error(...)`
+  - surfaced `Delegate reported error: ...` in wrapper `notes` when present
+- expanded focused regressions:
+  - `tests/test_pdf_to_excel_ocr_script.py`
+    - `test_main_discovery_failure_emits_normalized_failed_schema`
+  - `tests/test_pdf_to_excel_ocr_inbox_runner.py`
+    - `test_surfaces_delegate_error_context_in_wrapper_notes`
+- produced blocker hardening report and advanced backlog tracking:
+  - `BL-20260325-062` moved to `done`
+  - added next validation item `BL-20260325-063` (`planned` / `next`)
+
+Primary output:
+
+- [WRAPPER_DELEGATE_REPORT_SCHEMA_DIAGNOSTIC_ROBUSTNESS_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_REPORT_SCHEMA_DIAGNOSTIC_ROBUSTNESS_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-062` is complete as a source-side blocker-hardening phase
+- delegate reports now keep a stable schema across failure/sparse paths
+- wrapper summary now preserves explicit delegate error context for diagnostics
+- governance docs and next-step backlog item are synchronized
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_script.py tests/test_pdf_to_excel_ocr_inbox_runner.py`
+  passed (`17/17`)
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed
+- `bash scripts/premerge_check.sh` passed (`Warnings: 0`, `Failures: 0`)

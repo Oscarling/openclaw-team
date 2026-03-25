@@ -258,6 +258,33 @@ def emit_report(report: dict[str, Any], report_json: str) -> None:
     out_path.write_text(rendered + "\n", encoding="utf-8")
 
 
+def build_report_template(
+    *,
+    input_dir: Path,
+    output_xlsx: Path,
+    ocr_mode: str,
+    dry_run: bool,
+) -> dict[str, Any]:
+    return {
+        "status": "failed",
+        "input_dir": str(input_dir),
+        "output_xlsx": str(output_xlsx),
+        "ocr_mode": ocr_mode,
+        "ocr_runtime_status": "unknown",
+        "ocr_missing_dependencies": [],
+        "total_files": 0,
+        "files": [],
+        "status_counter": {},
+        "dry_run": bool(dry_run),
+        "excel_written": False,
+        "output_exists": False,
+        "output_size_bytes": 0,
+        "notes": [],
+        "next_steps": [],
+        "error": "",
+    }
+
+
 def main() -> int:
     args = parse_args()
     input_dir = Path(args.input_dir).expanduser().resolve()
@@ -266,30 +293,31 @@ def main() -> int:
     try:
         pdf_files = discover_pdfs(input_dir)
     except Exception as e:
-        emit_report({"status": "failed", "error": str(e)}, args.report_json)
+        report = build_report_template(
+            input_dir=input_dir,
+            output_xlsx=output_xlsx,
+            ocr_mode=args.ocr,
+            dry_run=args.dry_run,
+        )
+        report["error"] = str(e)
+        report["notes"].append("Input discovery failed before extraction could start.")
+        report["next_steps"].append("Verify input directory exists and is readable, then rerun.")
+        emit_report(report, args.report_json)
         return 2
 
     if not pdf_files:
-        emit_report(
-            {
-                "status": "partial",
-                "input_dir": str(input_dir),
-                "output_xlsx": str(output_xlsx),
-                "ocr_mode": args.ocr,
-                "total_files": 0,
-                "files": [],
-                "status_counter": {},
-                "dry_run": bool(args.dry_run),
-                "excel_written": False,
-                "output_exists": False,
-                "output_size_bytes": 0,
-                "notes": [f"No PDF files found under {input_dir}"],
-                "next_steps": [
-                    "Add one or more .pdf files under the input directory and rerun.",
-                ],
-            },
-            args.report_json,
+        report = build_report_template(
+            input_dir=input_dir,
+            output_xlsx=output_xlsx,
+            ocr_mode=args.ocr,
+            dry_run=args.dry_run,
         )
+        report["status"] = "partial"
+        report["notes"] = [f"No PDF files found under {input_dir}"]
+        report["next_steps"] = [
+            "Add one or more .pdf files under the input directory and rerun.",
+        ]
+        emit_report(report, args.report_json)
         return 0
 
     ocr_runtime, missing = detect_ocr_runtime_status()
@@ -343,23 +371,24 @@ def main() -> int:
         notes.append(f"{failed_count} file(s) reported failed status.")
         next_steps.append("Inspect per-file failures in `files` and resolve the extraction or OCR error causes.")
 
-    report = {
-        "status": aggregate_status,
-        "input_dir": str(input_dir),
-        "output_xlsx": str(output_xlsx),
-        "ocr_mode": args.ocr,
-        "ocr_runtime_status": ocr_runtime,
-        "ocr_missing_dependencies": missing,
-        "total_files": len(results),
-        "files": files_payload,
-        "status_counter": status_counter,
-        "dry_run": bool(args.dry_run),
-        "excel_written": False,
-        "output_exists": False,
-        "output_size_bytes": 0,
-        "notes": notes,
-        "next_steps": next_steps,
-    }
+    report = build_report_template(
+        input_dir=input_dir,
+        output_xlsx=output_xlsx,
+        ocr_mode=args.ocr,
+        dry_run=args.dry_run,
+    )
+    report.update(
+        {
+            "status": aggregate_status,
+            "ocr_runtime_status": ocr_runtime,
+            "ocr_missing_dependencies": missing,
+            "total_files": len(results),
+            "files": files_payload,
+            "status_counter": status_counter,
+            "notes": notes,
+            "next_steps": next_steps,
+        }
+    )
 
     if args.dry_run:
         emit_report(report, args.report_json)
