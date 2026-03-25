@@ -2838,3 +2838,67 @@ Verification snapshot on 2026-03-24:
   - `status = success`
   - verdict: `needs_revision`
   - artifact: `artifacts/reviews/pdf_to_excel_ocr_inbox_review.md`
+
+### 57. Fresh Governed Validation After BL-048 Delegate OCR/Status Hardening
+
+User objective:
+
+- activate `BL-20260325-049`
+- run one fresh same-origin governed validation candidate after BL-048
+- verify whether critic findings shift away from delegate OCR/status/reporting
+  semantics under real execute
+
+Main work areas:
+
+- created and linked issue `#90` for BL-049
+- switched to branch `phase9h/validate-bl049-delegate-ocr-status-reporting`
+- updated backlog item `BL-20260325-049` from `planned/next` to `active/now`
+- ran Trello readonly smoke in sandbox first and captured DNS/network block evidence
+- reran Trello readonly smoke elevated and captured live mapped preview
+- generated regenerated payload with token `regen-20260325-bl049-001`
+- ingested once to create preview
+  `preview-trello-69c24cd3c1a2359ddd7a1bf8-e33731f048be`
+- wrote explicit approval file and executed governed runtime in `test_mode=off`
+- captured sandbox Docker-initialization block evidence
+- ran elevated replay scoped to only the target preview id (`--preview-id`)
+- captured and fixed one runtime-env blocker (`Missing API key`) by explicitly
+  injecting OpenAI env from `secrets/`, then reran elevated replay
+- archived runtime/state/tmp/artifact evidence under `runtime_archives/bl049/`
+- restored tracked runtime-overwritten artifacts after archival
+
+Primary output:
+
+- [POST_DELEGATE_OCR_STATUS_REPORTING_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_DELEGATE_OCR_STATUS_REPORTING_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-049` is complete as a governed validation phase
+- runtime confirms BL-048 delegate OCR/status/reporting hardening is active in
+  the fresh governed run (`AUTO-20260325-865` success)
+- final verdict remains `critic_verdict=needs_revision`, but dominant critic
+  focus moved away from delegate OCR/status schema truthfulness toward
+  wrapper-level provenance/path/traceability concerns (`CRITIC-20260325-283`)
+- next backlog item was set to a wrapper-focused blocker (`BL-20260325-050`)
+
+Verification snapshot on 2026-03-25:
+
+- `python3 scripts/backlog_lint.py` passed after BL-049 activation
+- `python3 scripts/backlog_sync.py` passed and mirrored BL-049 to issue `#90`
+- sandbox smoke evidence captured as blocked (`ConnectionError` /
+  `NameResolutionError`)
+- elevated smoke passed with `read_count = 1`
+- `python3 skills/ingest_tasks.py --once --test-mode success` returned:
+  - `processed = 1`
+  - `duplicate_skipped = 0`
+  - `preview_created = 1`
+- sandbox execute for target preview captured Docker init block evidence
+- elevated execute (first replay) captured missing API key blocker
+- elevated execute (second replay with explicit secret env injection) returned:
+  - `processed = 0`
+  - `rejected = 1`
+  - `critic_verdict = needs_revision`
+- final preview state:
+  - `approved = true`
+  - `execution.status = rejected`
+  - `execution.executed = true`
+  - `execution.attempts = 3`

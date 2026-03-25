@@ -1,0 +1,492 @@
+{
+  "status": "done",
+  "processed": 0,
+  "rejected": 1,
+  "skipped": 79,
+  "test_mode": "off",
+  "allow_replay": false,
+  "results": [
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-cred-fix-smoke-20260320t012845z-27416f3c9bba",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-cred-fix-smoke-20260320t012845z-27416f3c9bba.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-cred-fix-smoke-20260320t012845z-27416f3c9bba",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-cred-fix-smoke-20260320t012845z-27416f3c9bba.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-critic-diag-r1-20260320t015807z-22d082bb07d9",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-critic-diag-r1-20260320t015807z-22d082bb07d9.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-critic-diag-r1-20260320t015807z-22d082bb07d9",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-critic-diag-r1-20260320t015807z-22d082bb07d9.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-critic-diag-r2-20260320t015902z-994ba18548b5",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-critic-diag-r2-20260320t015902z-994ba18548b5.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-critic-diag-r2-20260320t015902z-994ba18548b5",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-critic-diag-r2-20260320t015902z-994ba18548b5.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-critic-diag-r3-20260320t015955z-1010a34697db",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-critic-diag-r3-20260320t015955z-1010a34697db.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-critic-diag-r3-20260320t015955z-1010a34697db",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-critic-diag-r3-20260320t015955z-1010a34697db.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-fullchain-formal-r1-20260320t013510z-e4bb1dd202b4",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-formal-r1-20260320t013510z-e4bb1dd202b4.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-fullchain-formal-r1-20260320t013510z-e4bb1dd202b4",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-formal-r1-20260320t013510z-e4bb1dd202b4.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-fullchain-formal-r2-20260320t013555z-d29013862815",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-formal-r2-20260320t013555z-d29013862815.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-fullchain-formal-r2-20260320t013555z-d29013862815",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-formal-r2-20260320t013555z-d29013862815.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-fullchain-formal-r3-20260320t013755z-1ce027fe9fda",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-formal-r3-20260320t013755z-1ce027fe9fda.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-fullchain-formal-r3-20260320t013755z-1ce027fe9fda",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-formal-r3-20260320t013755z-1ce027fe9fda.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-fullchain-formal-r4-20260320t013845z-50c5a43018f7",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-formal-r4-20260320t013845z-50c5a43018f7.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-fullchain-formal-r4-20260320t013845z-50c5a43018f7",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-formal-r4-20260320t013845z-50c5a43018f7.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-fullchain-formal-r5-20260320t013936z-5d3b11a962bd",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-formal-r5-20260320t013936z-5d3b11a962bd.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-fullchain-formal-r5-20260320t013936z-5d3b11a962bd",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-formal-r5-20260320t013936z-5d3b11a962bd.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-fullchain-r1-20260320t012023z-ffa88c148dac",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-r1-20260320t012023z-ffa88c148dac.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-fullchain-r1-20260320t012023z-ffa88c148dac",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-r1-20260320t012023z-ffa88c148dac.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-fullchain-v2-r1-20260320t021452z-61bcb7e21fee",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-v2-r1-20260320t021452z-61bcb7e21fee.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-fullchain-v2-r1-20260320t021452z-61bcb7e21fee",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-v2-r1-20260320t021452z-61bcb7e21fee.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-fullchain-v2-r2-20260320t021554z-a8df2c084ad9",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-v2-r2-20260320t021554z-a8df2c084ad9.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-fullchain-v2-r2-20260320t021554z-a8df2c084ad9",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-v2-r2-20260320t021554z-a8df2c084ad9.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-fullchain-v2-r3-20260320t021756z-ba3e0aee693e",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-v2-r3-20260320t021756z-ba3e0aee693e.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-fullchain-v2-r3-20260320t021756z-ba3e0aee693e",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-v2-r3-20260320t021756z-ba3e0aee693e.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-fullchain-v2-r4-20260320t021858z-241fc650a2f6",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-v2-r4-20260320t021858z-241fc650a2f6.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-fullchain-v2-r4-20260320t021858z-241fc650a2f6",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-v2-r4-20260320t021858z-241fc650a2f6.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-fullchain-v2-r5-20260320t022001z-0fe62dfe884b",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-v2-r5-20260320t022001z-0fe62dfe884b.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-fullchain-v2-r5-20260320t022001z-0fe62dfe884b",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-fullchain-v2-r5-20260320t022001z-0fe62dfe884b.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-phase8e-a-20260319t134324z-a2f488a0b2bf",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-phase8e-a-20260319t134324z-a2f488a0b2bf.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-phase8e-a-20260319t134324z-a2f488a0b2bf",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-phase8e-a-20260319t134324z-a2f488a0b2bf.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-phase8e-b-20260319t134324z-3e6e6978fe31",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-phase8e-b-20260319t134324z-3e6e6978fe31.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-67f0a1b2c3d4e5f60718293a-0e21a7b6592c",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-67f0a1b2c3d4e5f60718293a-0e21a7b6592c.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-67f0a1b2c3d4e5f60718293a-0e21a7b6592c",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-67f0a1b2c3d4e5f60718293a-0e21a7b6592c.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69be5555fb0f701594fe0f21-1c7ff50a0460",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69be5555fb0f701594fe0f21-1c7ff50a0460.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69be5555fb0f701594fe0f21-1c7ff50a0460",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69be5555fb0f701594fe0f21-1c7ff50a0460.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69bfdffc66d1cb5436b1d3a1-837e4920437b",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69bfdffc66d1cb5436b1d3a1-837e4920437b.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69bfdffc66d1cb5436b1d3a1-837e4920437b",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69bfdffc66d1cb5436b1d3a1-837e4920437b.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69bfe9adbc5abeaca98fc60b-53f6278508bc",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69bfe9adbc5abeaca98fc60b-53f6278508bc.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69bfe9adbc5abeaca98fc60b-53f6278508bc",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69bfe9adbc5abeaca98fc60b-53f6278508bc.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69bff951f79026ca5f386743-84d223ca1d2c",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69bff951f79026ca5f386743-84d223ca1d2c.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69bff951f79026ca5f386743-84d223ca1d2c",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69bff951f79026ca5f386743-84d223ca1d2c.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.finalization.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c1229edc9b8ec895640c5b-d01d1c92df6b.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c1fff1b3339965c25783b7-cb69af50b8ba",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c1fff1b3339965c25783b7-cb69af50b8ba.finalization.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-055bd74afff8",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-055bd74afff8.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-055bd74afff8",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-055bd74afff8.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-103723900dc8",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-103723900dc8.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-103723900dc8",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-103723900dc8.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-18b3caaace36",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-18b3caaace36.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-18b3caaace36",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-18b3caaace36.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-19461fb0341a",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-19461fb0341a.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-19461fb0341a",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-19461fb0341a.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-2355ba57c8c0",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-2355ba57c8c0.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-2355ba57c8c0",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-2355ba57c8c0.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-354139fc92de",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-354139fc92de.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-354139fc92de",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-354139fc92de.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-4400266913e0",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-4400266913e0.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-4400266913e0",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-4400266913e0.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-4ce6c1cce934",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-4ce6c1cce934.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-4ce6c1cce934",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-4ce6c1cce934.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-6c674f5014a3",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-6c674f5014a3.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-6c674f5014a3",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-6c674f5014a3.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-92872bb091b6",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-92872bb091b6.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-92872bb091b6",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-92872bb091b6.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-ab85bf08e44d",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-ab85bf08e44d.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-ab85bf08e44d",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-ab85bf08e44d.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-ad8052fe53ac",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-ad8052fe53ac.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-ad8052fe53ac",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-ad8052fe53ac.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-ba935bd928da",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-ba935bd928da.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-ba935bd928da",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-ba935bd928da.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-c19150aca7c7",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-c19150aca7c7.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-c19150aca7c7",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-c19150aca7c7.result.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-ddd178ff3fe9",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-ddd178ff3fe9.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-ddd178ff3fe9",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-ddd178ff3fe9.result.json"
+    },
+    {
+      "status": "rejected",
+      "decision_reason": "Failed to initialize docker client from environment. Ensure Docker access is available or pass docker_client explicitly.",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-e33731f048be",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e33731f048be.json",
+      "result_sidecar": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e33731f048be.result.json",
+      "critic_verdict": "needs_revision"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "already_executed_use_allow_replay",
+      "preview_id": "preview-trello-test-20260321t083333z-68f3e5269ab3",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-test-20260321t083333z-68f3e5269ab3.json"
+    },
+    {
+      "status": "skipped",
+      "decision_reason": "approval_flag_not_true",
+      "preview_id": "preview-trello-test-20260321t083333z-68f3e5269ab3",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-test-20260321t083333z-68f3e5269ab3.result.json"
+    }
+  ]
+}
