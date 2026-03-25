@@ -843,8 +843,8 @@ Allowed enum values:
 ### BL-20260325-047
 - title: Validate BL-20260325-046 wrapper partial-evidence semantics hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-046
@@ -852,7 +852,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-046, runs one explicit approval plus one real execute, and records whether critic findings shift away from wrapper partial-evidence semantics
 - source: `WRAPPER_PARTIAL_EVIDENCE_SEMANTICS_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming source-side semantic hardening success without live evidence
 - link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_PARTIAL_EVIDENCE_SEMANTICS_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-046 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/86
+- evidence: `POST_WRAPPER_PARTIAL_EVIDENCE_SEMANTICS_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl047-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-4400266913e0` with explicit approval and one elevated real execute replay; runtime confirmed BL-20260325-046 wrapper partial-evidence hardening text is active in automation task inputs, while critic findings shifted to delegate-side OCR/status/reporting evidence quality (`CRITIC-20260325-282`, verdict `needs_revision`)
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-048
+- title: Harden delegate OCR/status reporting semantics after BL-20260325-047 critic blocker
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-047
+- start_when: `BL-20260325-047` has completed and confirmed critic focus has shifted from wrapper partial-evidence semantics to delegate-side OCR/status/reporting evidence quality under real execute
+- done_when: Source-side delegate/report hardening ensures OCR/status outcomes remain truthful and evidence-rich for best-effort readonly flows, focused tests cover the targeted semantics, and one blocker report records the mitigation
+- source: `POST_WRAPPER_PARTIAL_EVIDENCE_SEMANTICS_VALIDATION_REPORT.md` on 2026-03-25 records the remaining dominant blocker as delegate-side OCR/status/report evidence quality after BL-20260325-046 activation
+- link: /Users/lingguozhong/openclaw-team/DELEGATE_OCR_STATUS_REPORTING_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-047 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

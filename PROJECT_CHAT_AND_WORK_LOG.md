@@ -2031,6 +2031,75 @@ Verification snapshot on 2026-03-25:
 - `python3 scripts/backlog_sync.py` passed with no phase=now actionable issue
   mirroring required
 
+### 55. Fresh Governed Validation After BL-046 Wrapper Partial-Evidence Hardening
+
+User objective:
+
+- continue from `BL-20260325-046` with one fresh same-origin governed runtime
+  validation
+- verify whether wrapper success/partial contract hardening reduces recurrence
+  of critic findings around wrapper evidence semantics under real execute
+- preserve runtime evidence and keep workflow-gated delivery
+
+Main work areas:
+
+- activated `BL-20260325-047` and mirrored it to GitHub issue `#86`
+- ran live Trello read-only smoke for origin
+  `trello:69c24cd3c1a2359ddd7a1bf8`
+  - first sandboxed call blocked by DNS policy
+  - elevated rerun passed with `read_count=1`
+- generated one regeneration token:
+  - `regen-20260325-bl047-001`
+- created inbox payload from `smoke_read.mapped_preview`, ingested once, and
+  created fresh preview:
+  - `preview-trello-69c24cd3c1a2359ddd7a1bf8-4400266913e0`
+- wrote explicit approval and ran real execute in `test_mode=off`
+  - first sandboxed execute blocked before dispatch due Docker client access
+  - elevated replay (`--allow-replay`) ran with explicit fallback endpoint env
+    `ARGUS_LLM_FALLBACK_CHAT_URLS=https://api.openai.com/v1/chat/completions`
+- automation task payload confirms BL-046 guidance is active in runtime input:
+  - includes `delegate_partial_evidence` hint
+  - includes constraint requiring contract-compliant partial outcomes to remain
+    `partial` rather than escalating to `failed`
+  - includes acceptance criterion for non-escalation of partial outcomes
+- archived runtime outputs under `runtime_archives/bl047/`
+- recorded next blocker phase as `BL-20260325-048`
+
+Primary output:
+
+- [POST_WRAPPER_PARTIAL_EVIDENCE_SEMANTICS_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_WRAPPER_PARTIAL_EVIDENCE_SEMANTICS_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-047` completed as a governed validation phase
+- BL-046 source-side contract hardening is validated as active in runtime task
+  inputs
+- end-to-end runtime progressed through both workers:
+  - automation task `AUTO-20260325-864`: `success`
+  - critic task `CRITIC-20260325-282`: `success`
+  - final decision: `critic_verdict=needs_revision`
+- dominant blocker shifted from wrapper partial-evidence semantics to
+  delegate-side OCR/status/report evidence quality, tracked as
+  `BL-20260325-048`
+
+Verification snapshot on 2026-03-25:
+
+- smoke (elevated) returned `status=pass` with `read_count=1`
+- `python3 skills/ingest_tasks.py --once` returned:
+  - `processed = 1`
+  - `preview_created = 1`
+- sandboxed execute returned Docker-client initialization rejection
+- elevated replay execute returned:
+  - `status = rejected`
+  - `decision_reason = critic_verdict=needs_revision`
+  - automation `AUTO-20260325-864`: `status=success`
+  - critic `CRITIC-20260325-282`: `status=success`
+- runtime archive preserved under:
+  - `runtime_archives/bl047/artifacts/`
+  - `runtime_archives/bl047/runtime/`
+  - `runtime_archives/bl047/state/`
+  - `runtime_archives/bl047/tmp/`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:

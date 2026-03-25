@@ -1,0 +1,24 @@
+{
+  "task_id": "CRITIC-20260325-282",
+  "worker": "critic",
+  "status": "success",
+  "summary": "Reviewed the inbox runner and paired delegate together as an end-to-end readonly smoke path. Verdict: needs_revision. The wrapper is well-aligned with the governed best-effort/read-only review contract and adds strong evidence gating, but the delegate has a material bug: OCR-only successful extraction can still be marked failed because status is derived from the presence of any OCR error even when text was extracted. This undermines truthful end-to-end outcomes for the wrapper/delegate pair.",
+  "artifacts": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "timestamp": "2026-03-25T07:04:30.800606Z",
+  "duration_ms": 44398,
+  "metadata": {
+    "task_id": "CRITIC-20260325-282",
+    "worker": "critic",
+    "verdict": "needs_revision",
+    "reviewed_artifacts": [
+      "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "artifacts/scripts/pdf_to_excel_ocr.py"
+    ],
+    "review_scope": "end-to-end readonly pair"
+  }
+}
