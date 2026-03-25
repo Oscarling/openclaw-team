@@ -911,8 +911,8 @@ Allowed enum values:
 ### BL-20260325-051
 - title: Validate BL-20260325-050 wrapper provenance/path traceability hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-050
@@ -920,7 +920,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-050, runs one explicit approval plus one real execute, and records whether critic findings shift away from wrapper provenance/path traceability concerns
 - source: `WRAPPER_PROVENANCE_PATH_TRACEABILITY_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming wrapper hardening success without live evidence
 - link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_PROVENANCE_PATH_TRACEABILITY_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-050 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/94
+- evidence: `POST_WRAPPER_PROVENANCE_PATH_TRACEABILITY_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl051-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-58e83a71aacc` with explicit approval and real execute replays; phase remained pre-critic due automation runtime endpoint/auth failures (`AUTO-20260325-866`, `http_520` then `http_401`), so critic-shift outcome was inconclusive and a new automation runtime blocker was queued
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-052
+- title: Harden automation endpoint/auth runtime resilience after BL-20260325-051 pre-critic blocker
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-051
+- start_when: `BL-20260325-051` confirms fresh governed validation cannot reach critic dispatch because automation fails pre-critic with endpoint/auth runtime failures (`http_520` and `http_401`)
+- done_when: Source-side automation runtime hardening improves endpoint/auth handling so one governed execute can reliably progress beyond automation dispatch under the active environment profile, and one blocker report records mitigation with focused tests
+- source: `POST_WRAPPER_PROVENANCE_PATH_TRACEABILITY_VALIDATION_REPORT.md` on 2026-03-25 records that BL-050 validation remained inconclusive due pre-critic automation endpoint/auth runtime failures
+- link: /Users/lingguozhong/openclaw-team/AUTOMATION_ENDPOINT_AUTH_RUNTIME_RESILIENCE_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-051 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
