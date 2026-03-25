@@ -137,9 +137,59 @@ class PdfToExcelOcrScriptTests(unittest.TestCase):
         self.assertFalse(report["output_exists"])
         self.assertEqual(report["output_size_bytes"], 0)
         self.assertEqual(report["ocr_runtime_status"], "unknown")
+        self.assertEqual(report["extraction_status"], "none")
+        self.assertEqual(report["export_status"], "not_started")
         self.assertIn("Input discovery failed", report["notes"][0])
         self.assertTrue(any("Verify input directory exists" in step for step in report["next_steps"]))
         self.assertIn("Input directory does not exist", report["error"])
+
+    def test_main_excel_write_failure_exposes_extraction_export_distinction(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="pdf-to-excel-ocr-script-export-failed-") as tmp:
+            tmpdir = Path(tmp)
+            input_dir = tmpdir / "input"
+            input_dir.mkdir(parents=True, exist_ok=True)
+            output_xlsx = tmpdir / "output.xlsx"
+            sample_pdf = input_dir / "sample.pdf"
+            sample_pdf.write_bytes(b"%PDF-1.4\n")
+
+            args = SimpleNamespace(
+                input_dir=str(input_dir),
+                output_xlsx=str(output_xlsx),
+                ocr="auto",
+                dry_run=False,
+                ocr_lang="chi_sim+eng",
+                auto_ocr_min_chars=50,
+                report_json="",
+            )
+            success_file = self.script.FileResult(
+                file_name="sample.pdf",
+                file_path=str(sample_pdf),
+                status="success",
+                extract_method="text",
+                page_count=1,
+                text_chars=24,
+                text_preview="preview",
+                warnings="",
+                error="",
+            )
+
+            stdout = io.StringIO()
+            with mock.patch.object(self.script, "parse_args", return_value=args):
+                with mock.patch.object(self.script, "discover_pdfs", return_value=[sample_pdf]):
+                    with mock.patch.object(self.script, "detect_ocr_runtime_status", return_value=("available", [])):
+                        with mock.patch.object(self.script, "process_one_pdf", return_value=success_file):
+                            with mock.patch.object(self.script, "write_excel", side_effect=RuntimeError("openpyxl missing")):
+                                with contextlib.redirect_stdout(stdout):
+                                    exit_code = self.script.main()
+
+        self.assertEqual(exit_code, 3)
+        report = json.loads(stdout.getvalue())
+        self.assertEqual(report["status"], "failed")
+        self.assertEqual(report["extraction_status"], "success")
+        self.assertEqual(report["export_status"], "failed")
+        self.assertIn("openpyxl missing", report["error"])
+        self.assertTrue(any("extraction_status=success" in note for note in report["notes"]))
+        self.assertTrue(any("Inspect extraction evidence" in step for step in report["next_steps"]))
 
 
 if __name__ == "__main__":

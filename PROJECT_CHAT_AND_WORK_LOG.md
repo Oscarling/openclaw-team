@@ -3678,3 +3678,56 @@ Verification snapshot on 2026-03-25:
   - `execution.status = rejected`
   - `execution.executed = true`
   - `execution.attempts = 3`
+
+### 73. Wrapper/Delegate Output-Boundary + Outcome-Contract Hardening After BL-063 Findings
+
+User objective:
+
+- continue strict backlog mainline without drift
+- close blocker on wrapper output-boundary policy and extraction-vs-export
+  outcome-contract clarity
+
+Main work areas:
+
+- activated `BL-20260325-064` and mirrored it to issue `#121`
+- implemented output-boundary hardening in
+  `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`:
+  - added approved output root policy (`artifacts/outputs`)
+  - added output-path resolution provenance
+  - rejects governed readonly runs when `output_xlsx` is outside approved root
+- implemented phase-semantic hardening in
+  `artifacts/scripts/pdf_to_excel_ocr.py`:
+  - normalized report fields now include `extraction_status` and
+    `export_status`
+  - added explicit dry-run/no-input/export-failed phase outcomes
+  - made export failure notes preserve extraction evidence context
+- implemented wrapper phase diagnostics in
+  `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`:
+  - surfaces `delegate_extraction_status` and `delegate_export_status`
+  - emits explicit notes when export fails after extraction evidence
+- expanded focused regressions:
+  - `tests/test_pdf_to_excel_ocr_inbox_runner.py`
+    - `test_rejects_output_path_outside_approved_root`
+    - `test_surfaces_delegate_extraction_export_phase_distinction`
+  - `tests/test_pdf_to_excel_ocr_script.py`
+    - `test_main_excel_write_failure_exposes_extraction_export_distinction`
+- produced blocker hardening report and advanced backlog tracking:
+  - `BL-20260325-064` moved to `done`
+  - added next validation item `BL-20260325-065` (`planned` / `next`)
+
+Primary output:
+
+- [WRAPPER_DELEGATE_OUTPUT_BOUNDARY_OUTCOME_CONTRACT_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_OUTPUT_BOUNDARY_OUTCOME_CONTRACT_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-064` is complete as a source-side blocker-hardening phase
+- wrapper output destination is now constrained for governed readonly flow
+- delegate/wrapper reports now expose extraction/export phase semantics as
+  first-class diagnostics
+- governance docs and next-step backlog item are synchronized
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_script.py tests/test_pdf_to_excel_ocr_inbox_runner.py`
+  passed (`20/20`)
