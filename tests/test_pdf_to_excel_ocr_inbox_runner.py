@@ -91,15 +91,20 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
                 #!/usr/bin/env python3
                 import argparse
                 import json
+                from pathlib import Path
 
                 parser = argparse.ArgumentParser()
                 parser.add_argument("--input-dir", required=True)
                 parser.add_argument("--output-xlsx", required=True)
                 parser.add_argument("--ocr", default="auto")
                 parser.add_argument("--dry-run", action="store_true")
+                parser.add_argument("--report-json", default="")
                 args = parser.parse_args()
 
-                print(json.dumps({"status": "partial", "dry_run": bool(args.dry_run), "total_files": 1}))
+                payload = {"status": "partial", "dry_run": bool(args.dry_run), "total_files": 1}
+                if args.report_json:
+                    Path(args.report_json).write_text(json.dumps(payload), encoding="utf-8")
+                print(json.dumps(payload))
                 """
             ),
             encoding="utf-8",
@@ -207,12 +212,16 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
                 parser.add_argument("--input-dir", required=True)
                 parser.add_argument("--output-xlsx", required=True)
                 parser.add_argument("--ocr", default="auto")
+                parser.add_argument("--report-json", default="")
                 args = parser.parse_args()
 
                 output = Path(args.output_xlsx)
                 output.parent.mkdir(parents=True, exist_ok=True)
                 output.write_bytes(b"fake-xlsx")
-                print(json.dumps({"status": "partial", "total_files": 1}))
+                payload = {"status": "partial", "total_files": 1}
+                if args.report_json:
+                    Path(args.report_json).write_text(json.dumps(payload), encoding="utf-8")
+                print(json.dumps(payload))
                 """
             ),
             encoding="utf-8",
@@ -229,6 +238,62 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
         self.assertTrue(summary["execution"]["delegated"])
         self.assertEqual(summary["execution"]["delegate_report"]["status"], "partial")
         self.assertTrue(summary["output"]["exists"])
+        self.assertEqual(summary["execution"]["delegate_report_source"], "sidecar")
+
+    def test_sidecar_report_is_canonical_when_stdout_diverges(self) -> None:
+        input_dir = self._make_input_dir(with_pdf=True)
+        fake_base = self.tmpdir / "fake_pdf_to_excel_ocr_sidecar_priority.py"
+        fake_base.write_text(
+            textwrap.dedent(
+                """\
+                #!/usr/bin/env python3
+                import argparse
+                import json
+                from pathlib import Path
+
+                parser = argparse.ArgumentParser()
+                parser.add_argument("--input-dir", required=True)
+                parser.add_argument("--output-xlsx", required=True)
+                parser.add_argument("--ocr", default="auto")
+                parser.add_argument("--report-json", default="")
+                args = parser.parse_args()
+
+                output = Path(args.output_xlsx)
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_bytes(b"fake-xlsx")
+
+                sidecar_payload = {"status": "partial", "total_files": 1}
+                if args.report_json:
+                    Path(args.report_json).write_text(json.dumps(sidecar_payload), encoding="utf-8")
+
+                stdout_payload = {
+                    "status": "success",
+                    "total_files": 1,
+                    "status_counter": {"failed": 0, "partial": 0},
+                    "dry_run": False,
+                    "excel_written": True,
+                    "output_exists": True,
+                    "output_size_bytes": 9,
+                }
+                print(json.dumps(stdout_payload))
+                """
+            ),
+            encoding="utf-8",
+        )
+
+        exit_code, summary, _ = self._invoke_main(
+            input_dir=input_dir,
+            extra_args=["--preferred-base-script", str(fake_base)],
+            reviewed_base_script=fake_base,
+        )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(summary["status"], "partial")
+        self.assertEqual(summary["execution"]["delegate_report_source"], "sidecar")
+        self.assertEqual(summary["execution"]["delegate_report"]["status"], "partial")
+        self.assertTrue(
+            any("using sidecar as canonical evidence" in note for note in summary["notes"])
+        )
 
     def test_success_requires_strong_delegate_evidence(self) -> None:
         input_dir = self._make_input_dir(with_pdf=True)
@@ -245,12 +310,16 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
                 parser.add_argument("--input-dir", required=True)
                 parser.add_argument("--output-xlsx", required=True)
                 parser.add_argument("--ocr", default="auto")
+                parser.add_argument("--report-json", default="")
                 args = parser.parse_args()
 
                 output = Path(args.output_xlsx)
                 output.parent.mkdir(parents=True, exist_ok=True)
                 output.write_bytes(b"fake-xlsx")
-                print(json.dumps({"status": "success"}))
+                payload = {"status": "success"}
+                if args.report_json:
+                    Path(args.report_json).write_text(json.dumps(payload), encoding="utf-8")
+                print(json.dumps(payload))
                 """
             ),
             encoding="utf-8",

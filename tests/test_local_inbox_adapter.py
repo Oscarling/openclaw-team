@@ -116,7 +116,7 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
             contract_hints["delegate_report_schema"],
         )
         self.assertIn(
-            "prints a JSON report to stdout",
+            "sidecar report file is available",
             contract_hints["delegate_report_handoff"],
         )
         self.assertIn(
@@ -128,7 +128,7 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
             contract_hints["delegate_report_flag_contract"],
         )
         self.assertIn(
-            "execution.delegated=false",
+            "do not short-circuit dry-run",
             contract_hints["dry_run_semantics"],
         )
         self.assertIn(
@@ -173,7 +173,7 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         )
         self.assertTrue(
             any(
-                "emits JSON to stdout" in item
+                "sidecar report is present" in item
                 for item in auto_task["constraints"]
             )
         )
@@ -185,7 +185,7 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         )
         self.assertTrue(
             any(
-                "execution.delegated=false" in item
+                "do not short-circuit dry-run" in item
                 for item in auto_task["constraints"]
             )
         )
@@ -220,7 +220,7 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
             auto_task["acceptance_criteria"],
         )
         self.assertIn(
-            "Delegate report handoff can consume JSON printed to stdout without relying exclusively on report sidecar file discovery.",
+            "Delegate report handoff prefers sidecar JSON as canonical evidence and only falls back to stdout JSON when sidecar evidence is unavailable.",
             auto_task["acceptance_criteria"],
         )
         self.assertIn(
@@ -228,7 +228,7 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
             auto_task["acceptance_criteria"],
         )
         self.assertIn(
-            "Dry-run semantics remain explicit: short-circuit stays partial with no delegated execution, or delegated dry-run is passed through honestly.",
+            "Dry-run semantics remain explicit and delegated for readonly governed flows: pass --dry-run through delegate and preserve partial outcome honestly.",
             auto_task["acceptance_criteria"],
         )
         self.assertIn(

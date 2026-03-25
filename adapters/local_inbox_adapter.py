@@ -354,8 +354,8 @@ def normalize_local_inbox_payload(
                         "processed_files/succeeded_files/failed_files counters."
                     ),
                     "delegate_report_handoff": (
-                        "When the delegate prints a JSON report to stdout, parse that JSON "
-                        "directly instead of relying only on sidecar-report file path discovery."
+                        "When a sidecar report file is available, treat it as canonical evidence. "
+                        "Use stdout JSON parsing only as fallback when sidecar evidence is missing."
                     ),
                     "delegate_report_flag_contract": (
                         "If wrapper passes a sidecar report path to the reviewed delegate, "
@@ -364,9 +364,9 @@ def normalize_local_inbox_payload(
                         "as --report-file."
                     ),
                     "dry_run_semantics": (
-                        "If wrapper dry-run short-circuits before delegate execution, keep "
-                        "execution.delegated=false and report partial honestly. If wrapper "
-                        "does delegate under dry-run, pass through --dry-run explicitly."
+                        "For readonly governed flows, do not short-circuit dry-run before "
+                        "delegate execution. Delegate under dry-run and pass through "
+                        "--dry-run explicitly so wrapper/delegate semantics remain aligned."
                     ),
                     "pdf_discovery_consistency": (
                         "Keep wrapper preflight PDF discovery semantics aligned with the "
@@ -397,9 +397,9 @@ def normalize_local_inbox_payload(
             "When wrapper reports success, enforce delegate evidence gates: status=success, total_files>=1, dry_run=false, status_counter.failed=0, status_counter.partial=0, excel_written=true, output_exists=true, and output_size_bytes>0.",
             "If delegate reports partial with structured evidence in readonly best-effort mode, keep wrapper status partial (not failed) and include explicit limitations with next-step guidance.",
             "Use delegate report fields status/total_files/status_counter/dry_run as canonical evidence; do not require undeclared per-counter keys.",
-            "When delegate emits JSON to stdout, parse that report directly instead of depending only on sidecar report-file discovery.",
+            "When a delegate sidecar report is present, treat sidecar JSON as canonical evidence and use stdout JSON only as fallback.",
             "When wrapper passes a sidecar report path to the reviewed delegate, use --report-json exactly unless the reviewed delegate explicitly supports another alias.",
-            "If wrapper supports dry-run short-circuit semantics, keep execution.delegated=false and preserve partial status honestly.",
+            "For readonly governed flows, do not short-circuit dry-run before delegate execution; pass --dry-run through delegate and preserve partial status honestly.",
             "Keep wrapper PDF discovery semantics aligned with reviewed delegate discovery semantics to avoid preflight/execution evidence drift.",
             "Use an explicit timeout on delegate subprocess execution so the smoke wrapper cannot hang indefinitely.",
         ],
@@ -416,9 +416,9 @@ def normalize_local_inbox_payload(
             "Wrapper success attestation requires delegate fields excel_written=true, output_exists=true, output_size_bytes>0, and status_counter.partial/status_counter.failed equal to 0.",
             "Contract-compliant delegate partial outcomes remain partial with explicit limitations and next-step guidance, rather than being escalated to failed by success-only gates.",
             "Wrapper evidence logic remains compatible with delegate JSON fields status/total_files/status_counter/dry_run.",
-            "Delegate report handoff can consume JSON printed to stdout without relying exclusively on report sidecar file discovery.",
+            "Delegate report handoff prefers sidecar JSON as canonical evidence and only falls back to stdout JSON when sidecar evidence is unavailable.",
             "Wrapper/delegate sidecar report handoff remains CLI-compatible by using --report-json (or another explicitly supported delegate alias).",
-            "Dry-run semantics remain explicit: short-circuit stays partial with no delegated execution, or delegated dry-run is passed through honestly.",
+            "Dry-run semantics remain explicit and delegated for readonly governed flows: pass --dry-run through delegate and preserve partial outcome honestly.",
             "Wrapper preflight PDF discovery semantics remain aligned with delegate discovery semantics to keep evidence counts consistent.",
             "Delegate execution is bounded by an explicit timeout and reports timeout honestly.",
         ],
