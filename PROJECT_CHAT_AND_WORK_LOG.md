@@ -1794,6 +1794,79 @@ Verification snapshot on 2026-03-25:
 - `python3 scripts/backlog_sync.py` passed with no phase=now actionable issue
   mirroring required
 
+### 51. Fresh Governed Validation After BL-042 HTTP403 Hardening
+
+User objective:
+
+- continue from `BL-20260325-042` with one fresh same-origin governed runtime
+  validation
+- verify whether authorization-fallback hardening restores automation artifact
+  generation and critic dispatch under real execute
+- preserve runtime evidence and keep workflow-gated delivery
+
+Main work areas:
+
+- activated `BL-20260325-043` and mirrored it to GitHub issue `#79`
+- ran live Trello read-only smoke for origin
+  `trello:69c24cd3c1a2359ddd7a1bf8`
+  - first sandboxed call blocked by DNS policy
+  - elevated rerun passed with `read_count=1`
+- generated one regeneration token:
+  - `regen-20260325-bl043-001`
+- created inbox payload from `smoke_read.mapped_preview`, ingested once, and
+  created fresh preview:
+  - `preview-trello-69c24cd3c1a2359ddd7a1bf8-ddd178ff3fe9`
+- wrote explicit approval and ran real execute in `test_mode=off`
+  - first sandboxed execute blocked before dispatch due Docker client access
+  - elevated replay (`--allow-replay`) ran with explicit fallback endpoint env
+    `ARGUS_LLM_FALLBACK_CHAT_URLS=https://api.openai.com/v1/chat/completions`
+- runtime log confirms BL-042 behavior executed:
+  - attempt 1 on primary endpoint failed `http_403`
+  - one bounded auth-fallback retry was triggered
+  - attempt 2 reached fallback endpoint and failed `tls_eof`
+  - attempt 3 returned to primary and ended `http_403`
+- archived runtime outputs under `runtime_archives/bl043/`
+- recorded next blocker phase as `BL-20260325-044`
+
+Primary output:
+
+- [POST_HTTP403_HARDENING_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_HTTP403_HARDENING_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-043` completed as a governed validation phase
+- BL-042 source-side hardening was validated in live runtime (fallback retry
+  actually occurred)
+- end-to-end runtime remained blocked before critic dispatch due mixed
+  multi-endpoint failure:
+  - primary endpoint `http_403`
+  - fallback endpoint `tls_eof`
+  - automation task `AUTO-20260325-862`: `failed`
+  - critic task `CRITIC-20260325-281`: not dispatched
+- dominant blocker shifted to multi-endpoint policy/runtime reliability,
+  tracked as `BL-20260325-044`
+
+Verification snapshot on 2026-03-25:
+
+- smoke (elevated) returned `status=pass` with `read_count=1`
+- `python3 skills/ingest_tasks.py --once` returned:
+  - `processed = 1`
+  - `preview_created = 1`
+- sandboxed execute returned Docker-client initialization rejection
+- elevated replay execute returned:
+  - `status = rejected`
+  - decision reason includes:
+    `AUTO-20260325-862`, `class=http_403`, `HTTP 403: Forbidden`
+  - runtime log includes:
+    - `Authorization failure detected; retrying once on fallback endpoint.`
+    - fallback endpoint attempt `https://api.openai.com/v1/chat/completions`
+      failed with `tls_eof`
+- runtime archive preserved under:
+  - `runtime_archives/bl043/artifacts/`
+  - `runtime_archives/bl043/runtime/`
+  - `runtime_archives/bl043/state/`
+  - `runtime_archives/bl043/tmp/`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:

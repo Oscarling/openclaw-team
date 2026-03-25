@@ -1,0 +1,13 @@
+{
+  "task_id": "AUTO-20260325-862",
+  "worker": "automation",
+  "status": "failed",
+  "summary": "Worker execution failed",
+  "artifacts": [],
+  "errors": [
+    "LLM call exhausted (attempts=3/3, class=http_403, endpoint=https://fast.vpsairobot.com/v1/chat/completions, retryable=False): HTTP Error 403: Forbidden"
+  ],
+  "metadata": {},
+  "duration_ms": 11083,
+  "timestamp": "2026-03-25T06:16:20.325515Z"
+}
