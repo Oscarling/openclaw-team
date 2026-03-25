@@ -537,8 +537,8 @@ Allowed enum values:
 ### BL-20260325-029
 - title: Validate BL-20260325-028 contract alignment on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-028
@@ -546,7 +546,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-028, runs one explicit approval plus one real execute, and records whether automation/critic outcome now clears the previously observed wrapper/delegate contract drift findings
 - source: `RUNNER_CONTRACT_ALIGNMENT_REPORT.md` on 2026-03-25 concludes the next correct step is a fresh governed validation phase rather than assuming contract hardening success without runtime evidence
 - link: /Users/lingguozhong/openclaw-team/POST_CONTRACT_ALIGNMENT_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-028 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/51
+- evidence: `POST_CONTRACT_ALIGNMENT_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl029-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-ab85bf08e44d` with explicit approval and one real execute; automation (`AUTO-20260325-855`) and critic (`CRITIC-20260325-276`) both completed, and the run isolated a concrete blocker where the generated wrapper unconditionally passes `--report-json` but the reviewed delegate does not support that CLI argument, so integration remains `critic_verdict=needs_revision`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-030
+- title: Fix wrapper/delegate report-handoff CLI mismatch exposed by BL-20260325-029
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-029
+- start_when: `BL-20260325-029` has completed validation and narrowed the remaining `needs_revision` root cause to wrapper/delegate CLI contract drift around `--report-json` handoff
+- done_when: Wrapper/delegate integration no longer passes unsupported CLI arguments, evidence handoff remains reviewable and deterministic (stdout JSON and/or sidecar path contract clearly aligned), focused tests cover the agreed contract, and one phase report records the implementation outcome
+- source: `POST_CONTRACT_ALIGNMENT_VALIDATION_REPORT.md` on 2026-03-25 confirms the post-BL-20260325-028 governed run still fails review because wrapper and delegate report-handoff CLI contracts are incompatible
+- link: /Users/lingguozhong/openclaw-team/RUNNER_DELEGATE_CLI_ALIGNMENT_FIX_REPORT.md
+- issue: deferred:phase=next until BL-20260325-029 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

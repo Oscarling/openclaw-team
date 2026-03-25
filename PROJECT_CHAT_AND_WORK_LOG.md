@@ -1003,6 +1003,68 @@ Verification snapshot on 2026-03-24:
   - verdict: `needs_revision`
   - artifact: `artifacts/reviews/pdf_to_excel_ocr_inbox_review.md`
 
+### 37. Post-Contract Alignment Governed Validation After BL-028
+
+User objective:
+
+- continue from `BL-20260325-028` with a fresh same-origin governed validation
+- verify whether strengthened source-side contract guidance actually clears the
+  wrapper/delegate integration drift
+- preserve runtime evidence and keep backlog-first closure discipline
+
+Main work areas:
+
+- activated and executed `BL-20260325-029` against origin
+  `trello:69c24cd3c1a2359ddd7a1bf8`
+- generated one explicit regeneration token:
+  - `regen-20260325-bl029-001`
+- ingested one fresh payload and created preview candidate:
+  - `preview-trello-69c24cd3c1a2359ddd7a1bf8-ab85bf08e44d`
+- wrote one explicit approval file and ran one governed real execute in
+  `test_mode=off`
+- captured automation and critic runtime artifacts for this candidate
+- archived runtime outputs under `runtime_archives/bl029/` before restoring
+  tracked `artifacts/` baselines
+- wrote validation report and promoted the next implementation phase as
+  `BL-20260325-030`
+
+Primary output:
+
+- [POST_CONTRACT_ALIGNMENT_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_CONTRACT_ALIGNMENT_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-029` completed its validation objective with governed evidence
+- automation and critic both completed on the fresh candidate:
+  - automation task: `AUTO-20260325-855` (`success`)
+  - critic task: `CRITIC-20260325-276` (`success`, verdict
+    `needs_revision`)
+- residual blocker is now explicit and narrow:
+  - generated wrapper unconditionally passes `--report-json`
+  - reviewed delegate `artifacts/scripts/pdf_to_excel_ocr.py` does not accept
+    `--report-json`
+- this is a real integration defect (CLI contract mismatch), not a replay or
+  governance-path failure
+- backlog was updated to:
+  - mark `BL-20260325-029` done with report evidence
+  - add `BL-20260325-030` as the next blocker for contract alignment fix
+
+Verification snapshot on 2026-03-25:
+
+- governed ingest sidecar:
+  - `processed/trello-69c24cd3c1a2359ddd7a1bf8-regen-20260325-bl029-001.json.result.json`
+  - `status = processed`
+  - `decision = preview_created_pending_approval`
+- approval sidecar:
+  - `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-ab85bf08e44d.result.json`
+  - `status = rejected`
+  - `decision_reason = critic_verdict=needs_revision`
+- runtime archive preserved under:
+  - `runtime_archives/bl029/artifacts/`
+  - `runtime_archives/bl029/runtime/`
+  - `runtime_archives/bl029/state/`
+  - `runtime_archives/bl029/tmp/`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:

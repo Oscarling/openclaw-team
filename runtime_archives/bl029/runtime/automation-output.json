@@ -1,0 +1,25 @@
+{
+  "task_id": "AUTO-20260325-855",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated exactly one runnable helper wrapper script artifact that reuses the reviewed pdf_to_excel_ocr.py delegate, preserves parameter-driven input/output behavior, uses explicit timeout control, parses delegate JSON from stdout or sidecar report, and applies reviewable success/partial/failed evidence rules.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-25T01:53:38.846608Z",
+  "duration_ms": 65711,
+  "notes": [
+    "The artifact is provided as file contents for the expected path only.",
+    "The wrapper is designed to preserve true XLSX semantics by delegating workbook creation to the reviewed base script and failing honestly when evidence is insufficient.",
+    "Dry-run and zero-PDF discovery resolve to partial outcomes."
+  ],
+  "metadata": {
+    "task_id": "AUTO-20260325-855",
+    "worker": "automation",
+    "objective": "generate_script",
+    "generated_files": 1
+  }
+}
