@@ -1132,8 +1132,8 @@ Allowed enum values:
 ### BL-20260325-064
 - title: Harden wrapper/delegate output-boundary policy and aggregate outcome-contract clarity after BL-20260325-063 critic findings
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-063
@@ -1141,6 +1141,23 @@ Allowed enum values:
 - done_when: Source-side hardening constrains wrapper output destination policy for governed readonly runs, clarifies extraction-vs-export outcome semantics across wrapper/delegate reports, and records one blocker report with focused tests
 - source: `POST_WRAPPER_DELEGATE_REPORT_SCHEMA_DIAGNOSTIC_ROBUSTNESS_VALIDATION_REPORT.md` on 2026-03-25 records the next blocker class as output-boundary and aggregate outcome-contract clarity
 - link: /Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_OUTPUT_BOUNDARY_OUTCOME_CONTRACT_HARDENING_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/121
+- evidence: `WRAPPER_DELEGATE_OUTPUT_BOUNDARY_OUTCOME_CONTRACT_HARDENING_REPORT.md` records wrapper output-boundary enforcement in `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` (approved root: `artifacts/outputs`) and extraction/export phase-semantic hardening in `artifacts/scripts/pdf_to_excel_ocr.py`, with focused regressions in `tests/test_pdf_to_excel_ocr_inbox_runner.py` and `tests/test_pdf_to_excel_ocr_script.py`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-065
+- title: Validate BL-20260325-064 output-boundary and outcome-contract hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-064
+- start_when: `BL-20260325-064` is merged so one fresh governed candidate can verify critic findings move away from output-boundary and aggregate outcome-contract clarity concerns
+- done_when: One governed validation run (smoke -> regeneration -> preview -> approval -> real execute) records whether critic findings no longer cite wrapper output-boundary policy and extraction-vs-export outcome-contract clarity gaps
+- source: `WRAPPER_DELEGATE_OUTPUT_BOUNDARY_OUTCOME_CONTRACT_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation
+- link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_DELEGATE_OUTPUT_BOUNDARY_OUTCOME_CONTRACT_VALIDATION_REPORT.md
 - issue: -
 - evidence: -
 - last_reviewed_at: 2026-03-25

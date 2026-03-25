@@ -30,8 +30,19 @@ DEFAULT_REFERENCE_DOCS = [
 ]
 RUNNER_PATH = Path(__file__).resolve()
 REPO_ROOT = RUNNER_PATH.parents[2]
+APPROVED_OUTPUT_ROOT = (REPO_ROOT / "artifacts" / "outputs").resolve()
 REVIEWED_BASE_SCRIPT = (REPO_ROOT / DEFAULT_PREFERRED_BASE_SCRIPT).resolve()
 ALLOWED_SUMMARY_STATUSES = {"success", "partial", "failed"}
+ALLOWED_EXTRACTION_STATUSES = {"none", "success", "partial", "failed"}
+ALLOWED_EXPORT_STATUSES = {
+    "not_started",
+    "running",
+    "succeeded",
+    "failed",
+    "skipped_dry_run",
+    "skipped_no_input",
+    "unknown",
+}
 
 
 def utc_now() -> str:
@@ -67,6 +78,37 @@ def resolve_delegate_script(path_str: str) -> tuple[Path, dict[str, Any]]:
         "resolved": str(resolved),
         "within_repo_root": relative_to_repo is not None,
         "repo_relative_path": relative_to_repo,
+    }
+    return resolved, resolution
+
+
+def resolve_output_path(path_str: str) -> tuple[Path, dict[str, Any]]:
+    requested = expand_path(path_str)
+    if requested.is_absolute():
+        resolved = requested.resolve()
+        strategy = "absolute"
+    else:
+        resolved = (REPO_ROOT / requested).resolve()
+        strategy = "repo_root_relative"
+
+    relative_to_repo = repo_relative_path(resolved)
+    try:
+        relative_to_output_root = str(resolved.relative_to(APPROVED_OUTPUT_ROOT))
+        within_output_root = True
+    except ValueError:
+        relative_to_output_root = None
+        within_output_root = False
+
+    resolution = {
+        "requested": path_str,
+        "expanded": str(requested),
+        "strategy": strategy,
+        "resolved": str(resolved),
+        "within_repo_root": relative_to_repo is not None,
+        "repo_relative_path": relative_to_repo,
+        "approved_output_root": str(APPROVED_OUTPUT_ROOT),
+        "within_approved_output_root": within_output_root,
+        "approved_output_relative_path": relative_to_output_root,
     }
     return resolved, resolution
 
@@ -203,6 +245,37 @@ def extract_delegate_error(delegate_report: dict[str, Any] | None) -> str | None
     return cleaned or None
 
 
+def extract_delegate_phase_statuses(delegate_report: dict[str, Any] | None) -> tuple[str, str]:
+    if not isinstance(delegate_report, dict):
+        return "", ""
+
+    extraction_status = str(delegate_report.get("extraction_status", "")).strip().lower()
+    if extraction_status not in ALLOWED_EXTRACTION_STATUSES:
+        extraction_status = ""
+    export_status = str(delegate_report.get("export_status", "")).strip().lower()
+    if export_status not in ALLOWED_EXPORT_STATUSES:
+        export_status = ""
+
+    if not extraction_status:
+        status = str(delegate_report.get("status", "")).strip().lower()
+        if status == "success":
+            extraction_status = "success"
+        elif status == "partial":
+            extraction_status = "partial"
+        elif status == "failed":
+            extraction_status = "failed"
+
+    if not export_status:
+        if bool(delegate_report.get("dry_run", False)):
+            export_status = "skipped_dry_run"
+        elif delegate_report.get("excel_written") is True:
+            export_status = "succeeded"
+        elif str(delegate_report.get("status", "")).strip().lower() == "failed":
+            export_status = "failed"
+
+    return extraction_status, export_status
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Best-effort inbox runner that reuses the repository PDF-to-Excel OCR script."
@@ -237,7 +310,7 @@ def main() -> int:
     requested_at = utc_now()
     run_id = "bl050-wrapper-" + requested_at.replace(":", "").replace("-", "").replace(".", "")
     input_dir = expand_path(args.input_dir)
-    output_xlsx = expand_path(args.output_xlsx)
+    output_xlsx, output_resolution = resolve_output_path(args.output_xlsx)
     base_script, delegate_resolution = resolve_delegate_script(args.preferred_base_script)
     pdfs = discover_pdfs(input_dir)
     readonly_labels_present = any(str(label).strip().lower() == "readonly" for label in args.labels)
@@ -268,6 +341,8 @@ def main() -> int:
             "reviewed_base_script": str(REVIEWED_BASE_SCRIPT),
             "readonly_labels_present": readonly_labels_present,
             "readonly_delegate_verified": delegate_contract_error is None,
+            "approved_output_root": str(APPROVED_OUTPUT_ROOT),
+            "output_boundary_enforced": True,
             "delegate_timeout_seconds": max(int(args.delegate_timeout_seconds), 1),
             "delegate_success_evidence_policy": (
                 "Require delegate report status=success, total_files>=1, no failed files, "
@@ -279,6 +354,7 @@ def main() -> int:
             "repo_root": str(REPO_ROOT),
             "origin_id": args.origin_id,
             "delegate_path_resolution": delegate_resolution,
+            "output_path_resolution": output_resolution,
             "input_dir_resolution": {
                 "requested": args.input_dir,
                 "resolved": str(input_dir.resolve()),
@@ -313,6 +389,8 @@ def main() -> int:
             "delegate_report": None,
             "delegate_report_source": "none",
             "delegate_report_sidecar_path": "",
+            "delegate_extraction_status": "",
+            "delegate_export_status": "",
         },
         "output": {
             "exists": False,
@@ -335,6 +413,17 @@ def main() -> int:
         summary["notes"].append("Requested output path does not end with .xlsx; refusing mismatched workbook contract.")
         emit_summary(summary, args.summary_json)
         return 2
+
+    if not bool(output_resolution.get("within_approved_output_root", False)):
+        summary["notes"].append(
+            (
+                "Requested output path is outside approved output root "
+                f"{APPROVED_OUTPUT_ROOT}; refusing broader local write destination "
+                "for governed readonly flow."
+            )
+        )
+        emit_summary(summary, args.summary_json)
+        return 6
 
     if delegate_contract_error:
         summary["notes"].append(delegate_contract_error)
@@ -418,9 +507,27 @@ def main() -> int:
     stdout_report = parse_delegate_report(completed.stdout)
     delegate_report = sidecar_report or stdout_report
     summary["execution"]["delegate_report"] = delegate_report
+    delegate_extraction_status, delegate_export_status = extract_delegate_phase_statuses(delegate_report)
+    summary["execution"]["delegate_extraction_status"] = delegate_extraction_status
+    summary["execution"]["delegate_export_status"] = delegate_export_status
     delegate_error = extract_delegate_error(delegate_report)
     if delegate_error:
         summary["notes"].append(f"Delegate reported error: {delegate_error}")
+    if delegate_extraction_status or delegate_export_status:
+        summary["notes"].append(
+            (
+                "Delegate phase outcomes: "
+                f"extraction_status={delegate_extraction_status or 'unknown'}, "
+                f"export_status={delegate_export_status or 'unknown'}."
+            )
+        )
+    if delegate_export_status == "failed" and delegate_extraction_status in {"success", "partial"}:
+        summary["notes"].append(
+            (
+                "Delegate reported export failure after extraction evidence was produced "
+                f"(extraction_status={delegate_extraction_status}, export_status=failed)."
+            )
+        )
     if isinstance(sidecar_report, dict):
         summary["execution"]["delegate_report_source"] = "sidecar"
         if isinstance(stdout_report, dict) and stdout_report != sidecar_report:
@@ -461,7 +568,9 @@ def main() -> int:
             summary["status"] = "partial"
             summary["notes"].append("Delegate reported a reviewable partial outcome; preserving partial status.")
         elif delegate_status == "failed":
-            summary["notes"].append("Delegate reported failed status despite producing an XLSX artifact.")
+            summary["notes"].append(
+                "Delegate reported failed status despite producing an XLSX artifact; review extraction/export phase details."
+            )
         elif success_evidence_ok:
             summary["status"] = "success"
         elif delegate_status == "success":
@@ -475,7 +584,12 @@ def main() -> int:
             summary["notes"].append("Delegate produced XLSX output but did not provide a recognized summary status.")
     else:
         if completed.returncode == 0 and not output_exists:
-            summary["notes"].append("Delegate exited successfully but expected XLSX output was not found.")
+            if delegate_status == "failed" and delegate_export_status == "failed":
+                summary["notes"].append(
+                    "Delegate exited with failed export semantics and no XLSX artifact; preserving failed wrapper status."
+                )
+            else:
+                summary["notes"].append("Delegate exited successfully but expected XLSX output was not found.")
         elif completed.returncode != 0:
             summary["notes"].append("Delegate script returned a non-zero exit code.")
 

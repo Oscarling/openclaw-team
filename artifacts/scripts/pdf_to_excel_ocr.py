@@ -276,6 +276,8 @@ def build_report_template(
         "files": [],
         "status_counter": {},
         "dry_run": bool(dry_run),
+        "extraction_status": "none",
+        "export_status": "not_started",
         "excel_written": False,
         "output_exists": False,
         "output_size_bytes": 0,
@@ -300,6 +302,8 @@ def main() -> int:
             dry_run=args.dry_run,
         )
         report["error"] = str(e)
+        report["extraction_status"] = "none"
+        report["export_status"] = "not_started"
         report["notes"].append("Input discovery failed before extraction could start.")
         report["next_steps"].append("Verify input directory exists and is readable, then rerun.")
         emit_report(report, args.report_json)
@@ -313,6 +317,8 @@ def main() -> int:
             dry_run=args.dry_run,
         )
         report["status"] = "partial"
+        report["extraction_status"] = "none"
+        report["export_status"] = "skipped_no_input"
         report["notes"] = [f"No PDF files found under {input_dir}"]
         report["next_steps"] = [
             "Add one or more .pdf files under the input directory and rerun.",
@@ -355,9 +361,9 @@ def main() -> int:
     failed_count = status_counter.get("failed", 0)
     partial_count = status_counter.get("partial", 0)
     if failed_count == 0 and partial_count == 0:
-        aggregate_status = "success"
+        extraction_status = "success"
     else:
-        aggregate_status = "partial"
+        extraction_status = "partial"
 
     notes: list[str] = []
     next_steps: list[str] = []
@@ -379,27 +385,40 @@ def main() -> int:
     )
     report.update(
         {
-            "status": aggregate_status,
+            "status": extraction_status,
             "ocr_runtime_status": ocr_runtime,
             "ocr_missing_dependencies": missing,
             "total_files": len(results),
             "files": files_payload,
             "status_counter": status_counter,
+            "extraction_status": extraction_status,
+            "export_status": "not_started",
             "notes": notes,
             "next_steps": next_steps,
         }
     )
 
     if args.dry_run:
+        report["export_status"] = "skipped_dry_run"
         emit_report(report, args.report_json)
         return 0
 
+    report["export_status"] = "running"
     try:
         write_excel(results, output_xlsx)
         report["output_exists"] = output_xlsx.exists() and output_xlsx.is_file()
         if report["output_exists"]:
             report["output_size_bytes"] = int(output_xlsx.stat().st_size)
         report["excel_written"] = bool(report["output_exists"] and report["output_size_bytes"] > 0)
+        report["export_status"] = "succeeded" if report["excel_written"] else "failed"
+        if report["export_status"] == "failed":
+            report["status"] = "failed"
+            report["notes"] = report.get("notes", []) + [
+                "Excel write step completed without a usable XLSX artifact; treating export as failed."
+            ]
+            report["next_steps"] = report.get("next_steps", []) + [
+                "Inspect output artifact path permissions and workbook writer dependencies.",
+            ]
         emit_report(report, args.report_json)
         return 0
     except Exception as e:
@@ -409,8 +428,18 @@ def main() -> int:
         if report["output_exists"]:
             report["output_size_bytes"] = int(output_xlsx.stat().st_size)
         report["excel_written"] = bool(report["output_exists"] and report["output_size_bytes"] > 0)
-        report["notes"] = report.get("notes", []) + ["Excel write step failed after extraction."]
-        report["next_steps"] = report.get("next_steps", []) + ["Check pandas/openpyxl availability and output path permissions."]
+        report["export_status"] = "failed"
+        report["notes"] = report.get("notes", []) + [
+            "Excel write step failed after extraction.",
+            (
+                f"Extraction phase completed with extraction_status={report.get('extraction_status', 'unknown')}; "
+                "export_status=failed."
+            ),
+        ]
+        report["next_steps"] = report.get("next_steps", []) + [
+            "Inspect extraction evidence in `files`/`status_counter` even when export fails.",
+            "Check pandas/openpyxl availability and output path permissions.",
+        ]
         emit_report(report, args.report_json)
         return 3
 

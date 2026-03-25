@@ -51,7 +51,7 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
         reviewed_base_script: Path | None = None,
     ) -> tuple[int, dict[str, Any], str]:
         summary_path = self.tmpdir / "summary.json"
-        output_path = self.tmpdir / "output.xlsx"
+        output_path = REPO_ROOT / "artifacts" / "outputs" / "unit_tests" / f"{self.tmpdir.name}-output.xlsx"
         argv = [
             "pdf_to_excel_ocr_inbox_runner.py",
             "--input-dir",
@@ -335,6 +335,74 @@ class PdfToExcelOcrInboxRunnerTests(unittest.TestCase):
         self.assertEqual(summary["status"], "partial")
         self.assertTrue(summary["output"]["exists"])
         self.assertTrue(any("at least one processed PDF file" in note for note in summary["notes"]))
+
+    def test_rejects_output_path_outside_approved_root(self) -> None:
+        input_dir = self._make_input_dir(with_pdf=True)
+
+        exit_code, summary, _ = self._invoke_main(
+            input_dir=input_dir,
+            extra_args=["--output-xlsx", str(self.tmpdir / "outside.xlsx")],
+        )
+
+        self.assertEqual(exit_code, 6)
+        self.assertEqual(summary["status"], "failed")
+        self.assertFalse(summary["execution"]["delegated"])
+        self.assertFalse(summary["provenance"]["output_path_resolution"]["within_approved_output_root"])
+        self.assertTrue(any("outside approved output root" in note for note in summary["notes"]))
+
+    def test_surfaces_delegate_extraction_export_phase_distinction(self) -> None:
+        input_dir = self._make_input_dir(with_pdf=True)
+        fake_base = self.tmpdir / "fake_pdf_to_excel_ocr_export_failed.py"
+        fake_base.write_text(
+            textwrap.dedent(
+                """\
+                #!/usr/bin/env python3
+                import argparse
+                import json
+                from pathlib import Path
+
+                parser = argparse.ArgumentParser()
+                parser.add_argument("--input-dir", required=True)
+                parser.add_argument("--output-xlsx", required=True)
+                parser.add_argument("--ocr", default="auto")
+                parser.add_argument("--report-json", default="")
+                args = parser.parse_args()
+
+                payload = {
+                    "status": "failed",
+                    "total_files": 1,
+                    "status_counter": {"partial": 1},
+                    "dry_run": False,
+                    "extraction_status": "partial",
+                    "export_status": "failed",
+                    "excel_written": False,
+                    "output_exists": False,
+                    "output_size_bytes": 0,
+                    "ocr_runtime_status": "available",
+                    "notes": ["Excel write step failed after extraction."],
+                    "next_steps": ["Inspect extraction evidence in files/status_counter."],
+                    "error": "openpyxl missing",
+                }
+                if args.report_json:
+                    Path(args.report_json).write_text(json.dumps(payload), encoding="utf-8")
+                print(json.dumps(payload))
+                """
+            ),
+            encoding="utf-8",
+        )
+
+        exit_code, summary, _ = self._invoke_main(
+            input_dir=input_dir,
+            extra_args=["--preferred-base-script", str(fake_base)],
+            reviewed_base_script=fake_base,
+        )
+
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(summary["status"], "failed")
+        self.assertEqual(summary["execution"]["delegate_extraction_status"], "partial")
+        self.assertEqual(summary["execution"]["delegate_export_status"], "failed")
+        self.assertTrue(any("extraction_status=partial" in note for note in summary["notes"]))
+        self.assertTrue(any("export_status=failed" in note for note in summary["notes"]))
 
     def test_surfaces_delegate_error_context_in_wrapper_notes(self) -> None:
         input_dir = self._make_input_dir(with_pdf=True)
