@@ -2316,6 +2316,55 @@ Verification snapshot on 2026-03-25:
   - `execution.executed = true`
   - `execution.attempts = 2`
 
+### 66. Wrapper Delegate Evidence-Handoff Contract Hardening After BL-057 Blocker
+
+User objective:
+
+- continue next blocker phase without drift
+- harden wrapper/delegate contract handling after BL-057 critic
+  `needs_revision` (dry-run recurrence + stdout-over-sidecar risk)
+
+Main work areas:
+
+- activated `BL-20260325-058` and mirrored it to issue `#109`
+- updated `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`:
+  - passes `--report-json` sidecar path to delegate on execution
+  - prefers sidecar JSON as canonical delegate evidence
+  - falls back to stdout JSON only when sidecar is unavailable
+  - records delegate report source/path in execution summary
+  - adds divergence note when stdout and sidecar disagree
+- updated `adapters/local_inbox_adapter.py` contract guidance:
+  - dry-run semantics now require delegated pass-through for readonly governed
+    flows
+  - delegate report handoff now mandates sidecar-first truth with stdout
+    fallback
+- expanded focused tests:
+  - new wrapper regression
+    `test_sidecar_report_is_canonical_when_stdout_diverges`
+  - updated fake delegates to accept `--report-json`
+  - aligned adapter contract expectation coverage
+- produced blocker hardening report and prepared next governed validation item
+  (`BL-20260325-059`)
+
+Primary output:
+
+- [WRAPPER_DELEGATE_EVIDENCE_HANDOFF_CONTRACT_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_EVIDENCE_HANDOFF_CONTRACT_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-058` is complete as a source-side blocker-hardening phase
+- wrapper evidence handoff now enforces sidecar-first contract truth
+- generation-side dry-run/report guidance is tightened to reduce recurrence
+  under governed execution
+- next phase `BL-20260325-059` is defined as fresh governed validation
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_inbox_runner.py tests/test_local_inbox_adapter.py`
+  passed `15/15`
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with BL-058 issue mirror to `#109`
+
 ### 64. Wrapper Dry-Run Delegate Propagation Hardening After BL-055 Critic Blocker
 
 User objective:

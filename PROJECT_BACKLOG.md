@@ -1030,8 +1030,8 @@ Allowed enum values:
 ### BL-20260325-058
 - title: Harden wrapper/delegate evidence handoff contract to eliminate dry-run propagation recurrence and sidecar precedence risk
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-057
@@ -1039,7 +1039,24 @@ Allowed enum values:
 - done_when: Source-side hardening ensures reviewed wrapper behavior is preserved under governed generation (dry-run delegate propagation and sidecar-first evidence handoff), and one blocker report records mitigation with focused tests
 - source: `POST_WRAPPER_DRYRUN_DELEGATE_PROPAGATION_VALIDATION_REPORT.md` on 2026-03-25 records critic `needs_revision` persisted on wrapper/delegate contract handling despite BL-056 source merge
 - link: /Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_EVIDENCE_HANDOFF_CONTRACT_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260325-057 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/109
+- evidence: `WRAPPER_DELEGATE_EVIDENCE_HANDOFF_CONTRACT_HARDENING_REPORT.md` records source-side hardening in `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` and `adapters/local_inbox_adapter.py` to enforce dry-run delegation and sidecar-first report truth, with focused regressions in `tests/test_pdf_to_excel_ocr_inbox_runner.py` and updated adapter contract coverage in `tests/test_local_inbox_adapter.py`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-059
+- title: Validate BL-20260325-058 wrapper/delegate evidence handoff contract hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-058
+- start_when: `BL-20260325-058` is merged so a fresh same-origin governed run can verify whether critic findings move away from dry-run recurrence and sidecar precedence concerns
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-058, runs one explicit approval plus one real execute, and records whether critic findings no longer report wrapper/delegate evidence-handoff contract gaps
+- source: `WRAPPER_DELEGATE_EVIDENCE_HANDOFF_CONTRACT_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation under real execute conditions
+- link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_DELEGATE_EVIDENCE_HANDOFF_CONTRACT_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-058 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

@@ -5,6 +5,7 @@ import argparse
 import json
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -122,6 +123,18 @@ def parse_delegate_report(stdout_text: str) -> dict[str, Any] | None:
             continue
         if isinstance(candidate, dict):
             return candidate
+    return None
+
+
+def load_delegate_report_file(path: Path) -> dict[str, Any] | None:
+    if not path.exists() or not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    if isinstance(payload, dict):
+        return payload
     return None
 
 
@@ -267,6 +280,8 @@ def main() -> int:
             "stdout": "",
             "stderr": "",
             "delegate_report": None,
+            "delegate_report_source": "none",
+            "delegate_report_sidecar_path": "",
         },
         "output": {
             "exists": False,
@@ -304,6 +319,15 @@ def main() -> int:
         return 3
 
     output_xlsx.parent.mkdir(parents=True, exist_ok=True)
+    delegate_report_sidecar = Path(
+        tempfile.NamedTemporaryFile(
+            prefix="argus-delegate-report-",
+            suffix=".json",
+            delete=False,
+        ).name
+    )
+    delegate_report_sidecar.unlink(missing_ok=True)
+    summary["execution"]["delegate_report_sidecar_path"] = str(delegate_report_sidecar)
 
     cmd = [
         sys.executable,
@@ -312,6 +336,8 @@ def main() -> int:
         str(input_dir),
         "--output-xlsx",
         str(output_xlsx),
+        "--report-json",
+        str(delegate_report_sidecar),
     ]
     if args.ocr:
         cmd.extend(["--ocr", args.ocr])
@@ -342,18 +368,30 @@ def main() -> int:
             f"Delegate timed out after {max(int(args.delegate_timeout_seconds), 1)} seconds."
         )
         emit_summary(summary, args.summary_json)
+        delegate_report_sidecar.unlink(missing_ok=True)
         return 124
     except Exception as exc:
         summary["execution"]["stderr"] = f"delegate invocation error: {exc}"
         emit_summary(summary, args.summary_json)
+        delegate_report_sidecar.unlink(missing_ok=True)
         return 4
 
     summary["execution"]["returncode"] = completed.returncode
     summary["execution"]["stdout"] = completed.stdout
     summary["execution"]["stderr"] = completed.stderr
 
-    delegate_report = parse_delegate_report(completed.stdout)
+    sidecar_report = load_delegate_report_file(delegate_report_sidecar)
+    stdout_report = parse_delegate_report(completed.stdout)
+    delegate_report = sidecar_report or stdout_report
     summary["execution"]["delegate_report"] = delegate_report
+    if isinstance(sidecar_report, dict):
+        summary["execution"]["delegate_report_source"] = "sidecar"
+        if isinstance(stdout_report, dict) and stdout_report != sidecar_report:
+            summary["notes"].append("Delegate stdout report diverged from sidecar; using sidecar as canonical evidence.")
+    elif isinstance(stdout_report, dict):
+        summary["execution"]["delegate_report_source"] = "stdout"
+    else:
+        summary["execution"]["delegate_report_source"] = "none"
 
     output_exists = output_xlsx.exists() and output_xlsx.is_file()
     summary["output"]["exists"] = output_exists
@@ -402,6 +440,7 @@ def main() -> int:
             summary["notes"].append("Delegate script returned a non-zero exit code.")
 
     emit_summary(summary, args.summary_json)
+    delegate_report_sidecar.unlink(missing_ok=True)
     return 0 if summary["status"] in {"success", "partial"} else 1
 
 
