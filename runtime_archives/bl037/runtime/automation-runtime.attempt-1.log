@@ -1,0 +1,21 @@
+task_id: AUTO-20260325-859
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-859
+worker_image: argus-worker:latest
+started_at: 2026-03-25T04:39:23.278146Z
+finished_at: 2026-03-25T04:39:43.614613Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-25T04:39:23.517320Z] [automation] [INFO] Worker started using endpoint https://fast.vpsairobot.com/v1/chat/completions (timeout=120s, attempts=3)
+[2026-03-25T04:39:30.862285Z] [automation] [WARN] LLM call failed attempt 1: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1016)>
+[2026-03-25T04:39:38.234746Z] [automation] [WARN] LLM call failed attempt 2: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1016)>
+[2026-03-25T04:39:43.456964Z] [automation] [WARN] LLM call failed attempt 3: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1016)>
+[2026-03-25T04:39:43.457106Z] [automation] [ERROR] Task failed AUTO-20260325-859: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1016)>
+[2026-03-25T04:39:43.461801Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-859
+
+=== stderr ===
+

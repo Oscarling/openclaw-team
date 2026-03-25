@@ -673,8 +673,8 @@ Allowed enum values:
 ### BL-20260325-037
 - title: Validate BL-20260325-036 semantic contract hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-036
@@ -682,7 +682,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-036, runs one explicit approval plus one real execute, and records whether runtime critic outcome now clears semantic contract mismatches found in BL-20260325-035
 - source: `SEMANTIC_CONTRACT_ALIGNMENT_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming semantic hardening success without live evidence
 - link: /Users/lingguozhong/openclaw-team/POST_SEMANTIC_CONTRACT_ALIGNMENT_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-036 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/67
+- evidence: `POST_SEMANTIC_CONTRACT_ALIGNMENT_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl037-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-ad8052fe53ac` with explicit approval and one elevated real execute replay; runtime remained blocked by automation transport failure (`AUTO-20260325-859`, SSL EOF), so semantic hardening runtime effect stayed unverified
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-038
+- title: Harden automation endpoint transport reliability after BL-20260325-037 SSL EOF blocker
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-037
+- start_when: `BL-20260325-037` has completed and confirmed governed replay is blocked by automation transport failure (`SSL: UNEXPECTED_EOF_WHILE_READING`) before artifact generation
+- done_when: Automation LLM call path handles endpoint transport instability with deterministic retry/error classification hardening (or endpoint/TLS configuration hardening), focused tests cover the new behavior, and one blocker report records the implemented mitigation
+- source: `POST_SEMANTIC_CONTRACT_ALIGNMENT_VALIDATION_REPORT.md` on 2026-03-25 records automation transport failure as the active blocker that prevented semantic runtime validation closure
+- link: /Users/lingguozhong/openclaw-team/AUTOMATION_ENDPOINT_SSL_RELIABILITY_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-037 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
