@@ -1,0 +1,6 @@
+https://fast.vpsairobot.com/v1 | gpt-5.4 -> 200
+https://fast.vpsairobot.com/v1 | gpt-5-codex -> 200
+https://fast.vpsairobot.com/v1 | gpt-5 -> 200
+https://fast.vpsairobot.com | gpt-5.4 -> 200
+https://fast.vpsairobot.com | gpt-5-codex -> 200
+https://fast.vpsairobot.com | gpt-5 -> 200
