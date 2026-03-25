@@ -3510,3 +3510,64 @@ Verification snapshot on 2026-03-25:
 
 - `python3 -m unittest -v tests/test_pdf_to_excel_ocr_inbox_runner.py tests/test_local_inbox_adapter.py`
   passed `16/16`
+
+### 70. Fresh Governed Validation After BL-060 Readonly/OCR Sufficiency Hardening
+
+User objective:
+
+- continue phase-by-phase without drift
+- validate BL-060 readonly/OCR sufficiency contract hardening on one fresh
+  same-origin governed candidate
+
+Main work areas:
+
+- activated `BL-20260325-061` and mirrored it to issue `#115`
+- executed governed validation pipeline with token
+  `regen-20260325-bl061-001`:
+  - sandbox Trello smoke (captured network-policy block evidence)
+  - elevated Trello smoke (live pass + mapped preview)
+  - generated regeneration payload and ingest once -> fresh preview
+    `preview-trello-69c24cd3c1a2359ddd7a1bf8-0ceb21ad88dd`
+  - explicit approval write
+  - sandbox execute (captured Docker init block evidence)
+  - elevated replay with runtime env injection reached automation and critic
+- captured and archived runtime evidence:
+  - automation task completed (`AUTO-20260325-871`)
+  - critic task completed (`CRITIC-20260325-287`)
+  - final execute remained `rejected` on critic `needs_revision`
+- produced validation report and queued next blocker phase
+  (`BL-20260325-062`)
+
+Primary output:
+
+- [POST_WRAPPER_DELEGATE_READONLY_OCR_SUFFICIENCY_CONTRACT_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_WRAPPER_DELEGATE_READONLY_OCR_SUFFICIENCY_CONTRACT_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-061` is complete as a governed validation phase
+- critic findings moved away from BL-060 target concerns:
+  - readonly semantics overclaim no longer dominant
+  - OCR sufficiency gating drift no longer dominant
+- new blocker focus shifted to wrapper/delegate report-schema robustness and
+  delegate-error surfacing consistency (`BL-20260325-062`)
+
+Verification snapshot on 2026-03-25:
+
+- `python3 scripts/backlog_lint.py` passed after BL-061 activation
+- `python3 scripts/backlog_sync.py` passed with BL-061 issue mirror to `#115`
+- sandbox smoke evidence captured as blocked (`ConnectionError` /
+  `NameResolutionError`)
+- elevated smoke passed with `read_count = 1`
+- `python3 skills/ingest_tasks.py --once --test-mode success` returned:
+  - `processed = 1`
+  - `duplicate_skipped = 0`
+  - `preview_created = 1`
+- elevated execute replay returned:
+  - `status = rejected`
+  - `decision_reason = critic_verdict=needs_revision`
+  - `critic_verdict = needs_revision`
+- final preview state:
+  - `approved = true`
+  - `execution.status = rejected`
+  - `execution.executed = true`
+  - `execution.attempts = 2`

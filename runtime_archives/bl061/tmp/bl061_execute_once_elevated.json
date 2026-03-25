@@ -1,0 +1,20 @@
+/Users/lingguozhong/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+{
+  "status": "done",
+  "processed": 0,
+  "rejected": 1,
+  "skipped": 0,
+  "test_mode": "off",
+  "allow_replay": true,
+  "results": [
+    {
+      "status": "rejected",
+      "decision_reason": "critic_verdict=needs_revision",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-0ceb21ad88dd",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-0ceb21ad88dd.json",
+      "result_sidecar": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-0ceb21ad88dd.result.json",
+      "critic_verdict": "needs_revision"
+    }
+  ]
+}

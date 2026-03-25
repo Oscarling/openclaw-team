@@ -1081,8 +1081,8 @@ Allowed enum values:
 ### BL-20260325-061
 - title: Validate BL-20260325-060 readonly/OCR sufficiency contract hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-060
@@ -1090,7 +1090,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-060, runs one explicit approval plus one real execute, and records whether critic findings no longer cite readonly/OCR sufficiency contract gaps
 - source: `WRAPPER_DELEGATE_READONLY_OCR_SUFFICIENCY_CONTRACT_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation under real execute conditions
 - link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_DELEGATE_READONLY_OCR_SUFFICIENCY_CONTRACT_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-061 activation
+- issue: https://github.com/Oscarling/openclaw-team/issues/115
+- evidence: `POST_WRAPPER_DELEGATE_READONLY_OCR_SUFFICIENCY_CONTRACT_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl061-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-0ceb21ad88dd`; runtime reached automation (`AUTO-20260325-871`) and critic (`CRITIC-20260325-287`) with final verdict `needs_revision`, while critic focus moved away from readonly/OCR-sufficiency concerns toward wrapper/delegate report-schema robustness and delegate-error surfacing gaps
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-062
+- title: Harden wrapper/delegate report-schema robustness and delegate-error surfacing after BL-20260325-061 critic findings
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-061
+- start_when: `BL-20260325-061` confirms readonly/OCR sufficiency concerns are no longer dominant and critic `needs_revision` has shifted to report-schema consistency plus delegate-error surfacing gaps
+- done_when: Source-side hardening normalizes delegate report schema across failure paths and ensures wrapper evidence/notes surface delegate error context explicitly, with focused tests and one blocker report
+- source: `POST_WRAPPER_DELEGATE_READONLY_OCR_SUFFICIENCY_CONTRACT_VALIDATION_REPORT.md` on 2026-03-25 records the next blocker as wrapper/delegate report-schema robustness and diagnostic evidence surfacing
+- link: /Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_REPORT_SCHEMA_DIAGNOSTIC_ROBUSTNESS_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-062 activation
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
