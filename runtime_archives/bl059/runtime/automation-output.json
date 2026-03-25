@@ -1,0 +1,25 @@
+{
+  "task_id": "AUTO-20260325-870",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated exactly one runnable local helper wrapper script artifact that reuses the reviewed delegate path contract, preserves parameter-driven input/output behavior, enforces structured delegate evidence gates, prefers sidecar report handoff via --report-json, keeps dry-run/zero-PDF outcomes reviewable as partial, and bounds delegate execution with an explicit timeout.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-25T09:25:19.312582Z",
+  "duration_ms": 108120,
+  "notes": [
+    "The artifact is a deterministic local wrapper intended to delegate only to the reviewed repository script artifacts/scripts/pdf_to_excel_ocr.py when available.",
+    "The wrapper resolves relative delegate paths from repository/script location rather than Path.cwd().",
+    "The wrapper preserves meaningful traceability fields from the incoming request and emits a structured JSON summary."
+  ],
+  "metadata": {
+    "task_id": "AUTO-20260325-870",
+    "worker": "automation",
+    "task_type": "generate_script",
+    "expected_output_count": 1
+  }
+}

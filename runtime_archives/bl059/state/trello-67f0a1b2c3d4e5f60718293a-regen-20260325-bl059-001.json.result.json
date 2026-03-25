@@ -1,0 +1,26 @@
+{
+  "ingested_at": "2026-03-25T09:17:14.675810Z",
+  "status": "processed",
+  "decision": "preview_created_pending_approval",
+  "decision_reason": "preview_created; waiting_for_explicit_approval",
+  "origin_id": "trello:67f0a1b2c3d4e5f60718293a",
+  "payload_hash": "931335a1dfb75999963c69404134223007c3daaec885b82679b8629b78723fe7",
+  "dedupe_keys": [
+    "origin_regeneration:trello:67f0a1b2c3d4e5f60718293a:regen-20260325-bl059-001",
+    "hash:931335a1dfb75999963c69404134223007c3daaec885b82679b8629b78723fe7"
+  ],
+  "title": "Prepare PDF to Excel OCR pilot run (best-effort reviewable attempt)",
+  "labels": [
+    "best_effort",
+    "evidence_backed",
+    "ocr",
+    "pdf",
+    "pilot",
+    "readonly",
+    "reviewable",
+    "trello"
+  ],
+  "preview_id": "preview-trello-67f0a1b2c3d4e5f60718293a-931335a1dfb7",
+  "preview_file": "/Users/lingguozhong/openclaw-team/preview/preview-trello-67f0a1b2c3d4e5f60718293a-931335a1dfb7.json",
+  "regeneration_token": "regen-20260325-bl059-001"
+}

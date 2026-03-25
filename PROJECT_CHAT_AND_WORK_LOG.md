@@ -3362,3 +3362,102 @@ Verification snapshot on 2026-03-25:
   - `execution.status = rejected`
   - `execution.executed = true`
   - `execution.attempts = 2`
+
+### 67. BL-059 Activation And Preflight Governance Check
+
+User objective:
+
+- continue execution without drift
+- activate BL-059 as the immediate now-phase validation item after BL-058 merge
+- run a preflight governance sweep before entering governed runtime validation
+
+Main work areas:
+
+- confirmed BL-058 landing closure:
+  - PR `#110` merged into `main`
+  - `main` and `origin/main` aligned at commit `faf7deae8a9ba6646a40f44c8b4fb1bec5a1a10c`
+  - backlog mirror issue `#109` is closed
+- switched from `main` to branch
+  `phase9m/validate-bl059-wrapper-delegate-evidence-handoff`
+- created BL-059 mirror issue `#111`
+- activated backlog item `BL-20260325-059`:
+  - `status: planned -> active`
+  - `phase: next -> now`
+  - `issue: deferred -> https://github.com/Oscarling/openclaw-team/issues/111`
+- executed preflight governance checks before runtime work:
+  - `python3 scripts/backlog_lint.py` passed
+  - `python3 scripts/backlog_sync.py` passed
+  - `bash scripts/premerge_check.sh` intentionally reports branch guard failure when run on `main` (`Current branch is main`) while all other checks and unit suites passed
+
+Key result:
+
+- BL-059 is now formally active and mirrored (`#111`)
+- branch, backlog, and governance context are aligned for the next governed validation run
+- next step is governed runtime validation and evidence archival for BL-059
+
+### 68. Fresh Governed Validation After BL-058 Wrapper/Delegate Evidence-Handoff Hardening
+
+User objective:
+
+- continue phase-by-phase without drift
+- validate BL-058 wrapper/delegate evidence-handoff hardening on one fresh
+  same-origin governed candidate
+
+Main work areas:
+
+- activated and mirrored BL-059 to issue `#111`
+- executed governed validation pipeline with token
+  `regen-20260325-bl059-001`:
+  - sandbox Trello smoke (captured network-policy block evidence)
+  - elevated Trello smoke (live pass)
+  - generated regeneration payload and ingest once -> fresh preview
+    `preview-trello-69c24cd3c1a2359ddd7a1bf8-d91793a3e34b`
+  - explicit approval write
+  - sandbox execute (captured Docker init block evidence)
+  - elevated replay with runtime env injection reached automation and critic
+- captured and archived runtime evidence:
+  - automation task completed (`AUTO-20260325-870`)
+  - critic task completed (`CRITIC-20260325-286`)
+  - final execute remained `rejected` on critic `needs_revision`
+- detected and corrected one evidence-path drift during execution:
+  - initial ingest attempt used a stale mapped-output file unrelated to current
+    `smoke_read.mapped_preview`
+  - reran ingest/execute from the authoritative
+    `smoke_read.mapped_preview` candidate and recorded that run as BL-059 truth
+- archived runtime/state/tmp evidence under `runtime_archives/bl059/`
+- produced validation report and queued next blocker phase
+  (`BL-20260325-060`)
+
+Primary output:
+
+- [POST_WRAPPER_DELEGATE_EVIDENCE_HANDOFF_CONTRACT_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_WRAPPER_DELEGATE_EVIDENCE_HANDOFF_CONTRACT_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-059` is complete as a governed validation phase
+- critic findings moved away from BL-058 target gaps:
+  - no dry-run propagation recurrence finding
+  - no stdout-over-sidecar precedence finding
+- new dominant blocker shifted to wrapper/delegate readonly semantics and OCR
+  sufficiency contract clarity (`BL-20260325-060`)
+
+Verification snapshot on 2026-03-25:
+
+- `python3 scripts/backlog_lint.py` passed after BL-059 activation
+- `python3 scripts/backlog_sync.py` passed with BL-059 issue mirror to `#111`
+- sandbox smoke evidence captured as blocked (`ConnectionError` /
+  `NameResolutionError`)
+- elevated smoke passed with `read_count = 1`
+- `python3 skills/ingest_tasks.py --once --test-mode success` returned:
+  - `processed = 1`
+  - `duplicate_skipped = 0`
+  - `preview_created = 1`
+- elevated execute replay returned:
+  - `status = rejected`
+  - `decision_reason = critic_verdict=needs_revision`
+  - `critic_verdict = needs_revision`
+- final preview state:
+  - `approved = true`
+  - `execution.status = rejected`
+  - `execution.executed = true`
+  - `execution.attempts = 2`

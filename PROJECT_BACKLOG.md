@@ -1047,8 +1047,8 @@ Allowed enum values:
 ### BL-20260325-059
 - title: Validate BL-20260325-058 wrapper/delegate evidence handoff contract hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-058
@@ -1056,7 +1056,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-058, runs one explicit approval plus one real execute, and records whether critic findings no longer report wrapper/delegate evidence-handoff contract gaps
 - source: `WRAPPER_DELEGATE_EVIDENCE_HANDOFF_CONTRACT_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation under real execute conditions
 - link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_DELEGATE_EVIDENCE_HANDOFF_CONTRACT_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-058 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/111
+- evidence: `POST_WRAPPER_DELEGATE_EVIDENCE_HANDOFF_CONTRACT_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl059-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-d91793a3e34b`; runtime reached automation (`AUTO-20260325-870`) and critic (`CRITIC-20260325-286`) with final verdict `needs_revision`, while critic focus moved away from BL-058 target gaps (dry-run recurrence and sidecar precedence) toward readonly-semantics/OCR-sufficiency contract concerns
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-060
+- title: Harden wrapper/delegate readonly semantics and OCR sufficiency contract after BL-20260325-059 critic findings
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-059
+- start_when: `BL-20260325-059` confirms prior evidence-handoff blocker gaps no longer dominate and critic `needs_revision` has shifted to readonly-contract semantics ambiguity plus OCR sufficiency evidence strictness concerns
+- done_when: Source-side contract hardening aligns wrapper/delegate readonly semantics and runtime-summary wording with actual behavior, strengthens OCR sufficiency disclosure/gating expectations for best-effort readonly flows, and one blocker report records mitigation with focused tests
+- source: `POST_WRAPPER_DELEGATE_EVIDENCE_HANDOFF_CONTRACT_VALIDATION_REPORT.md` on 2026-03-25 records critic focus moved from dry-run/sidecar gaps to readonly/OCR-sufficiency contract concerns
+- link: /Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_READONLY_OCR_SUFFICIENCY_CONTRACT_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-060 activation
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

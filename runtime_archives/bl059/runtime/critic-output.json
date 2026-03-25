@@ -1,0 +1,24 @@
+{
+  "task_id": "CRITIC-20260325-286",
+  "worker": "critic",
+  "status": "success",
+  "summary": "Reviewed the inbox runner and paired delegate together as an end-to-end readonly smoke path. Verdict: needs_revision. The wrapper is well-aligned with the evidence-backed/read-only contract and applies conservative success gating, but the pair has a material contract mismatch: the runner documents and reports readonly behavior, yet the delegate performs local Excel writing in non-dry-run mode. Additionally, the delegate can report aggregate success even when OCR dependencies are unavailable and OCR fallback may have been needed for image-only PDFs, so end-to-end evidence remains conditional rather than fully robust.",
+  "artifacts": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "timestamp": "2026-03-25T09:26:11.450574Z",
+  "duration_ms": 51745,
+  "metadata": {
+    "task_id": "CRITIC-20260325-286",
+    "worker": "critic",
+    "verdict": "needs_revision",
+    "reviewed_artifacts": [
+      "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "artifacts/scripts/pdf_to_excel_ocr.py"
+    ],
+    "review_scope": "end-to-end readonly pair"
+  }
+}
