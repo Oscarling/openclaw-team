@@ -344,6 +344,17 @@ def normalize_local_inbox_payload(
                         "report timeout as an honest failed/partial outcome instead of "
                         "allowing smoke automation to hang indefinitely."
                     ),
+                    "readonly_semantics": (
+                        "Readonly semantics must be explicit: no external/Trello writeback "
+                        "is required, but local filesystem output writes may still occur when "
+                        "dry_run=false. Runtime summary fields must not overstate readonly "
+                        "scope."
+                    ),
+                    "ocr_sufficiency": (
+                        "When OCR mode is auto/on and delegate reports ocr_runtime_status "
+                        "as blocked/partial, do not claim wrapper success even if an output "
+                        "file exists; keep partial status with explicit OCR sufficiency notes."
+                    ),
                     "runtime_summary": (
                         "The generated script should emit a structured summary of what it "
                         "produced so later review can inspect behavior without guessing."
@@ -401,6 +412,8 @@ def normalize_local_inbox_payload(
             "When wrapper passes a sidecar report path to the reviewed delegate, use --report-json exactly unless the reviewed delegate explicitly supports another alias.",
             "For readonly governed flows, do not short-circuit dry-run before delegate execution; pass --dry-run through delegate and preserve partial status honestly.",
             "Keep wrapper PDF discovery semantics aligned with reviewed delegate discovery semantics to avoid preflight/execution evidence drift.",
+            "Readonly semantics must be explicit as no external writeback; avoid claiming strict filesystem readonly when dry_run=false can write local outputs.",
+            "When OCR mode is auto/on and delegate reports ocr_runtime_status as blocked/partial, keep wrapper status partial and surface OCR sufficiency limitations.",
             "Use an explicit timeout on delegate subprocess execution so the smoke wrapper cannot hang indefinitely.",
         ],
         "priority": priority,
@@ -420,6 +433,8 @@ def normalize_local_inbox_payload(
             "Wrapper/delegate sidecar report handoff remains CLI-compatible by using --report-json (or another explicitly supported delegate alias).",
             "Dry-run semantics remain explicit and delegated for readonly governed flows: pass --dry-run through delegate and preserve partial outcome honestly.",
             "Wrapper preflight PDF discovery semantics remain aligned with delegate discovery semantics to keep evidence counts consistent.",
+            "Readonly semantics are explicit as no external writeback, and runtime summary wording does not overclaim strict filesystem readonly when dry_run=false.",
+            "Wrapper success is conservative when OCR mode is auto/on and delegate reports ocr_runtime_status as blocked/partial.",
             "Delegate execution is bounded by an explicit timeout and reports timeout honestly.",
         ],
         "metadata": {

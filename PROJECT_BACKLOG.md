@@ -1064,8 +1064,8 @@ Allowed enum values:
 ### BL-20260325-060
 - title: Harden wrapper/delegate readonly semantics and OCR sufficiency contract after BL-20260325-059 critic findings
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-059
@@ -1073,7 +1073,24 @@ Allowed enum values:
 - done_when: Source-side contract hardening aligns wrapper/delegate readonly semantics and runtime-summary wording with actual behavior, strengthens OCR sufficiency disclosure/gating expectations for best-effort readonly flows, and one blocker report records mitigation with focused tests
 - source: `POST_WRAPPER_DELEGATE_EVIDENCE_HANDOFF_CONTRACT_VALIDATION_REPORT.md` on 2026-03-25 records critic focus moved from dry-run/sidecar gaps to readonly/OCR-sufficiency contract concerns
 - link: /Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_READONLY_OCR_SUFFICIENCY_CONTRACT_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260325-060 activation
+- issue: https://github.com/Oscarling/openclaw-team/issues/113
+- evidence: `WRAPPER_DELEGATE_READONLY_OCR_SUFFICIENCY_CONTRACT_HARDENING_REPORT.md` records source-side hardening in `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py` and `adapters/local_inbox_adapter.py` that clarifies readonly semantics as no-external-writeback scope and enforces conservative partial handling when delegate reports `ocr_runtime_status=blocked|partial` under `ocr=auto|on`, with focused regressions in `tests/test_pdf_to_excel_ocr_inbox_runner.py` and `tests/test_local_inbox_adapter.py`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-061
+- title: Validate BL-20260325-060 readonly/OCR sufficiency contract hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-060
+- start_when: `BL-20260325-060` is merged so a fresh same-origin governed run can verify whether critic findings move away from readonly-semantics and OCR-sufficiency contract concerns
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-060, runs one explicit approval plus one real execute, and records whether critic findings no longer cite readonly/OCR sufficiency contract gaps
+- source: `WRAPPER_DELEGATE_READONLY_OCR_SUFFICIENCY_CONTRACT_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation under real execute conditions
+- link: /Users/lingguozhong/openclaw-team/POST_WRAPPER_DELEGATE_READONLY_OCR_SUFFICIENCY_CONTRACT_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-061 activation
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

@@ -3461,3 +3461,52 @@ Verification snapshot on 2026-03-25:
   - `execution.status = rejected`
   - `execution.executed = true`
   - `execution.attempts = 2`
+
+### 69. Wrapper/Delegate Readonly + OCR Sufficiency Contract Hardening After BL-059 Findings
+
+User objective:
+
+- continue next blocker phase without drift
+- harden wrapper/delegate contract after BL-059 critic findings shifted to
+  readonly semantics ambiguity and OCR sufficiency concerns
+
+Main work areas:
+
+- activated `BL-20260325-060` and mirrored it to issue `#113`
+- updated `artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py`:
+  - made readonly scope explicit as `no_external_writeback`
+  - added `local_filesystem_writes_allowed` to avoid overstating strict
+    filesystem readonly semantics
+  - added explicit readonly semantics note in runtime summary
+  - hardened success gates so when `ocr=auto|on` and delegate reports
+    `ocr_runtime_status=blocked|partial`, wrapper keeps `partial`
+- updated `adapters/local_inbox_adapter.py` contract text:
+  - added `readonly_semantics` hint
+  - added `ocr_sufficiency` hint
+  - extended constraints/acceptance criteria for readonly wording and OCR
+    sufficiency partial behavior
+- expanded focused regressions:
+  - new runner test
+    `test_ocr_runtime_blocked_keeps_wrapper_partial_even_with_success_attestation`
+  - updated runner readonly attestation assertions
+  - updated adapter contract assertions for new hints/constraints/acceptance
+    criteria
+- produced blocker hardening report and prepared next governed validation item
+  (`BL-20260325-061`)
+
+Primary output:
+
+- [WRAPPER_DELEGATE_READONLY_OCR_SUFFICIENCY_CONTRACT_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_READONLY_OCR_SUFFICIENCY_CONTRACT_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-060` is complete as a source-side blocker-hardening phase
+- readonly semantics are now explicit and bounded as no-external-writeback
+- wrapper success policy now avoids OCR completeness overclaim under blocked/
+  partial OCR runtime in OCR-relevant modes
+- next phase `BL-20260325-061` is defined as fresh governed validation
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_pdf_to_excel_ocr_inbox_runner.py tests/test_local_inbox_adapter.py`
+  passed `16/16`
