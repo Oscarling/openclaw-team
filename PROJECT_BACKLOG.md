@@ -639,8 +639,8 @@ Allowed enum values:
 ### BL-20260325-035
 - title: Validate BL-20260325-034 critic snapshot completeness hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-034
@@ -648,7 +648,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-034, runs one explicit approval plus one real execute, and records whether critic can now complete full wrapper/delegate review without truncation-driven rejection
 - source: `CRITIC_SNAPSHOT_COMPLETENESS_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation rather than assuming snapshot hardening success without live evidence
 - link: /Users/lingguozhong/openclaw-team/POST_CRITIC_SNAPSHOT_HARDENING_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-034 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/63
+- evidence: `POST_CRITIC_SNAPSHOT_HARDENING_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl035-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-103723900dc8` with explicit approval and one elevated real execute replay; automation (`AUTO-20260325-858`) and critic (`CRITIC-20260325-279`) both completed, critic still returned `needs_revision`, and the dominant blocker shifted from snapshot truncation to wrapper/delegate semantic alignment issues (zero-input status semantics, aggregate partial accounting, and explicit output-write attestation)
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-036
+- title: Harden wrapper/delegate semantic contract alignment after BL-20260325-035 runtime findings
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-035
+- start_when: `BL-20260325-035` has completed and confirmed truncation is no longer the dominant blocker but runtime review still fails on wrapper/delegate semantic contract mismatches
+- done_when: Delegate/wrapper contract is aligned on zero-input semantics and aggregate status truthfulness, delegate report includes explicit output-write evidence fields required for reviewability, focused tests cover the new semantics, and one hardening report records the outcome
+- source: `POST_CRITIC_SNAPSHOT_HARDENING_VALIDATION_REPORT.md` on 2026-03-25 records `needs_revision` due semantic contract drift instead of snapshot truncation
+- link: /Users/lingguozhong/openclaw-team/SEMANTIC_CONTRACT_ALIGNMENT_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-035 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

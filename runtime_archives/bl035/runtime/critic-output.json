@@ -1,0 +1,27 @@
+{
+  "task_id": "CRITIC-20260325-279",
+  "worker": "critic",
+  "status": "success",
+  "summary": "Reviewed the inbox runner and paired delegate together as an end-to-end readonly smoke path. The wrapper is well aligned to the evidence-backed contract: it resolves paths portably, performs honest preflight handling, avoids success claims based only on exit code, requires canonical delegate JSON evidence, supports sidecar reporting, and preserves partial outcomes for dry-run and zero-input cases. The delegate provides batch isolation, OCR fallback options, sidecar/stdout reporting, and per-file result modeling. However, the pair has material contract mismatches that prevent a full pass: the delegate reports zero discovered PDFs as status=failed while the wrapper expects zero-input as an honest partial scenario; the delegate marks overall status=success whenever there are no failed files, even if some files are partial; and the wrapper’s canonical success check depends on an output XLSX existing but the delegate report itself does not attest to successful Excel write beyond status, making the success evidence slightly asymmetric. Verdict: needs_revision.",
+  "artifacts": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "timestamp": "2026-03-25T04:23:05.855830Z",
+  "duration_ms": 30476,
+  "notes": [
+    "Used supplied artifact snapshots as review evidence.",
+    "Reviewed wrapper and delegate together rather than narrowing to a single file."
+  ],
+  "metadata": {
+    "task_id": "CRITIC-20260325-279",
+    "worker": "critic",
+    "verdict": "needs_revision",
+    "reviewed_artifacts": [
+      "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "artifacts/scripts/pdf_to_excel_ocr.py"
+    ]
+  }
+}
