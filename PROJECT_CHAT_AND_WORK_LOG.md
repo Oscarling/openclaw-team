@@ -1913,6 +1913,74 @@ Verification snapshot on 2026-03-25:
   mirroring required
 - `bash scripts/premerge_check.sh` passed with `Warnings: 0` and `Failures: 0`
 
+### 53. Fresh Governed Validation After BL-044 Multi-Endpoint Policy Hardening
+
+User objective:
+
+- continue from `BL-20260325-044` with one fresh same-origin governed runtime
+  validation
+- verify whether endpoint-quarantine hardening now prevents pre-critic early
+  termination and restores full automation+critic progression under real execute
+- preserve runtime evidence and keep workflow-gated delivery
+
+Main work areas:
+
+- activated `BL-20260325-045` and mirrored it to GitHub issue `#82`
+- ran live Trello read-only smoke for origin
+  `trello:69c24cd3c1a2359ddd7a1bf8`
+  - first sandboxed call blocked by DNS policy
+  - elevated rerun passed with `read_count=1`
+- generated one regeneration token:
+  - `regen-20260325-bl045-001`
+- created inbox payload from `smoke_read.mapped_preview`, ingested once, and
+  created fresh preview:
+  - `preview-trello-69c24cd3c1a2359ddd7a1bf8-ba935bd928da`
+- wrote explicit approval and ran real execute in `test_mode=off`
+  - first sandboxed execute blocked before dispatch due Docker client access
+  - elevated replay (`--allow-replay`) ran with explicit fallback endpoint env
+    `ARGUS_LLM_FALLBACK_CHAT_URLS=https://api.openai.com/v1/chat/completions`
+- runtime log confirms BL-044 behavior executed in-call:
+  - attempt 2 failed on fallback endpoint with `http_401`
+  - auth-fallback path quarantined the failing endpoint for the current call
+  - attempt 3 retried on the alternate endpoint and completed successfully
+- archived runtime outputs under `runtime_archives/bl045/`
+- recorded next blocker phase as `BL-20260325-046`
+
+Primary output:
+
+- [POST_MULTI_ENDPOINT_POLICY_HARDENING_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_MULTI_ENDPOINT_POLICY_HARDENING_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-045` completed as a governed validation phase
+- BL-044 source-side hardening was validated in live runtime (auth-failure
+  endpoint quarantine activated and call progressed)
+- end-to-end runtime progressed through both workers:
+  - automation task `AUTO-20260325-863`: `success`
+  - critic task `CRITIC-20260325-281`: `success`
+  - final decision: `critic_verdict=needs_revision`
+- dominant blocker shifted away from pre-critic endpoint-policy failures to
+  critic-identified wrapper/delegate evidence semantics, tracked as
+  `BL-20260325-046`
+
+Verification snapshot on 2026-03-25:
+
+- smoke (elevated) returned `status=pass` with `read_count=1`
+- `python3 skills/ingest_tasks.py --once` returned:
+  - `processed = 1`
+  - `preview_created = 1`
+- sandboxed execute returned Docker-client initialization rejection
+- elevated replay execute returned:
+  - `status = rejected`
+  - `decision_reason = critic_verdict=needs_revision`
+  - automation `AUTO-20260325-863`: `status=success`
+  - critic `CRITIC-20260325-281`: `status=success`
+- runtime archive preserved under:
+  - `runtime_archives/bl045/artifacts/`
+  - `runtime_archives/bl045/runtime/`
+  - `runtime_archives/bl045/state/`
+  - `runtime_archives/bl045/tmp/`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:

@@ -1,0 +1,17 @@
+{
+  "task_id": "CRITIC-20260325-281",
+  "worker": "critic",
+  "status": "success",
+  "summary": "Reviewed the inbox runner and paired delegate together as an end-to-end readonly smoke pair. Verdict: needs_revision. The wrapper is read-only and delegates locally as required, but it overstates success by requiring a fully successful delegate outcome with nonzero Excel output, and it can report failure even when the underlying best-effort evidence-backed contract is satisfied via partial/intermediate results. The delegate is generally aligned with batch/best-effort processing and emits evidence-backed reports, but the pair does not fully honor the stated contract to preserve reviewable intermediate outcomes without over-claiming or over-failing.",
+  "artifacts": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "timestamp": "2026-03-25T06:50:16.954561Z",
+  "duration_ms": 35188,
+  "metadata": {
+    "verdict": "needs_revision"
+  }
+}

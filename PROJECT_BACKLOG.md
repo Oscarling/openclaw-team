@@ -809,8 +809,8 @@ Allowed enum values:
 ### BL-20260325-045
 - title: Validate BL-20260325-044 multi-endpoint runtime policy hardening on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-044
@@ -818,7 +818,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-044, runs one explicit approval plus one real execute, and records whether runtime now avoids same-call primary-endpoint `http_403` re-entry after auth-fallback activation
 - source: `AUTOMATION_MULTI_ENDPOINT_POLICY_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation under real execute conditions
 - link: /Users/lingguozhong/openclaw-team/POST_MULTI_ENDPOINT_POLICY_HARDENING_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-044 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/82
+- evidence: `POST_MULTI_ENDPOINT_POLICY_HARDENING_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl045-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-ba935bd928da` with explicit approval and one elevated real execute replay; runtime confirmed BL-20260325-044 endpoint-quarantine behavior activation during auth-failure retry flow and progressed to both automation artifact generation and critic dispatch (`AUTO-20260325-863` and `CRITIC-20260325-281`), with final decision `critic_verdict=needs_revision`
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-046
+- title: Harden wrapper success/partial evidence semantics after BL-20260325-045 critic findings
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-045
+- start_when: `BL-20260325-045` has completed and runtime has progressed to critic review with `needs_revision` findings focused on wrapper/delegate success-vs-partial evidence semantics rather than endpoint-policy pre-critic failures
+- done_when: Source-side contract hardening aligns wrapper verdict behavior with best-effort evidence-backed partial semantics (without over-claiming success or over-failing reviewable partial outcomes), focused tests cover the targeted semantics, and one blocker report records the mitigation
+- source: `POST_MULTI_ENDPOINT_POLICY_HARDENING_VALIDATION_REPORT.md` on 2026-03-25 records that multi-endpoint policy blocker is no longer dominant in the governed run and the next blocker is critic-identified wrapper/delegate evidence semantics
+- link: /Users/lingguozhong/openclaw-team/WRAPPER_PARTIAL_EVIDENCE_SEMANTICS_HARDENING_REPORT.md
+- issue: deferred:phase=next until BL-20260325-045 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
