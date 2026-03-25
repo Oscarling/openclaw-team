@@ -3618,3 +3618,63 @@ Verification snapshot on 2026-03-25:
 - `python3 scripts/backlog_lint.py` passed
 - `python3 scripts/backlog_sync.py` passed
 - `bash scripts/premerge_check.sh` passed (`Warnings: 0`, `Failures: 0`)
+
+### 72. Fresh Governed Validation After BL-062 Report-Schema Diagnostic Hardening
+
+User objective:
+
+- continue strict backlog mainline without drift
+- validate BL-062 hardening on one fresh same-origin governed candidate
+
+Main work areas:
+
+- activated `BL-20260325-063` and mirrored it to issue `#119`
+- executed governed validation pipeline with token
+  `regen-20260325-bl063-001`:
+  - sandbox Trello smoke (captured network-policy block evidence)
+  - elevated Trello smoke (live pass + mapped preview)
+  - generated regeneration payload and ingest once -> fresh preview
+    `preview-trello-69c24cd3c1a2359ddd7a1bf8-6b1d3f094609`
+  - explicit approval write
+  - sandbox execute (captured Docker init block evidence)
+  - elevated replay with runtime env injection reached automation and critic
+- captured and archived runtime evidence:
+  - automation task completed (`AUTO-20260325-872`)
+  - critic task completed (`CRITIC-20260325-288`)
+  - final execute remained `rejected` on critic `needs_revision`
+- produced validation report and queued next blocker phase
+  (`BL-20260325-064`)
+
+Primary output:
+
+- [POST_WRAPPER_DELEGATE_REPORT_SCHEMA_DIAGNOSTIC_ROBUSTNESS_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_WRAPPER_DELEGATE_REPORT_SCHEMA_DIAGNOSTIC_ROBUSTNESS_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-063` is complete as a governed validation phase
+- critic findings moved away from BL-062 target concerns:
+  - sparse report-schema consistency gaps no longer dominant
+  - delegate-error surfacing gaps no longer dominant
+- new blocker focus shifted to wrapper output-boundary policy and aggregate
+  outcome-contract clarity (`BL-20260325-064`)
+
+Verification snapshot on 2026-03-25:
+
+- `python3 scripts/backlog_lint.py` passed after BL-063 activation
+- `python3 scripts/backlog_sync.py` passed with BL-063 issue mirror to `#119`
+- sandbox smoke evidence captured as blocked (`ConnectionError` /
+  `NameResolutionError`)
+- elevated smoke passed with `read_count = 1`
+- `python3 skills/ingest_tasks.py --once --test-mode success` returned:
+  - `processed = 1`
+  - `duplicate_skipped = 0`
+  - `preview_created = 1`
+- elevated execute replay returned:
+  - `status = rejected`
+  - `decision_reason = critic_verdict=needs_revision`
+  - `critic_verdict = needs_revision`
+- final preview state:
+  - `approved = true`
+  - `execution.status = rejected`
+  - `execution.executed = true`
+  - `execution.attempts = 3`

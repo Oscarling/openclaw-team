@@ -1,0 +1,25 @@
+{
+  "task_id": "AUTO-20260325-872",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated exactly one runnable wrapper script artifact that reuses the reviewed pdf_to_excel_ocr.py delegate, prefers sidecar JSON evidence via --report-json, preserves parameter-driven input/output behavior, enforces conservative success gates, keeps dry-run/zero-PDF/OCR-blocked outcomes reviewable as partial, and bounds delegate execution with an explicit timeout.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-25T10:07:24.051613Z",
+  "duration_ms": 79131,
+  "notes": [
+    "Only the expected script artifact was produced.",
+    "The script is deterministic and repository-relative for delegate resolution, avoiding Path.cwd()-dependent behavior.",
+    "The wrapper is designed to be parameter-driven and to preserve meaningful traceability from the request description.",
+    "Readonly semantics are explicit as no external/Trello writeback; local filesystem writes may still occur when dry_run=false."
+  ],
+  "metadata": {
+    "task_id": "AUTO-20260325-872",
+    "worker": "automation",
+    "created_artifact_count": 1
+  }
+}
