@@ -1106,6 +1106,72 @@ Verification snapshot on 2026-03-25:
 - `python3 -m unittest -v tests/test_pdf_to_excel_ocr_delegate.py` passed
 - `python3 -m unittest -v tests/test_pdf_to_excel_ocr_inbox_runner.py` passed
 
+### 39. Post-BL-030 Governed Runtime Validation On Fresh Same-Origin Candidate
+
+User objective:
+
+- continue immediately after `BL-20260325-030`
+- run one fresh same-origin governed validation to verify whether delegate-side
+  CLI alignment clears the report-handoff blocker end-to-end
+- preserve runtime evidence and avoid losing generated artifacts during cleanup
+
+Main work areas:
+
+- activated `BL-20260325-031` and mirrored it to GitHub issue `#55`
+- ran live Trello read-only smoke for origin
+  `trello:69c24cd3c1a2359ddd7a1bf8`
+  - first sandboxed read was blocked by DNS/sandbox networking
+  - elevated rerun passed with `read_count=1`
+- generated one governed regeneration token:
+  - `regen-20260325-bl031-001`
+- created inbox payload from live `mapped_preview` and ingested once
+- created fresh preview candidate:
+  - `preview-trello-69c24cd3c1a2359ddd7a1bf8-6c674f5014a3`
+- wrote one explicit approval file and ran one real execute in `test_mode=off`
+- archived runtime outputs under `runtime_archives/bl031/` before restoring
+  tracked `artifacts/` baselines
+- wrote validation report and promoted follow-up blocker as
+  `BL-20260325-032`
+
+Primary output:
+
+- [POST_CLI_ALIGNMENT_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/POST_CLI_ALIGNMENT_VALIDATION_REPORT.md)
+
+Key result:
+
+- `BL-20260325-031` completed as a governed validation phase
+- final execute outcome remained:
+  - `critic_verdict = needs_revision`
+- critic isolated a new concrete wrapper/delegate integration drift:
+  - generated wrapper invoked delegate with `--report-file`
+  - reviewed delegate contract expects `--report-json`
+- additional review concern:
+  - wrapper preflight PDF discovery and delegate recursive discovery were not
+    aligned
+- backlog update from this phase:
+  - `BL-20260325-031` marked done with evidence
+  - new blocker `BL-20260325-032` added as next source-side hardening phase
+
+Verification snapshot on 2026-03-25:
+
+- ingest output:
+  - `processed = 1`
+  - `preview_created = 1`
+  - preview id:
+    `preview-trello-69c24cd3c1a2359ddd7a1bf8-6c674f5014a3`
+- execute sidecar:
+  - `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-6c674f5014a3.result.json`
+  - `status = rejected`
+  - `decision_reason = critic_verdict=needs_revision`
+- worker outcomes:
+  - automation `AUTO-20260325-856`: `success`
+  - critic `CRITIC-20260325-277`: `partial` with verdict `needs_revision`
+- runtime archive preserved under:
+  - `runtime_archives/bl031/artifacts/`
+  - `runtime_archives/bl031/runtime/`
+  - `runtime_archives/bl031/state/`
+  - `runtime_archives/bl031/tmp/`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:

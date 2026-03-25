@@ -571,8 +571,8 @@ Allowed enum values:
 ### BL-20260325-031
 - title: Validate BL-20260325-030 CLI alignment on a fresh same-origin governed candidate
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-030
@@ -580,7 +580,24 @@ Allowed enum values:
 - done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-030, runs one explicit approval plus one real execute, and records whether automation/critic outcome now clears the `--report-json` compatibility blocker isolated in BL-20260325-029
 - source: `RUNNER_DELEGATE_CLI_ALIGNMENT_FIX_REPORT.md` on 2026-03-25 concludes the next required step is governed runtime validation rather than assuming source-side fix success without live evidence
 - link: /Users/lingguozhong/openclaw-team/POST_CLI_ALIGNMENT_VALIDATION_REPORT.md
-- issue: deferred:phase=next until BL-20260325-030 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/55
+- evidence: `POST_CLI_ALIGNMENT_VALIDATION_REPORT.md` records one fresh same-origin governed run (`regen-20260325-bl031-001`) to preview `preview-trello-69c24cd3c1a2359ddd7a1bf8-6c674f5014a3` with explicit approval and one real execute; automation (`AUTO-20260325-856`) completed, critic (`CRITIC-20260325-277`) returned `needs_revision`, and runtime review isolated a new wrapper/delegate sidecar-flag mismatch (`--report-file` vs delegate `--report-json`) plus discovery-consistency concerns
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-032
+- title: Re-align generated wrapper report-handoff flag and discovery contract after BL-20260325-031
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-031
+- start_when: `BL-20260325-031` has completed and confirmed the end-to-end path still fails review because generated wrapper invocation drifted to `--report-file` while the reviewed delegate contract is `--report-json`
+- done_when: Source-side/runtime contract hardening prevents wrapper-side report-flag drift against reviewed delegate CLI, wrapper/delegate PDF discovery semantics are aligned or explicitly justified in contract/tests, and one phase report records the implementation outcome with focused regressions
+- source: `POST_CLI_ALIGNMENT_VALIDATION_REPORT.md` on 2026-03-25 confirms the fresh governed validation after BL-20260325-030 still yields `needs_revision` due wrapper-side report-handoff drift and discovery inconsistency
+- link: /Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_REPORT_FLAG_REALIGNMENT_REPORT.md
+- issue: deferred:phase=next until BL-20260325-031 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25
