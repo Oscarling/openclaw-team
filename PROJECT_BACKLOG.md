@@ -928,8 +928,8 @@ Allowed enum values:
 ### BL-20260325-052
 - title: Harden automation endpoint/auth runtime resilience after BL-20260325-051 pre-critic blocker
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-051
@@ -937,7 +937,24 @@ Allowed enum values:
 - done_when: Source-side automation runtime hardening improves endpoint/auth handling so one governed execute can reliably progress beyond automation dispatch under the active environment profile, and one blocker report records mitigation with focused tests
 - source: `POST_WRAPPER_PROVENANCE_PATH_TRACEABILITY_VALIDATION_REPORT.md` on 2026-03-25 records that BL-050 validation remained inconclusive due pre-critic automation endpoint/auth runtime failures
 - link: /Users/lingguozhong/openclaw-team/AUTOMATION_ENDPOINT_AUTH_RUNTIME_RESILIENCE_HARDENING_REPORT.md
-- issue: deferred:phase=next until BL-20260325-051 lands on main
+- issue: https://github.com/Oscarling/openclaw-team/issues/96
+- evidence: `AUTOMATION_ENDPOINT_AUTH_RUNTIME_RESILIENCE_HARDENING_REPORT.md` records source-side hardening in `dispatcher/worker_runtime.py` that classifies upstream `http_520-524` as retryable transient failures and preserves auth-fallback quarantine flow, with focused regressions in `tests/test_argus_hardening.py` covering `http_520 -> http_401 -> recovery` behavior
+- last_reviewed_at: 2026-03-25
+- opened_at: 2026-03-25
+
+### BL-20260325-053
+- title: Validate BL-20260325-052 automation endpoint/auth runtime resilience hardening on a fresh same-origin governed candidate
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-052
+- start_when: `BL-20260325-052` is merged so a fresh same-origin governed run can verify whether automation now progresses beyond pre-critic endpoint/auth blockers under real execute
+- done_when: One governed validation creates a fresh same-origin preview candidate after BL-20260325-052, runs one explicit approval plus one real execute, and records whether runtime reaches critic dispatch more reliably
+- source: `AUTOMATION_ENDPOINT_AUTH_RUNTIME_RESILIENCE_HARDENING_REPORT.md` on 2026-03-25 concludes the next required step is fresh governed runtime validation under real execute conditions
+- link: /Users/lingguozhong/openclaw-team/POST_AUTOMATION_ENDPOINT_AUTH_RUNTIME_RESILIENCE_VALIDATION_REPORT.md
+- issue: deferred:phase=next until BL-20260325-052 lands on main
 - evidence: -
 - last_reviewed_at: 2026-03-25
 - opened_at: 2026-03-25

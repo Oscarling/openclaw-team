@@ -3010,3 +3010,42 @@ Verification snapshot on 2026-03-25:
   - `execution.status = rejected`
   - `execution.executed = true`
   - `execution.attempts = 3`
+
+### 60. Automation Endpoint/Auth Runtime Resilience Hardening After BL-051 Blocker
+
+User objective:
+
+- continue next blocker phase without drift
+- harden automation endpoint/auth runtime handling after BL-051 pre-critic
+  failures (`http_520` / `http_401`)
+
+Main work areas:
+
+- activated `BL-20260325-052` and mirrored it to issue `#96`
+- updated `dispatcher/worker_runtime.py` to widen transient retry classification:
+  - added `RETRYABLE_HTTP_STATUS_CODES`
+  - expanded retryable HTTP set to include upstream/proxy transient
+    `520/521/522/523/524`
+- preserved existing auth-fallback quarantine mechanism and validated mixed-path
+  recovery behavior under the new classification
+- expanded focused regressions in `tests/test_argus_hardening.py`:
+  - `test_classify_llm_call_error_marks_http_520_as_retryable`
+  - `test_call_llm_retries_http_520_then_recovers_after_fallback_http_401`
+- produced blocker hardening report and prepared next governed validation item
+
+Primary output:
+
+- [AUTOMATION_ENDPOINT_AUTH_RUNTIME_RESILIENCE_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/AUTOMATION_ENDPOINT_AUTH_RUNTIME_RESILIENCE_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-052` is complete as a source-side blocker-hardening phase
+- automation runtime no longer treats `http_520` as immediate terminal failure;
+  it now retries and can flow into fallback/quarantine recovery path
+- next phase `BL-20260325-053` is defined as fresh governed validation
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_argus_hardening.py` passed `13/13`
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with BL-052 issue mirror to `#96`

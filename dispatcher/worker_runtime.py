@@ -85,6 +85,22 @@ DEFAULT_LLM_MAX_RETRIES = 3
 MAX_ARTIFACT_SIZE = 2 * 1024 * 1024  # 2MB
 NO_PROXY_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 HTTP_USER_AGENT = "Mozilla/5.0"
+RETRYABLE_HTTP_STATUS_CODES = {
+    408,
+    409,
+    425,
+    429,
+    500,
+    502,
+    503,
+    504,
+    # Common upstream/proxy transient errors (for example Cloudflare-class gateways).
+    520,
+    521,
+    522,
+    523,
+    524,
+}
 ALLOWED_STATUSES = {"success", "failed", "partial"}
 ARTIFACT_TYPE_BY_PREFIX = {
     "artifacts/architecture/": "architecture",
@@ -370,8 +386,7 @@ def classify_llm_call_error(error):
     if "remote end closed connection" in lowered:
         return "remote_closed", True
     if status_code is not None:
-        retryable_codes = {408, 409, 425, 429, 500, 502, 503, 504}
-        return f"http_{status_code}", status_code in retryable_codes
+        return f"http_{status_code}", status_code in RETRYABLE_HTTP_STATUS_CODES
     if isinstance(error, TimeoutError):
         return "timeout", True
     return "unknown", True

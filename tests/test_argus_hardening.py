@@ -710,6 +710,78 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertEqual([timeout for _url, timeout in calls], [120, 120, 120])
         self.assertEqual(json.loads(content)["status"], "success")
 
+    def test_call_llm_retries_http_520_then_recovers_after_fallback_http_401(self) -> None:
+        calls: list[tuple[str, int]] = []
+        primary_attempts = {"count": 0}
+
+        class FakeResponse:
+            def __enter__(self) -> "FakeResponse":
+                return self
+
+            def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+                return False
+
+            def read(self) -> bytes:
+                payload = {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps({"status": "success", "summary": "ok"})
+                            }
+                        }
+                    ]
+                }
+                return json.dumps(payload).encode("utf-8")
+
+        class MixedFailureOpener:
+            def open(self, req: Any, timeout: int | None = None) -> FakeResponse:
+                calls.append((req.full_url, timeout or 0))
+                if "primary.invalid" in req.full_url:
+                    primary_attempts["count"] += 1
+                    if primary_attempts["count"] == 1:
+                        raise urllib.error.HTTPError(req.full_url, 520, "Web Server Returned an Unknown Error", None, None)
+                    return FakeResponse()
+                raise urllib.error.HTTPError(req.full_url, 401, "Unauthorized", None, None)
+
+        with mock.patch.object(worker_runtime, "NO_PROXY_OPENER", MixedFailureOpener()):
+            with mock.patch.object(worker_runtime.time, "sleep", return_value=None):
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "ARGUS_LLM_MAX_RETRIES": "3",
+                        "ARGUS_LLM_FALLBACK_CHAT_URLS": "https://fallback.invalid/v1/chat/completions",
+                    },
+                    clear=False,
+                ):
+                    content = worker_runtime.call_llm(
+                        "system",
+                        "user",
+                        "automation",
+                        {
+                            "api_key": "key",
+                            "api_base": "https://primary.invalid/v1",
+                            "chat_url": "https://primary.invalid/v1/chat/completions",
+                            "model_name": "demo-model",
+                        },
+                    )
+
+        self.assertEqual(
+            [url for url, _timeout in calls],
+            [
+                "https://primary.invalid/v1/chat/completions",
+                "https://fallback.invalid/v1/chat/completions",
+                "https://primary.invalid/v1/chat/completions",
+            ],
+        )
+        self.assertEqual([timeout for _url, timeout in calls], [120, 120, 120])
+        self.assertEqual(json.loads(content)["status"], "success")
+
+    def test_classify_llm_call_error_marks_http_520_as_retryable(self) -> None:
+        err = urllib.error.HTTPError("https://primary.invalid/v1/chat/completions", 520, "Unknown Error", None, None)
+        error_class, retryable = worker_runtime.classify_llm_call_error(err)
+        self.assertEqual(error_class, "http_520")
+        self.assertTrue(retryable)
+
     def test_call_llm_raises_classified_tls_error_after_exhaustion(self) -> None:
         class AlwaysFailOpener:
             def open(self, req: Any, timeout: int | None = None) -> Any:  # noqa: ARG002
