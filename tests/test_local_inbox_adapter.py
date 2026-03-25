@@ -111,8 +111,20 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
             contract_hints["delegate_report_handoff"],
         )
         self.assertIn(
+            "--report-json",
+            contract_hints["delegate_report_flag_contract"],
+        )
+        self.assertIn(
+            "--report-file",
+            contract_hints["delegate_report_flag_contract"],
+        )
+        self.assertIn(
             "execution.delegated=false",
             contract_hints["dry_run_semantics"],
+        )
+        self.assertIn(
+            "recursive vs non-recursive",
+            contract_hints["pdf_discovery_consistency"],
         )
         self.assertTrue(
             any(
@@ -146,7 +158,19 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         )
         self.assertTrue(
             any(
+                "--report-json exactly" in item
+                for item in auto_task["constraints"]
+            )
+        )
+        self.assertTrue(
+            any(
                 "execution.delegated=false" in item
+                for item in auto_task["constraints"]
+            )
+        )
+        self.assertTrue(
+            any(
+                "PDF discovery semantics aligned" in item
                 for item in auto_task["constraints"]
             )
         )
@@ -171,7 +195,15 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
             auto_task["acceptance_criteria"],
         )
         self.assertIn(
+            "Wrapper/delegate sidecar report handoff remains CLI-compatible by using --report-json (or another explicitly supported delegate alias).",
+            auto_task["acceptance_criteria"],
+        )
+        self.assertIn(
             "Dry-run semantics remain explicit: short-circuit stays partial with no delegated execution, or delegated dry-run is passed through honestly.",
+            auto_task["acceptance_criteria"],
+        )
+        self.assertIn(
+            "Wrapper preflight PDF discovery semantics remain aligned with delegate discovery semantics to keep evidence counts consistent.",
             auto_task["acceptance_criteria"],
         )
         self.assertIn(

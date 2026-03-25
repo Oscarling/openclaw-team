@@ -1172,6 +1172,51 @@ Verification snapshot on 2026-03-25:
   - `runtime_archives/bl031/state/`
   - `runtime_archives/bl031/tmp/`
 
+### 40. Source-Side Realignment After BL-031 Runtime Findings
+
+User objective:
+
+- continue after `BL-20260325-031` without mixing a new live validation into
+  the same phase
+- harden source-side contract rules so generated wrappers stop drifting on
+  delegate report-flag usage and discovery semantics
+- keep phase closure backlog-first and test-backed
+
+Main work areas:
+
+- activated `BL-20260325-032` and mirrored it to GitHub issue `#57`
+- updated `adapters/local_inbox_adapter.py` automation contract guidance with:
+  - explicit report-flag compatibility requirement (`--report-json`, no
+    undeclared `--report-file` drift)
+  - wrapper/delegate PDF discovery consistency requirement
+- strengthened automation constraints and acceptance criteria to make both rules
+  gate-visible at source
+- updated `tests/test_local_inbox_adapter.py` assertions for:
+  - new contract hints
+  - new constraints
+  - new acceptance criteria
+- recorded next runtime verification phase as `BL-20260325-033`
+
+Primary output:
+
+- [WRAPPER_DELEGATE_REPORT_FLAG_REALIGNMENT_REPORT.md](/Users/lingguozhong/openclaw-team/WRAPPER_DELEGATE_REPORT_FLAG_REALIGNMENT_REPORT.md)
+
+Key result:
+
+- `BL-20260325-032` completed as a source-side hardening phase
+- source contract now explicitly targets the exact drift pattern observed in
+  `BL-20260325-031`
+- this phase does not claim runtime closure; it prepares the next fresh governed
+  validation phase (`BL-20260325-033`)
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_local_inbox_adapter.py` passed
+- `python3 -m unittest -v tests/test_trello_readonly_ingress.py` passed
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with `BL-20260325-032` mirrored to
+  issue `#57`
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:
