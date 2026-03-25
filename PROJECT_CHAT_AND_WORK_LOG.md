@@ -1981,6 +1981,56 @@ Verification snapshot on 2026-03-25:
   - `runtime_archives/bl045/state/`
   - `runtime_archives/bl045/tmp/`
 
+### 54. Wrapper Partial-Evidence Semantics Hardening After BL-045 Findings
+
+User objective:
+
+- continue from `BL-20260325-045` without mixing another governed runtime rerun
+  into the same phase
+- harden source-side wrapper contract guidance so best-effort
+  evidence-backed `partial` outcomes remain reviewable partial states instead
+  of being escalated to failure by success-only gates
+- keep the hardening minimal, explicit, and test-backed
+
+Main work areas:
+
+- activated and completed `BL-20260325-046` and mirrored it to GitHub issue
+  `#84`
+- updated `adapters/local_inbox_adapter.py`:
+  - refined `delegate_success_evidence` hint so strict evidence gates are
+    explicitly scoped to wrapper `success` claims
+  - added `delegate_partial_evidence` guidance requiring contract-compliant
+    delegate `partial` outcomes to remain wrapper `partial`
+  - added explicit next-step guidance requirement for partial/failed wrapper
+    outputs
+  - expanded constraints and acceptance criteria to encode success-vs-partial
+    behavior boundaries
+- expanded `tests/test_local_inbox_adapter.py` with focused assertions for:
+  - new partial-evidence hint semantics
+  - new constraint enforcing `partial` (not `failed`) on contract-compliant
+    partial evidence paths
+  - new acceptance criterion covering non-escalation of partial outcomes
+- recorded next governed validation phase as `BL-20260325-047`
+
+Primary output:
+
+- [WRAPPER_PARTIAL_EVIDENCE_SEMANTICS_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/WRAPPER_PARTIAL_EVIDENCE_SEMANTICS_HARDENING_REPORT.md)
+
+Key result:
+
+- `BL-20260325-046` completed as a source-side blocker-hardening phase
+- wrapper contract text now explicitly preserves honest, reviewable `partial`
+  outcomes while keeping strict anti-overclaim gates for `success`
+- live effectiveness is intentionally deferred to fresh governed validation
+  phase `BL-20260325-047`
+
+Verification snapshot on 2026-03-25:
+
+- `python3 -m unittest -v tests/test_local_inbox_adapter.py` passed
+- `python3 scripts/backlog_lint.py` passed
+- `python3 scripts/backlog_sync.py` passed with no phase=now actionable issue
+  mirroring required
+
 ### 31. Post-Timeout Governed Validation On Fresh Same-Origin Candidate
 
 User objective:

@@ -106,6 +106,10 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         self.assertIn("excel_written=true", contract_hints["delegate_success_evidence"])
         self.assertIn("output_exists=true", contract_hints["delegate_success_evidence"])
         self.assertIn("output_size_bytes>0", contract_hints["delegate_success_evidence"])
+        self.assertIn("wrapper status is success", contract_hints["delegate_success_evidence"])
+        self.assertIn("status is partial", contract_hints["delegate_partial_evidence"])
+        self.assertIn("status partial instead of escalating to failed", contract_hints["delegate_partial_evidence"])
+        self.assertIn("next-step guidance", contract_hints["delegate_partial_evidence"])
         self.assertIn("explicit timeout", contract_hints["delegate_timeout"])
         self.assertIn(
             "status/total_files/status_counter/dry_run",
@@ -163,6 +167,12 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         )
         self.assertTrue(
             any(
+                "keep wrapper status partial (not failed)" in item
+                for item in auto_task["constraints"]
+            )
+        )
+        self.assertTrue(
+            any(
                 "emits JSON to stdout" in item
                 for item in auto_task["constraints"]
             )
@@ -199,6 +209,10 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
         )
         self.assertIn(
             "Wrapper success attestation requires delegate fields excel_written=true, output_exists=true, output_size_bytes>0, and status_counter.partial/status_counter.failed equal to 0.",
+            auto_task["acceptance_criteria"],
+        )
+        self.assertIn(
+            "Contract-compliant delegate partial outcomes remain partial with explicit limitations and next-step guidance, rather than being escalated to failed by success-only gates.",
             auto_task["acceptance_criteria"],
         )
         self.assertIn(
