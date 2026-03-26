@@ -1,0 +1,19 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Recovered controlled malformed-output payload.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-26T03:50:31.318860Z",
+  "duration_ms": 7,
+  "metadata": {
+    "source": "bl085-mock",
+    "path": "repair",
+    "json_output_repair_attempts_used": 1
+  }
+}
