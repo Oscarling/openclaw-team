@@ -1,0 +1,13 @@
+endpoint	field_limit	prompt_chars	exit_code	elapsed_sec	output_chars	detail
+https://fast.vpsairobot.com/responses	0	13136	1	45.952	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/responses, retryable=True): The read operation timed out
+https://fast.vpsairobot.com/responses	1200	6505	1	45.640	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/responses, retryable=True): The read operation timed out
+https://fast.vpsairobot.com/responses	800	5134	1	45.902	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/responses, retryable=True): The read operation timed out
+https://fast.vpsairobot.com/responses	600	4334	1	0.423	0	LLM call exhausted (attempts=1/1, class=tls_eof, endpoint=https://fast.vpsairobot.com/responses, retryable=True): <urlopen error EOF occurred in violation of protocol (_ssl.c:1129)>
+https://fast.vpsairobot.com/responses	400	3397	1	45.623	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/responses, retryable=True): The read operation timed out
+https://fast.vpsairobot.com/responses	250	2647	1	45.790	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/responses, retryable=True): The read operation timed out
+https://fast.vpsairobot.com/v1/responses	0	13136	1	45.787	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): The read operation timed out
+https://fast.vpsairobot.com/v1/responses	1200	6505	1	45.984	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): The read operation timed out
+https://fast.vpsairobot.com/v1/responses	800	5134	1	45.962	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): The read operation timed out
+https://fast.vpsairobot.com/v1/responses	600	4334	1	45.991	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): The read operation timed out
+https://fast.vpsairobot.com/v1/responses	400	3397	1	45.646	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): The read operation timed out
+https://fast.vpsairobot.com/v1/responses	250	2647	1	45.894	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): The read operation timed out

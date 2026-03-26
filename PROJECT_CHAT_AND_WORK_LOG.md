@@ -5460,3 +5460,42 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl096/runtime/automation-runtime.s01.gpt-5-codex.log`
 - automation output:
   - `runtime_archives/bl096/runtime/automation-output.s01.gpt-5-codex.json`
+
+### 107. BL-097 Alternative Model Route Probe (GPT-5.4 Still Not Viable)
+
+User objective:
+
+- continue forward without drift
+- test whether model switch can unlock an otherwise blocked route
+- keep decisions based on controlled probe evidence
+
+Main work areas:
+
+- activated `BL-20260326-097` candidate probe
+- extracted new model hint (`gpt-5.4`) from backup configuration text
+- verified lightweight endpoint availability for `gpt-5.4`:
+  - `fast.vpsairobot.com/responses` -> `200`
+  - `fast.vpsairobot.com/v1/responses` -> `200`
+- executed real automation prompt-shape limit probes (`45s`, single-attempt) for
+  `gpt-5.4` across both fast endpoints and compaction limits
+- observed outcome:
+  - `/responses`: timeout-dominant failures (plus one `tls_eof`)
+  - `/v1/responses`: full timeout across tested limits
+  - no successful completion for real prompt shape
+- updated backlog:
+  - `BL-20260326-097` moved to `blocked`
+  - queued next blocker `BL-20260326-098` (`planned`)
+
+Primary output:
+
+- [ALTERNATIVE_MODEL_GPT54_ROUTE_PROBE_REPORT.md](/Users/lingguozhong/openclaw-team/ALTERNATIVE_MODEL_GPT54_ROUTE_PROBE_REPORT.md)
+
+Key result:
+
+- switching model to `gpt-5.4` does not recover a stable route for real
+  automation prompt execution on the current provider topology.
+
+Verification snapshot on 2026-03-26:
+
+- prompt-shape matrix:
+  - `runtime_archives/bl097/tmp/bl097_prompt_limit_probe_gpt54.tsv`

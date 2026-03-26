@@ -1693,7 +1693,7 @@ Allowed enum values:
 ### BL-20260326-097
 - title: Recover canary promotion by introducing an alternative provider route after BL-096 fallback-only rejection
 - type: blocker
-- status: planned
+- status: blocked
 - phase: next
 - priority: p1
 - owner: Oscarling
@@ -1701,6 +1701,23 @@ Allowed enum values:
 - start_when: BL-096 confirms both mixed-route and fallback-only route still fail governed replay on endpoint-chain instability
 - done_when: A new provider/endpoint route is validated through controlled replay and then passes governed 4-sample canary thresholds (`processed_rate >= 0.75`, `pass_verdict_rate >= 0.75`) without rollback trigger
 - source: `FALLBACK_ONLY_ROUTE_VALIDATION_REPORT.md` on 2026-03-26 records fallback-only rejection under real replay
+- link: /Users/lingguozhong/openclaw-team/ALTERNATIVE_MODEL_GPT54_ROUTE_PROBE_REPORT.md
+- issue: -
+- evidence: `ALTERNATIVE_MODEL_GPT54_ROUTE_PROBE_REPORT.md` and `runtime_archives/bl097/tmp/bl097_prompt_limit_probe_gpt54.tsv` show that although `gpt-5.4` ping probes return `200`, real automation prompt-shape probes still fail across all tested compaction limits on both fast endpoints (`timeout`/`tls_eof`), so no stable route was recovered
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-098
+- title: Provision a new provider/base route for governed replay after BL-097 model-switch failure
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-097
+- start_when: BL-097 confirms alternative model switch (`gpt-5.4`) does not recover real prompt-shape stability on existing fast endpoints
+- done_when: A newly provisioned provider/base route (new key/base topology) passes controlled replay and then governed 4-sample canary thresholds without rollback trigger
+- source: `ALTERNATIVE_MODEL_GPT54_ROUTE_PROBE_REPORT.md` on 2026-03-26 records full failure of real prompt-shape probes on existing route
 - link: -
 - issue: -
 - evidence: -
