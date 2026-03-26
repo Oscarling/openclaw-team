@@ -1723,3 +1723,20 @@ Allowed enum values:
 - evidence: `TIMEOUT_BUDGET_GATEWAY_CEILING_PROBE_REPORT.md` and `runtime_archives/bl098/tmp/bl098_timeout_budget_probe.tsv` show that increasing timeout budget on the current fast route (`120/180/240/300`) does not recover real automation prompt execution; `120s` ends in timeout and `180/240/300` all terminate at ~126s with `http_524`, indicating an upstream ceiling under current provider/base topology
 - last_reviewed_at: 2026-03-26
 - opened_at: 2026-03-26
+
+### BL-20260326-099
+- title: Onboard a new provider/base topology and clear route handshake gate before replay
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-098
+- start_when: BL-098 confirms timeout budget tuning (`120/180/240/300`) cannot bypass the current fast-route gateway ceiling (`http_524` near ~126s)
+- done_when: A newly supplied provider/base route (new key/base topology) passes lightweight ping and real prompt-shape probe, then is promoted into controlled replay validation
+- source: `TIMEOUT_BUDGET_GATEWAY_CEILING_PROBE_REPORT.md` on 2026-03-26 confirms current topology remains blocked after timeout-budget expansion
+- link: -
+- issue: -
+- evidence: -
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26

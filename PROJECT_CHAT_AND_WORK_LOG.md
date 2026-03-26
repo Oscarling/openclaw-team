@@ -5526,6 +5526,7 @@ Main work areas:
   - no success sample, so no repeat run was started
 - updated backlog:
   - `BL-20260326-098` moved to `blocked` with evidence
+  - queued next blocker `BL-20260326-099` (`planned`)
 
 Primary output:
 
