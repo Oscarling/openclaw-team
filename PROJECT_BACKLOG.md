@@ -1676,7 +1676,7 @@ Allowed enum values:
 ### BL-20260326-096
 - title: Establish a stable provider/endpoint route for real automation prompt execution before canary clearance
 - type: blocker
-- status: planned
+- status: blocked
 - phase: next
 - priority: p1
 - owner: Oscarling
@@ -1684,6 +1684,23 @@ Allowed enum values:
 - start_when: BL-095 confirms current provider topology has no stable route for real automation prompt shape despite endpoint/model/compaction probes
 - done_when: A candidate provider/endpoint route is validated with repeatable real-automation prompt success and then confirmed by governed 4-sample canary meeting `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` without rollback trigger
 - source: `ENDPOINT_CHAIN_ROUTE_DISCOVERY_PROBE_REPORT.md` on 2026-03-26 records shape-dependent timeout saturation on current fallback route and persistent primary `http_502`
+- link: /Users/lingguozhong/openclaw-team/FALLBACK_ONLY_ROUTE_VALIDATION_REPORT.md
+- issue: -
+- evidence: `FALLBACK_ONLY_ROUTE_VALIDATION_REPORT.md` and `runtime_archives/bl096/tmp/bl096_execute_s01.gpt-5-codex.json` show fallback-only candidate route (`https://fast.vpsairobot.com/v1` + fallback `/responses`) still ends `rejected` with endpoint-chain failure sequence (`timeout -> http_502 -> tls_eof`), so stable promotion path remains unavailable
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-097
+- title: Recover canary promotion by introducing an alternative provider route after BL-096 fallback-only rejection
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-096
+- start_when: BL-096 confirms both mixed-route and fallback-only route still fail governed replay on endpoint-chain instability
+- done_when: A new provider/endpoint route is validated through controlled replay and then passes governed 4-sample canary thresholds (`processed_rate >= 0.75`, `pass_verdict_rate >= 0.75`) without rollback trigger
+- source: `FALLBACK_ONLY_ROUTE_VALIDATION_REPORT.md` on 2026-03-26 records fallback-only rejection under real replay
 - link: -
 - issue: -
 - evidence: -

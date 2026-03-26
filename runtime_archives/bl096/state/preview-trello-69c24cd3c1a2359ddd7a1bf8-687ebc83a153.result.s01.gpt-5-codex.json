@@ -1,0 +1,11 @@
+{
+  "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153",
+  "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.json",
+  "executed_at": "2026-03-26T09:27:44.150717Z",
+  "status": "rejected",
+  "decision_reason": "Automation task failed: {\"task_id\": \"AUTO-20260325-874\", \"worker\": \"automation\", \"status\": \"failed\", \"summary\": \"Worker execution failed\", \"artifacts\": [], \"errors\": [\"LLM call exhausted (attempts=3/3, class=tls_eof, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1016)>\"], \"metadata\": {}, \"duration_ms\": 211406, \"timestamp\": \"2026-03-26T09:27:43.987809Z\"}",
+  "critic_verdict": "needs_revision",
+  "automation_transient_retries_used": 0,
+  "automation_workspace_retries_used": 0,
+  "test_mode": "off"
+}

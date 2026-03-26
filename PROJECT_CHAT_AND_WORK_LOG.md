@@ -5418,3 +5418,45 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl095/tmp/bl095_prompt_limit_probe.tsv`
 - limit reliability retest:
   - `runtime_archives/bl095/tmp/bl095_limit1200_repeats.tsv`
+
+### 106. BL-096 Fallback-Only Replay Validation (Still Rejected)
+
+User objective:
+
+- continue strict no-drift progression
+- test whether removing `aixj` path can recover execution stability
+- avoid full-window canary cost before route viability is proven
+
+Main work areas:
+
+- activated `BL-20260326-096` candidate validation in local-first mode
+- created fallback-only replay profile:
+  - primary endpoint: `https://fast.vpsairobot.com/v1/responses`
+  - fallback endpoint: `https://fast.vpsairobot.com/responses`
+  - key source: backup key only
+  - prompt compaction enabled for automation (`field max chars=1200`)
+- executed controlled replay (`s01`) and archived execute/runtime/state evidence
+- observed terminal endpoint-chain failure remained:
+  - `timeout` -> `http_502` -> `tls_eof`
+  - final decision remained `rejected`
+- updated backlog:
+  - `BL-20260326-096` moved to `blocked`
+  - queued next blocker `BL-20260326-097` (`planned`)
+
+Primary output:
+
+- [FALLBACK_ONLY_ROUTE_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/FALLBACK_ONLY_ROUTE_VALIDATION_REPORT.md)
+
+Key result:
+
+- fallback-only route did not restore stable governed replay; endpoint-chain
+  blocker remains active.
+
+Verification snapshot on 2026-03-26:
+
+- execute result:
+  - `runtime_archives/bl096/tmp/bl096_execute_s01.gpt-5-codex.json`
+- runtime log:
+  - `runtime_archives/bl096/runtime/automation-runtime.s01.gpt-5-codex.log`
+- automation output:
+  - `runtime_archives/bl096/runtime/automation-output.s01.gpt-5-codex.json`
