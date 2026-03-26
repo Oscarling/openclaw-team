@@ -754,6 +754,43 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertEqual(settings["chat_url"], "https://provider.invalid/v1/chat/completions")
         self.assertEqual(settings["responses_url"], "https://provider.invalid/v1/responses")
 
+    def test_build_user_prompt_default_keeps_full_fields(self) -> None:
+        task = {
+            "task_id": "AUTO-TEST-001",
+            "worker": "automation",
+            "task_type": "generate_script",
+            "objective": "obj",
+            "inputs": {"x": "y" * 200},
+            "constraints": ["c" * 200],
+            "expected_outputs": [{"path": "artifacts/scripts/demo.py", "type": "script"}],
+            "acceptance_criteria": ["a" * 200],
+            "source": {"kind": "local_inbox"},
+            "metadata": {"k": "v" * 200},
+        }
+        with mock.patch.dict(os.environ, {"ARGUS_AUTOMATION_PROMPT_FIELD_MAX_CHARS": ""}, clear=False):
+            prompt = worker_runtime.build_user_prompt(task)
+        self.assertNotIn("truncated_for_prompt", prompt)
+        self.assertIn("Prompt Compact Notes: []", prompt)
+
+    def test_build_user_prompt_can_compact_automation_fields(self) -> None:
+        task = {
+            "task_id": "AUTO-TEST-002",
+            "worker": "automation",
+            "task_type": "generate_script",
+            "objective": "obj",
+            "inputs": {"x": "y" * 400},
+            "constraints": ["c" * 400],
+            "expected_outputs": [{"path": "artifacts/scripts/demo.py", "type": "script"}],
+            "acceptance_criteria": ["a" * 400],
+            "source": {"kind": "local_inbox", "blob": "s" * 400},
+            "metadata": {"k": "v" * 400},
+        }
+        with mock.patch.dict(os.environ, {"ARGUS_AUTOMATION_PROMPT_FIELD_MAX_CHARS": "120"}, clear=False):
+            prompt = worker_runtime.build_user_prompt(task)
+        self.assertIn("truncated_for_prompt", prompt)
+        self.assertIn("Prompt Compact Notes:", prompt)
+        self.assertIn("inputs: truncated to 120 chars", prompt)
+
     def test_call_llm_honors_env_timeout_and_retry_overrides(self) -> None:
         calls: list[int] = []
         attempts = {"count": 0}
