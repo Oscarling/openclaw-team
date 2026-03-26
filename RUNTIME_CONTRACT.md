@@ -543,3 +543,22 @@ malformed-output 回放并归档证据，口径如下：
    - scenario 定义表
    - 每轮 execute/runtime/state/trace
    - boundary matrix + metrics（含 observed error classes）
+
+### BL-091 真实端点 canary 观察窗口口径
+
+在进入真实端点拓扑的短窗口 canary 时，必须执行以下守护口径：
+
+1. 固定 baseline 默认参数，不做重试/JSON 预算上调，仅允许 profile 级主备拓扑切换。  
+2. 执行窗口至少 4 次（`s01..s04`）并完整归档：
+   - probe matrix（主备端点可达性/状态码）
+   - execute/runtime/state 逐轮快照
+   - canary matrix + metrics
+3. 回滚触发条件（任一满足即停止推广并进入修复 blocker）：
+   - 任一轮 terminal rejection
+   - `processed_rate < 0.75`
+   - `pass_verdict_rate < 0.75`
+4. canary 判定必须区分两类信号：
+   - failover marker（例如 runtime 中出现 fallback `next_endpoint`）
+   - endpoint availability（例如 fallback `http_401/http_403/http_5xx`）
+5. 若存在 failover marker 但 availability 不达标，结论应为
+   “路径可观测但不可推广”，并显式创建下一条 remediation blocker。  

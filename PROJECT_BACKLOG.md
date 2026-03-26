@@ -1591,14 +1591,31 @@ Allowed enum values:
 ### BL-20260326-091
 - title: Run canary-style real endpoint failover observation window with strict rollback guardrails
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-090
 - start_when: BL-090 mixed synthetic boundary matrix confirms expected failover and fail-closed behavior across transient classes and degraded fallback scenarios
 - done_when: A short canary observation window against real endpoint topology validates failover markers and rollback conditions without changing baseline defaults, with full execute/runtime/state evidence and explicit abort criteria
 - source: `MIXED_TRANSIENT_FAILOVER_BOUNDARY_REPORT.md` on 2026-03-26 quantifies synthetic boundaries; next confidence step is canary-style real-topology observation under strict safety guardrails
+- link: /Users/lingguozhong/openclaw-team/CANARY_REAL_ENDPOINT_FAILOVER_OBSERVATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/175
+- evidence: `CANARY_REAL_ENDPOINT_FAILOVER_OBSERVATION_REPORT.md` archives BL-091 real-topology canary evidence in `runtime_archives/bl091/`; probe matrix shows primary `aixj.vip` path returns `502` while fallback `fast.vpsairobot.com` path returns `401`, observation window `s01..s04` records failover markers (`next_endpoint=https://fast.vpsairobot.com/...`) with terminal rejections (`processed=0/4`, `pass_verdict_rate=0.0`), and rollback guardrails are explicitly triggered (`terminal_rejection_present`, `processed_rate_below_0.75`, `pass_verdict_rate_below_0.75`)
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-092
+- title: Restore fallback credential/profile availability and rerun canary failover window to clear rollback trigger
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-091
+- start_when: BL-091 canary against real endpoint topology triggers rollback due fallback authorization unavailability and zero processed/pass rates
+- done_when: Fallback credential/profile alignment is verified by preflight probe (`200`) and a rerun canary observation window reaches at least `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` without violating rollback guardrails
+- source: `CANARY_REAL_ENDPOINT_FAILOVER_OBSERVATION_REPORT.md` on 2026-03-26 records fallback path `http_401` and mandatory rollback; next blocker is alignment/remediation plus governed rerun
 - link: -
 - issue: -
 - evidence: -

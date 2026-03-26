@@ -1,0 +1,17 @@
+{
+  "sample_size": 4,
+  "processed": 0,
+  "rejected": 4,
+  "processed_rate": 0.0,
+  "pass_verdict_rate": 0.0,
+  "complete_failover_signal_rate": 1.0,
+  "observed_automation_error_classes": [
+    "http_502"
+  ],
+  "rollback_triggered": true,
+  "rollback_reasons": [
+    "terminal_rejection_present",
+    "processed_rate_below_0.75",
+    "pass_verdict_rate_below_0.75"
+  ]
+}

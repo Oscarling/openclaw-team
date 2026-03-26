@@ -1,0 +1,5 @@
+sequence	status	critic_verdict	automation_error_class	automation_failover_marker	critic_failover_marker	complete_failover_signal
+s01	rejected	needs_revision	http_502	1	0	1
+s02	rejected	needs_revision	http_502	1	0	1
+s03	rejected	needs_revision	http_502	1	0	1
+s04	rejected	needs_revision	http_502	1	0	1
