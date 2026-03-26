@@ -1,0 +1,147 @@
+{
+  "task_id": "CRITIC-20260325-290",
+  "worker": "critic",
+  "task_type": "review_artifact",
+  "objective": "Review the generated inbox runner together with its reviewed delegate script from the local inbox pipeline and provide a structured verdict using one of: pass, fail, needs_revision. Always output a review markdown artifact and include verdict in metadata.",
+  "inputs": {
+    "artifacts": [
+      {
+        "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+        "type": "script"
+      },
+      {
+        "path": "artifacts/scripts/pdf_to_excel_ocr.py",
+        "type": "script"
+      }
+    ],
+    "params": {
+      "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+      "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+      "description": "Purpose:\n\n  Controlled Trello live preview smoke for openclaw-team.\n\n‌\n\n  Expected behavior:\n\n- read-only Trello ingest\n\n- preview creation smoke only\n\n- no business execution claim\n\n- no Trello writeback expected in this step\n\n‌\n\n  Traceability:\n\n- backlog: BL-20260324-014\n\n- blocker context: BL-20260324-015\n\n- created_by: Oscarling\n\n- created_at: 2026-03-24 Asia/Shanghai\n\n‌\n\n  Note:\n\n  This card is only for governed smoke verification and should remain open until the smoke is finished.\n\nExecution contract: treat this as a best-effort, evidence-backed PDF extraction/conversion attempt. Do not claim OCR success without evidence. If full OCR/Excel conversion is not honestly achievable, return reviewable intermediate artifacts, explicit limitations, and next-step guidance. Keep behavior deterministic and limited to declared local artifacts.",
+      "labels": [
+        "best_effort",
+        "evidence_backed",
+        "readonly",
+        "reviewable",
+        "trello"
+      ],
+      "review_scope": {
+        "primary_artifact": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+        "paired_artifacts": [
+          "artifacts/scripts/pdf_to_excel_ocr.py"
+        ],
+        "goal": "Audit the wrapper and the reviewed delegate together so the review evidence can speak to the end-to-end readonly smoke path."
+      },
+      "artifact_snapshots": [
+        {
+          "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+          "available": true,
+          "content": "#!/usr/bin/env python3\nprint('bl085 controlled repaired artifact')\n",
+          "truncated": false
+        },
+        {
+          "path": "artifacts/scripts/pdf_to_excel_ocr.py",
+          "available": true,
+          "content": "#!/usr/bin/env python3\n\"\"\"\nBatch PDF -> Excel extractor with optional OCR fallback.\n\nDesign goals:\n- Batch processing with per-file isolation (single file failure must not stop the batch)\n- OCR mode: auto | on | off\n- Chinese-friendly OCR defaults (chi_sim+eng)\n- Dry-run support for pilot validation when dependencies are unavailable\n\"\"\"\n\nfrom __future__ import annotations\n\nimport argparse\nimport json\nimport shutil\nimport sys\nfrom dataclasses import asdict, dataclass\nfrom pathlib import Path\nfrom typing import Any\n\n\ntry:\n    from pypdf import PdfReader  # type: ignore\nexcept Exception:\n    PdfReader = None\n\ntry:\n    import pandas as pd  # type: ignore\nexcept Exception:\n    pd = None\n\ntry:\n    import pytesseract  # type: ignore\nexcept Exception:\n    pytesseract = None\n\ntry:\n    from pdf2image import convert_from_path  # type: ignore\nexcept Exception:\n    convert_from_path = None\n\n\n@dataclass\nclass FileResult:\n    file_name: str\n    file_path: str\n    status: str\n    extract_method: str\n    page_count: int\n    text_chars: int\n    text_preview: str\n    warnings: str\n    error: str\n\n\ndef parse_args() -> argparse.Namespace:\n    parser = argparse.ArgumentParser(description=\"Batch PDF to Excel extractor with OCR fallback.\")\n    parser.add_argument(\"--input-dir\", required=True, help=\"Directory containing PDF files.\")\n    parser.add_argument(\"--output-xlsx\", required=True, help=\"Output Excel path.\")\n    parser.add_argument(\n        \"--ocr\",\n        choices=(\"auto\", \"on\", \"off\"),\n        default=\"auto\",\n        help=\"OCR mode. auto=use OCR when plain text extraction is weak.\",\n    )\n    parser.add_argument(\n        \"--dry-run\",\n        action=\"store_true\",\n        help=\"Do not write Excel file. Print execution summary only.\",\n    )\n    parser.add_argument(\n        \"--ocr-lang\",\n        default=\"chi_sim+eng\",\n        help=\"OCR language pack for pytesseract, default supports Chinese + English.\",\n    )\n    parser.add_argument(\n        \"--auto-ocr-min-chars\",\n        type=int,\n        default=50,\n        help=\"In auto mode, run OCR when extracted text chars < this threshold.\",\n    )\n    parser.add_argument(\n        \"--report-json\",\n        default=\"\",\n        help=\"Optional sidecar path for writing the same JSON report emitted to stdout.\",\n    )\n    return parser.parse_args()\n\n\ndef discover_pdfs(input_dir: Path) -> list[Path]:\n    if not input_dir.exists():\n        raise FileNotFoundError(f\"Input directory does not exist: {input_dir}\")\n    if not input_dir.is_dir():\n        raise NotADirectoryError(f\"Input path is not a directory: {input_dir}\")\n    files = sorted([p for p in input_dir.rglob(\"*\") if p.is_file() and p.suffix.lower() == \".pdf\"])\n    return files\n\n\ndef detect_ocr_runtime_status() -> tuple[str, list[str]]:\n    missing: list[str] = []\n    present: list[str] = []\n\n    if pytesseract is None:\n        missing.append(\"python module pytesseract\")\n    else:\n        present.append(\"python module pytesseract\")\n    if convert_from_path is None:\n        missing.append(\"python module pdf2image\")\n    else:\n        present.append(\"python module pdf2image\")\n    if shutil.which(\"tesseract\") is None:\n        missing.append(\"binary tesseract\")\n    else:\n        present.append(\"binary tesseract\")\n    if shutil.which(\"pdftoppm\") is None:\n        missing.append(\"binary pdftoppm (poppler)\")\n    else:\n        present.append(\"binary pdftoppm (poppler)\")\n\n    if not missing:\n        return \"available\", []\n    if present:\n        return \"partial\", missing\n    return \"blocked\", missing\n\n\ndef extract_text_pypdf(pdf_path: Path) -> tuple[str, int]:\n    if PdfReader is None:\n        raise RuntimeError(\"pypdf not installed\")\n    reader = PdfReader(str(pdf_path))\n    page_texts: list[str] = []\n    for page in reader.pages:\n        text = page.extract_text() or \"\"\n        page_texts.append(text)\n    return \"\\n\".join(page_texts), len(reader.pages)\n\n\ndef extract_text_ocr(pdf_path: Path, ocr_lang: str) -> str:\n    if pytesseract is None:\n        raise RuntimeError(\"pytesseract not installed\")\n    if convert_from_path is None:\n        raise RuntimeError(\"pdf2image not installed\")\n    if shutil.which(\"tesseract\") is None:\n        raise RuntimeError(\"tesseract binary not found\")\n    if shutil.which(\"pdftoppm\") is None:\n        raise RuntimeError(\"pdftoppm binary not found (install poppler)\")\n\n    images = convert_from_path(str(pdf_path), dpi=220)\n    chunks: list[str] = []\n    for image in images:\n        chunks.append(pytesseract.image_to_string(image, lang=ocr_lang))\n    return \"\\n\".join(chunks)\n\n\ndef compact_preview(text: str, limit: int = 160) -> str:\n    single_line = \" \".join(text.split())\n    if len(single_line) <= limit:\n        return single_line\n    return single_line[: limit - 3] + \"...\"\n\n\ndef process_one_pdf(\n    pdf_path: Path,\n    ocr_mode: str,\n    ocr_lang: str,\n    auto_ocr_min_chars: int,\n) -> FileResult:\n    warnings: list[str] = []\n    errors: list[str] = []\n    method = \"none\"\n    text = \"\"\n    page_count = 0\n\n    try:\n        text, page_count = extract_text_pypdf(pdf_path)\n        method = \"text\"\n    except Exception as e:\n        warnings.append(f\"text extraction unavailable: {e}\")\n\n    needs_ocr = False\n    if ocr_mode == \"on\":\n        needs_ocr = True\n    elif ocr_mode == \"auto\" and len(text.strip()) < auto_ocr_min_chars:\n        needs_ocr = True\n\n    if needs_ocr:\n        try:\n            ocr_text = extract_text_ocr(pdf_path, ocr_lang).strip()\n            if ocr_text:\n                if text.strip():\n                    text = f\"{text.strip()}\\n\\n[OCR Fallback]\\n{ocr_text}\"\n                    method = \"text+ocr\"\n                else:\n                    text = ocr_text\n                    method = \"ocr\"\n            else:\n                warnings.append(\"OCR returned empty text\")\n        except Exception as e:\n            errors.append(f\"OCR failed: {e}\")\n\n    if not text.strip():\n        if errors:\n            status = \"failed\"\n        else:\n            status = \"partial\"\n            warnings.append(\"No extractable text captured\")\n    else:\n        if errors:\n            status = \"partial\"\n            warnings.append(\"Text was extracted, but one or more extraction attempts failed; review errors\")\n        else:\n            status = \"success\"\n\n    return FileResult(\n        file_name=pdf_path.name,\n        file_path=str(pdf_path),\n        status=status,\n        extract_method=method,\n        page_count=page_count,\n        text_chars=len(text),\n        text_preview=compact_preview(text),\n        warnings=\" | \".join(warnings),\n        error=\" | \".join(errors),\n    )\n\n\ndef write_excel(results: list[FileResult], output_xlsx: Path) -> None:\n    if pd is None:\n        raise RuntimeError(\"pandas is required to write Excel output\")\n    output_xlsx.parent.mkdir(parents=True, exist_ok=True)\n\n    rows = [asdict(r) for r in results]\n    detail_df = pd.DataFrame(rows)\n\n    summary_rows: list[dict[str, Any]] = []\n    by_status = detail_df.groupby(\"status\").size().to_dict()\n    by_method = detail_df.groupby(\"extract_method\").size().to_dict()\n    for key, value in sorted(by_status.items()):\n        summary_rows.append({\"metric\": \"status_count\", \"name\": key, \"value\": int(value)})\n    for key, value in sorted(by_method.items()):\n        summary_rows.append({\"metric\": \"method_count\", \"name\": key, \"value\": int(value)})\n    summary_rows.append({\"metric\": \"total_files\", \"name\": \"all\", \"value\": int(len(results))})\n    summary_df = pd.DataFrame(summary_rows)\n\n    with pd.ExcelWriter(output_xlsx) as writer:\n        summary_df.to_excel(writer, sheet_name=\"summary\", index=False)\n        detail_df.to_excel(writer, sheet_name=\"files\", index=False)\n\n\ndef emit_report(report: dict[str, Any], report_json: str) -> None:\n    rendered = json.dumps(report, ensure_ascii=False, indent=2)\n    print(rendered)\n    if not report_json:\n        return\n    out_path = Path(report_json).expanduser().resolve()\n    out_path.parent.mkdir(parents=True, exist_ok=True)\n    out_path.write_text(rendered + \"\\n\", encoding=\"utf-8\")\n\n\ndef build_report_template(\n    *,\n    input_dir: Path,\n    output_xlsx: Path,\n    ocr_mode: str,\n    dry_run: bool,\n) -> dict[str, Any]:\n    return {\n        \"status\": \"failed\",\n        \"input_dir\": str(input_dir),\n        \"output_xlsx\": str(output_xlsx),\n        \"ocr_mode\": ocr_mode,\n        \"ocr_runtime_status\": \"unknown\",\n        \"ocr_missing_dependencies\": [],\n        \"total_files\": 0,\n        \"files\": [],\n        \"status_counter\": {},\n        \"dry_run\": bool(dry_run),\n        \"extraction_status\": \"none\",\n        \"export_status\": \"not_started\",\n        \"excel_written\": False,\n        \"output_exists\": False,\n        \"output_size_bytes\": 0,\n        \"notes\": [],\n        \"next_steps\": [],\n        \"error\": \"\",\n    }\n\n\ndef main() -> int:\n    args = parse_args()\n    input_dir = Path(args.input_dir).expanduser().resolve()\n    output_xlsx = Path(args.output_xlsx).expanduser().resolve()\n\n    try:\n        pdf_files = discover_pdfs(input_dir)\n    except Exception as e:\n        report = build_report_template(\n            input_dir=input_dir,\n            output_xlsx=output_xlsx,\n            ocr_mode=args.ocr,\n            dry_run=args.dry_run,\n        )\n        report[\"error\"] = str(e)\n        report[\"extraction_status\"] = \"none\"\n        report[\"export_status\"] = \"not_started\"\n        report[\"notes\"].append(\"Input discovery failed before extraction could start.\")\n        report[\"next_steps\"].append(\"Verify input directory exists and is readable, then rerun.\")\n        emit_report(report, args.report_json)\n        return 2\n\n    if not pdf_files:\n        report = build_report_template(\n            input_dir=input_dir,\n            output_xlsx=output_xlsx,\n            ocr_mode=args.ocr,\n            dry_run=args.dry_run,\n        )\n        report[\"status\"] = \"partial\"\n        report[\"extraction_status\"] = \"none\"\n        report[\"export_status\"] = \"skipped_no_input\"\n        report[\"notes\"] = [f\"No PDF files found under {input_dir}\"]\n        report[\"next_steps\"] = [\n            \"Add one or more .pdf files under the input directory and rerun.\",\n        ]\n        emit_report(report, args.report_json)\n        return 0\n\n    ocr_runtime, missing = detect_ocr_runtime_status()\n    results: list[FileResult] = []\n    for pdf in pdf_files:\n        try:\n            results.append(\n                process_one_pdf(\n                    pdf,\n                    ocr_mode=args.ocr,\n                    ocr_lang=args.ocr_lang,\n                    auto_ocr_min_chars=args.auto_ocr_min_chars,\n                )\n            )\n        except Exception as e:\n            results.append(\n                FileResult(\n                    file_name=pdf.name,\n                    file_path=str(pdf),\n                    status=\"failed\",\n                    extract_method=\"none\",\n                    page_count=0,\n                    text_chars=0,\n                    text_preview=\"\",\n                    warnings=\"\",\n                    error=f\"Unhandled processing exception: {e}\",\n                )\n            )\n\n    status_counter: dict[str, int] = {}\n    for item in results:\n        status_counter[item.status] = status_counter.get(item.status, 0) + 1\n\n    files_payload = [asdict(item) for item in results]\n    failed_count = status_counter.get(\"failed\", 0)\n    partial_count = status_counter.get(\"partial\", 0)\n    if failed_count == 0 and partial_count == 0:\n        extraction_status = \"success\"\n    else:\n        extraction_status = \"partial\"\n\n    notes: list[str] = []\n    next_steps: list[str] = []\n    if ocr_runtime != \"available\":\n        notes.append(f\"OCR runtime status is {ocr_runtime}; missing dependencies: {', '.join(missing) or 'none'}\")\n        next_steps.append(\"Install missing OCR runtime dependencies if OCR fallback is required.\")\n    if partial_count > 0:\n        notes.append(f\"{partial_count} file(s) reported partial status.\")\n        next_steps.append(\"Inspect per-file partial records in `files` and address listed warnings/errors.\")\n    if failed_count > 0:\n        notes.append(f\"{failed_count} file(s) reported failed status.\")\n        next_steps.append(\"Inspect per-file failures in `files` and resolve the extraction or OCR error causes.\")\n\n    report = build_report_template(\n        input_dir=input_dir,\n        output_xlsx=output_xlsx,\n        ocr_mode=args.ocr,\n        dry_run=args.dry_run,\n    )\n    report.update(\n        {\n            \"status\": extraction_status,\n            \"ocr_runtime_status\": ocr_runtime,\n            \"ocr_missing_dependencies\": missing,\n            \"total_files\": len(results),\n            \"files\": files_payload,\n            \"status_counter\": status_counter,\n            \"extraction_status\": extraction_status,\n            \"export_status\": \"not_started\",\n            \"notes\": notes,\n            \"next_steps\": next_steps,\n        }\n    )\n\n    if args.dry_run:\n        report[\"export_status\"] = \"skipped_dry_run\"\n        emit_report(report, args.report_json)\n        return 0\n\n    report[\"export_status\"] = \"running\"\n    try:\n        write_excel(results, output_xlsx)\n        report[\"output_exists\"] = output_xlsx.exists() and output_xlsx.is_file()\n        if report[\"output_exists\"]:\n            report[\"output_size_bytes\"] = int(output_xlsx.stat().st_size)\n        report[\"excel_written\"] = bool(report[\"output_exists\"] and report[\"output_size_bytes\"] > 0)\n        report[\"export_status\"] = \"succeeded\" if report[\"excel_written\"] else \"failed\"\n        if report[\"export_status\"] == \"failed\":\n            report[\"status\"] = \"failed\"\n            report[\"notes\"] = report.get(\"notes\", []) + [\n                \"Excel write step completed without a usable XLSX artifact; treating export as failed.\"\n            ]\n            report[\"next_steps\"] = report.get(\"next_steps\", []) + [\n                \"Inspect output artifact path permissions and workbook writer dependencies.\",\n            ]\n        emit_report(report, args.report_json)\n        return 0\n    except Exception as e:\n        report[\"status\"] = \"failed\"\n        report[\"error\"] = str(e)\n        report[\"output_exists\"] = output_xlsx.exists() and output_xlsx.is_file()\n        if report[\"output_exists\"]:\n            report[\"output_size_bytes\"] = int(output_xlsx.stat().st_size)\n        report[\"excel_written\"] = bool(report[\"output_exists\"] and report[\"output_size_bytes\"] > 0)\n        report[\"export_status\"] = \"failed\"\n        report[\"notes\"] = report.get(\"notes\", []) + [\n            \"Excel write step failed after extraction.\",\n            (\n                f\"Extraction phase completed with extraction_status={report.get('extraction_status', 'unknown')}; \"\n                \"export_status=failed.\"\n            ),\n        ]\n        report[\"next_steps\"] = report.get(\"next_steps\", []) + [\n            \"Inspect extraction evidence in `files`/`status_counter` even when export fails.\",\n            \"Check pandas/openpyxl availability and output path permissions.\",\n        ]\n        emit_report(report, args.report_json)\n        return 3\n\n\nif __name__ == \"__main__\":\n    raise SystemExit(main())\n",
+          "truncated": false
+        }
+      ],
+      "review_contract": {
+        "required_status": [
+          "success",
+          "partial",
+          "failed"
+        ],
+        "required_verdict_values": [
+          "fail",
+          "needs_revision",
+          "pass"
+        ],
+        "required_metadata_key": "verdict",
+        "must_write_review_artifact_to": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+        "artifact_policy": "Always include either `file_contents` for the review artifact path or `artifacts` referencing that exact path.",
+        "fallback_policy": "If evidence is insufficient, return `status=partial`, include explicit `errors`, still generate review artifact content, and set verdict=needs_revision."
+      },
+      "review_template": {
+        "title": "Review: <artifact name>",
+        "sections": [
+          "Scope",
+          "Findings",
+          "Verdict",
+          "Rationale"
+        ],
+        "verdict_required": true
+      }
+    }
+  },
+  "expected_outputs": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "constraints": [
+    "Review must be grounded in produced automation artifact",
+    "When both wrapper and reviewed delegate snapshots are supplied, evaluate them as one end-to-end readonly pair instead of ignoring the delegate evidence.",
+    "Do not invent missing artifact content",
+    "Return a clear verdict: pass, fail, or needs_revision",
+    "Include metadata.verdict in output",
+    "Generate review artifact markdown for expected_outputs[0].path",
+    "Use artifact_snapshots when provided; avoid claiming access problems if snapshot content exists.",
+    "When both the generated wrapper and reviewed delegate snapshots are provided, review them together rather than silently narrowing scope to one file.",
+    "Return metadata.verdict with one of: pass, fail, needs_revision.",
+    "Always generate review artifact content for expected_outputs[0].path.",
+    "If evidence is insufficient, use partial + errors + verdict=needs_revision, but still output review artifact."
+  ],
+  "priority": "medium",
+  "source": {
+    "kind": "local_inbox",
+    "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+    "inbox_file": "trello-69c24cd3c1a2359ddd7a1bf8-regen-20260325-bl067-001.json",
+    "received_at": "2026-03-25T11:45:58.529105Z",
+    "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+    "labels": [
+      "best_effort",
+      "evidence_backed",
+      "readonly",
+      "reviewable",
+      "trello"
+    ],
+    "provider": "trello",
+    "mode": "readonly",
+    "card_id": "69c24cd3c1a2359ddd7a1bf8",
+    "board_id": "69be462743bfa0038ca10f7a",
+    "list_id": "69be462743bfa0038ca10f8f",
+    "regeneration_token": "regen-20260325-bl067-001"
+  },
+  "acceptance_criteria": [
+    "Produce a review artifact with explicit verdict (pass/fail/needs_revision)"
+  ],
+  "metadata": {
+    "integration_phase": "8B",
+    "pipeline": "inbox->adapter->manager->automation->critic",
+    "request_type": "pdf_to_excel_ocr",
+    "payload_hash": "687ebc83a15301413ccf4c39574ace2121af2e87e87563fbd3bb18ec8ef8d7ad",
+    "regeneration_token": "regen-20260325-bl067-001",
+    "labels": [
+      "best_effort",
+      "evidence_backed",
+      "readonly",
+      "reviewable",
+      "trello"
+    ],
+    "external_metadata": {
+      "source_system": "trello",
+      "card_id": "69c24cd3c1a2359ddd7a1bf8",
+      "card_short_id": 7,
+      "board_id": "69be462743bfa0038ca10f7a",
+      "list_id": "69be462743bfa0038ca10f8f",
+      "date_last_activity": "2026-03-24T08:35:56.234Z",
+      "readonly_mapped_at": "2026-03-25T11:45:32.575060Z",
+      "contract_profile": "best_effort_evidence_backed",
+      "ocr_claim_policy": "do_not_claim_success_without_evidence",
+      "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable",
+      "regeneration_token": "regen-20260325-bl067-001"
+    }
+  }
+}

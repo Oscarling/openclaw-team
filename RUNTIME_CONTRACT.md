@@ -433,3 +433,22 @@ Argus 当前已经从“只讨论架构”推进到：
    - `json_invalid_terminal` 终止率
    - `processed`/`critic_verdict` 与 wall-time
 4. 若窗口内失败主因仍是 `timeout`，优先处理上游时延/可用性，不将其误归因为 JSON 修复策略。  
+
+### BL-085 JSON 修复已触发路径受控回放口径
+
+当需要验证“修复路径本身”的行为（而非线上自然触发频率）时，使用受控
+malformed-output 回放并归档证据，口径如下：
+
+1. 首轮 automation 输出必须是非 JSON，随后 repair 轮返回合法 JSON。  
+2. 必须记录请求轨迹，能够证明调用顺序是：
+   - `automation_initial_invalid`
+   - `automation_repair`
+   - `critic_*`
+3. 证据至少包含：
+   - execute 结果 JSON/stderr
+   - automation/critic 的 runtime + output + task 快照
+   - request trace（标识初始失败与修复轮）
+   - 汇总 TSV（`json_output_repair_attempts_used`、verdict、wall-time）
+4. 该受控回放仅用于验证已触发路径，不改变默认参数：
+   - `ARGUS_LLM_JSON_REPAIR_ATTEMPTS=1`
+   - `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`

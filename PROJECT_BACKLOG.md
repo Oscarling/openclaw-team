@@ -1489,16 +1489,16 @@ Allowed enum values:
 ### BL-20260326-085
 - title: Targeted JSON-repair path exercise under controlled malformed-output replay to validate engaged-path quality
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-084
 - start_when: BL-084 confirms time-spread production-like window has zero JSON-repair engagements and timeout-dominant failures
 - done_when: A controlled malformed-output replay exercise triggers JSON-repair path deterministically, validates engaged-path verdict/latency behavior with archived evidence, and confirms no contract drift in output schema guarantees
 - source: `JSON_REPAIR_ENGAGEMENT_CONFIDENCE_WINDOW_REPORT.md` on 2026-03-26 shows `json_output_repair_attempts_used` engagement `0/4`, so engaged-path operational quality still needs explicit controlled validation
-- link: -
-- issue: -
-- evidence: -
+- link: /Users/lingguozhong/openclaw-team/JSON_REPAIR_ENGAGED_PATH_CONTROLLED_REPLAY_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/163
+- evidence: `JSON_REPAIR_ENGAGED_PATH_CONTROLLED_REPLAY_REPORT.md` records BL-085 controlled replay evidence in `runtime_archives/bl085/`; request trace `tmp/bl085_mock_requests.log` confirms deterministic sequence (`automation_initial_invalid -> automation_repair -> critic_pass`), automation output metadata records `json_output_repair_attempts_used=1`, and execute result reports `processed=1` with `critic_verdict=pass` while output schema contract remains stable
 - last_reviewed_at: 2026-03-26
 - opened_at: 2026-03-26

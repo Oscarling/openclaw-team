@@ -1,0 +1,3 @@
+{"path": "/v1/chat/completions", "mode": "automation_initial_invalid"}
+{"path": "/v1/chat/completions", "mode": "automation_repair"}
+{"path": "/v1/chat/completions", "mode": "critic_pass"}

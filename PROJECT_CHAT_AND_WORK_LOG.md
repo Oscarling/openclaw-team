@@ -4845,3 +4845,59 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl084/runtime/automation-runtime.s02-baseline.log`
   - `runtime_archives/bl084/runtime/critic-output.s02-baseline.json`
   - `runtime_archives/bl084/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.s04-baseline.json`
+
+### 95. BL-085 JSON-Repair Engaged-Path Controlled Malformed-Output Replay Validation
+
+User objective:
+
+- continue strict no-drift flow
+- exercise JSON-repair engaged path deterministically (not passively wait for live trigger)
+- verify engaged-path quality and contract stability
+
+Main work areas:
+
+- activated `BL-20260326-085` and mirrored to issue `#163`
+- ran one controlled replay using local mock endpoint (`host.docker.internal:18080`) with fixed controls:
+  - `ARGUS_LLM_MAX_RETRIES=1`
+  - `ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES=0`
+  - `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`
+  - `ARGUS_LLM_JSON_REPAIR_ATTEMPTS=1`
+  - `ARGUS_PROVIDER_PROFILE` unset to avoid profile drift
+- enforced deterministic request sequence:
+  - automation initial call returns non-JSON
+  - automation repair call returns valid JSON object
+  - critic call returns pass verdict payload
+- archived BL-085 evidence in `runtime_archives/bl085/`:
+  - execute JSON/stderr
+  - mock request trace
+  - automation/critic runtime+output+task snapshots
+  - preview/result sidecar snapshots
+  - summary TSV
+- validated engaged-path outcomes:
+  - `processed=1`, `rejected=0`, `critic_verdict=pass`
+  - automation `json_output_repair_attempts_used=1`
+  - no terminal JSON-invalid failure; output schema remained contract-valid
+- updated runtime contract with BL-085 controlled replay governance section
+- completed backlog item:
+  - `BL-20260326-085` marked `done`
+
+Primary output:
+
+- [JSON_REPAIR_ENGAGED_PATH_CONTROLLED_REPLAY_REPORT.md](/Users/lingguozhong/openclaw-team/JSON_REPAIR_ENGAGED_PATH_CONTROLLED_REPLAY_REPORT.md)
+
+Key result:
+
+- engaged JSON-repair path is now explicitly validated with deterministic
+  evidence (`invalid -> repair -> pass`) and no contract drift, while baseline
+  defaults remain unchanged.
+
+Verification snapshot on 2026-03-26:
+
+- controlled summary:
+  - `runtime_archives/bl085/tmp/bl085_controlled_replay_summary.tsv`
+- deterministic trace:
+  - `runtime_archives/bl085/tmp/bl085_mock_requests.log`
+- representative runtime/state artifacts:
+  - `runtime_archives/bl085/runtime/automation-runtime.controlled.log`
+  - `runtime_archives/bl085/runtime/automation-output.controlled.json`
+  - `runtime_archives/bl085/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.controlled.json`
