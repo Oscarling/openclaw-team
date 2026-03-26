@@ -1557,14 +1557,31 @@ Allowed enum values:
 ### BL-20260326-089
 - title: Quantify fallback success stability across short multi-run production-like timeout windows
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-088
 - start_when: BL-088 confirms one production-like provider-profile failover window can recover from primary timeout to fallback success
 - done_when: A short multi-run production-like matrix quantifies fallback recovery stability (success rate, verdict quality, wall-time spread) and defines when failover should be considered reliable enough for baseline operational playbooks
 - source: `TIMEOUT_FAILOVER_PRODUCTIONLIKE_WINDOW_REPORT.md` on 2026-03-26 validates single-run profile failover behavior but does not yet quantify short-window stability variance
+- link: /Users/lingguozhong/openclaw-team/TIMEOUT_FAILOVER_STABILITY_WINDOW_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/171
+- evidence: `TIMEOUT_FAILOVER_STABILITY_WINDOW_REPORT.md` archives 4-run matrix evidence in `runtime_archives/bl089/tmp/bl089_profile_failover_stability_matrix.tsv`; outcomes are `processed=4/4`, `critic_verdict=pass` in all runs, complete failover signals in all runs (`http_524 -> fallback` with primary/fallback hits present), and stable wall-time spread (`automation 1.335s-1.400s`, `critic 1.314s-1.349s`)
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-090
+- title: Validate failover stability against mixed transient classes and fallback degradation scenarios
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-089
+- start_when: BL-089 confirms short-window failover stability under uniform `http_524` primary-failure pattern
+- done_when: A governed mixed-scenario matrix (including `timeout/http_524/http_502` and at least one fallback degradation case) quantifies boundary behavior and defines clear rollback triggers for operational failover playbooks
+- source: `TIMEOUT_FAILOVER_STABILITY_WINDOW_REPORT.md` on 2026-03-26 shows strong stability for one transient class pattern, but mixed-class and degraded-fallback boundaries are not yet quantified
 - link: -
 - issue: -
 - evidence: -

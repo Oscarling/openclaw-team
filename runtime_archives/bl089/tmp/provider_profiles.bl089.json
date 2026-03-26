@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "bl089_production_like_failover": {
+      "api_base": "http://host.docker.internal:18085/v1",
+      "model_name": "gpt-5-codex",
+      "wire_api": "chat_completions",
+      "api_key_env": "OPENAI_API_KEY_BL089",
+      "fallback_chat_urls": [
+        "http://host.docker.internal:18086/v1/chat/completions"
+      ]
+    }
+  }
+}

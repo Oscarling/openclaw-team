@@ -5050,3 +5050,55 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl088/runtime/automation-runtime.profile-failover.log`
   - `runtime_archives/bl088/runtime/critic-runtime.profile-failover.log`
   - `runtime_archives/bl088/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.profile-failover.json`
+
+### 99. BL-089 Production-Like Failover Stability Short-Window Matrix
+
+User objective:
+
+- continue strict no-drift flow
+- quantify whether failover recovery is stable beyond single-run success
+- derive practical thresholds for operational playbook readiness
+
+Main work areas:
+
+- activated `BL-20260326-089` and mirrored to issue `#171`
+- executed 4-run production-like provider-profile failover matrix (`s01..s04`) under fixed controls
+- archived BL-089 evidence under `runtime_archives/bl089/`:
+  - per-run execute JSON/stderr
+  - automation/critic runtime+output+task snapshots
+  - preview/result sidecar snapshots
+  - per-run primary/fallback request traces
+  - profile snapshot (`provider_profiles.bl089.json`)
+  - stability matrix + aggregated metrics
+- measured stability outcomes:
+  - `processed=4/4` (`100%`)
+  - `critic_verdict=pass` in all runs (`100%`)
+  - complete failover signals in all runs (`100%`)
+  - wall-time spread:
+    - automation `1.335s .. 1.400s` (avg `1.365s`)
+    - critic `1.314s .. 1.349s` (avg `1.333s`)
+- updated runtime contract with BL-089 short-window stability thresholds
+- completed backlog and queued next blocker:
+  - `BL-20260326-089` marked `done`
+  - queued `BL-20260326-090` (`planned` / `next`)
+
+Primary output:
+
+- [TIMEOUT_FAILOVER_STABILITY_WINDOW_REPORT.md](/Users/lingguozhong/openclaw-team/TIMEOUT_FAILOVER_STABILITY_WINDOW_REPORT.md)
+
+Key result:
+
+- provider-profile failover path shows stable short-window recovery in this
+  governed matrix, and explicit readiness thresholds are now documented for
+  future operational playbooks.
+
+Verification snapshot on 2026-03-26:
+
+- stability matrix:
+  - `runtime_archives/bl089/tmp/bl089_profile_failover_stability_matrix.tsv`
+- aggregated metrics:
+  - `runtime_archives/bl089/tmp/bl089_profile_failover_stability_metrics.json`
+- representative runtime/state artifacts:
+  - `runtime_archives/bl089/runtime/automation-runtime.s01.log`
+  - `runtime_archives/bl089/runtime/critic-runtime.s04.log`
+  - `runtime_archives/bl089/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.s04.json`

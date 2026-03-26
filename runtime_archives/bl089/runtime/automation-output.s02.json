@@ -1,0 +1,17 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Automation success via profile failover path.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-26T04:16:52.731761Z",
+  "duration_ms": 1014,
+  "metadata": {
+    "source": "bl089-fallback"
+  }
+}

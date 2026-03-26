@@ -1,0 +1,5 @@
+sequence	status	processed	rejected	critic_verdict	automation_status	primary_hits	fallback_hits	automation_failover_markers	critic_failover_markers	automation_wall_seconds	critic_wall_seconds
+s01	done	1	0	pass	success	2	2	2	2	1.377	1.330
+s02	done	1	0	pass	success	2	2	2	2	1.335	1.339
+s03	done	1	0	pass	success	2	2	2	2	1.346	1.349
+s04	done	1	0	pass	success	2	2	2	2	1.400	1.314

@@ -1,0 +1,19 @@
+{
+  "sample_size": 4,
+  "processed": 4,
+  "rejected": 0,
+  "processed_rate": 1.0,
+  "pass_verdict_rate": 1.0,
+  "automation_success_rate": 1.0,
+  "complete_failover_signal_rate": 1.0,
+  "automation_wall_seconds": {
+    "avg": 1.365,
+    "min": 1.335,
+    "max": 1.4
+  },
+  "critic_wall_seconds": {
+    "avg": 1.333,
+    "min": 1.314,
+    "max": 1.349
+  }
+}
