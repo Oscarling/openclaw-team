@@ -1,0 +1,2 @@
+label	status	processed	rejected	critic_verdict	retries_used	wall_seconds	auto_error_class	decision_reason
+drill-b2	done	0	1	needs_revision	1	179		Automation task failed: {"task_id": "AUTO-20260325-874", "worker": "automation", "status": "failed", "summary": "Worker execution failed", "artifacts": [], "errors": ["LLM output not valid JSON"], "metadata": {}, "duration_ms": 58283, "timestamp": "2026-03-26T03:03:21.799034Z"}

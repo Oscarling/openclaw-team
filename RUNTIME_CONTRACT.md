@@ -385,3 +385,39 @@ Argus 当前已经从“只讨论架构”推进到：
 1. 默认保持 `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`。  
 2. 不把默认值提升为 `2`，除非有新证据证明可显著提升 `processed` 通过率。  
 3. `=2` 仅作为受控恢复窗口中的临时覆盖值使用，并在 run 结束后恢复默认。  
+
+### BL-082 预算 `2` 临时升级触发与回滚 Runbook（产品化）
+
+在保持默认 `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1` 的前提下，仅允许在满足触发条件时临时升级到 `=2`。
+
+#### 触发条件（全部满足）
+
+1. 当前执行对象是 `phase=now` 的阻塞项或明确优先级恢复窗口。  
+2. 最近一次同目标受管 replay 在默认预算 `=1` 下因瞬态错误失败（`timeout/http_524/http_502`）。  
+3. 已声明本次为“短窗口临时覆盖”，并约定 run 后立即回滚到默认预算。  
+
+#### 执行步骤（受管 drill 口径）
+
+1. 固定 provider 控制：  
+   - `ARGUS_PROVIDER_PROFILE=fast_chat_governed_baseline`  
+   - `ARGUS_PROVIDER_PROFILES_FILE` 置空/不设置  
+   - `ARGUS_LLM_MAX_RETRIES=1`  
+   - `ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES=0`
+2. 临时导出：`ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=2`。  
+3. 执行一次受管 replay，并归档 execute/runtime/state 证据。  
+4. 执行后立刻恢复默认：取消该临时环境变量，后续 run 回到预算 `=1`。  
+
+#### 回滚条件（任一满足即回滚）
+
+1. 本次 run 结束（不论 `processed` 成功或失败）。  
+2. run 出现非瞬态失败或异常副作用信号。  
+3. run 未带来可接受收益（例如通过率无改善但 wall-time 明显增加）。  
+
+#### 证据要求
+
+最少归档以下文件：
+
+- `tmp/*execute*.json` 与 `tmp/*stderr*.log`
+- `runtime/automation-*` 与 `runtime/critic-*`
+- `state/<preview>.result*.json` 与 `state/<preview>*.json`
+- 汇总记录触发原因、回滚时点与结论

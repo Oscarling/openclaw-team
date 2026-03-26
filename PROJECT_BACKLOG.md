@@ -1438,14 +1438,31 @@ Allowed enum values:
 ### BL-20260326-082
 - title: Productize controlled budget-2 escalation trigger and replay runbook after confidence-window freeze
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-081
 - start_when: BL-081 confirms default retry budget stays at `1` while budget `2` remains a temporary override path with mixed outcomes
 - done_when: A documented, governed escalation trigger for temporary `budget=2` use (activation and rollback criteria) is added and validated by at least one archived drill run, so operators can use the override path consistently without drifting baseline defaults
 - source: `RETRY_BUDGET_CONFIDENCE_WINDOW_REPORT.md` on 2026-03-26 shows occasional budget `2` benefit but persistent latency/retry overhead, requiring a stricter operational override playbook
+- link: /Users/lingguozhong/openclaw-team/BUDGET2_ESCALATION_RUNBOOK_PRODUCTIZATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/157
+- evidence: `RUNTIME_CONTRACT.md` now defines BL-082 governed activation/rollback/evidence rules for temporary `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=2`; drill run evidence is archived in `runtime_archives/bl082/tmp/bl082_drill_summary.tsv` and companion execute/runtime/state snapshots (`*drill-b2*`), validating runbook execution while preserving baseline default guidance (`=1`)
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-083
+- title: Harden automation JSON-output validity recovery path after budget-2 drill failure signal
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-082
+- start_when: BL-082 drill archives show a terminal automation failure containing `LLM output not valid JSON` under controlled replay
+- done_when: Automation path adds bounded JSON-validity recovery/repair handling (with focused tests) and governed replay evidence confirms the new path improves completion robustness without relaxing baseline safety constraints
+- source: `BUDGET2_ESCALATION_RUNBOOK_PRODUCTIZATION_REPORT.md` on 2026-03-26 records BL-082 drill rejection with terminal reason `LLM output not valid JSON`, indicating a remaining reliability blocker outside retry-budget policy
 - link: -
 - issue: -
 - evidence: -
