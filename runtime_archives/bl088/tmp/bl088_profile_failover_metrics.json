@@ -1,0 +1,11 @@
+{
+  "status": "done",
+  "processed": 1,
+  "rejected": 0,
+  "critic_verdict": "pass",
+  "automation_status": "success",
+  "primary_hits": 2,
+  "fallback_hits": 2,
+  "automation_failover_markers": 2,
+  "critic_failover_markers": 2
+}
