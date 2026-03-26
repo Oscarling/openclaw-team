@@ -1,0 +1,22 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-26T06:22:16.541904Z
+finished_at: 2026-03-26T06:24:23.887766Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-26T06:22:16.769367Z] [automation] [INFO] Worker started using endpoint https://aixj.vip/v1/responses (wire_api=responses, timeout=120s, attempts=3, timeout_recovery_retries=1, json_repair_attempts=1)
+[2026-03-26T06:22:18.029074Z] [automation] [WARN] LLM call failed attempt 1/3 (endpoint=https://aixj.vip/v1/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-26T06:22:18.029156Z] [automation] [INFO] Retrying LLM call in 1s (next_endpoint=https://fast.vpsairobot.com/responses)
+[2026-03-26T06:24:19.269872Z] [automation] [WARN] LLM call failed attempt 2/3 (endpoint=https://fast.vpsairobot.com/responses, class=timeout, retryable=True): The read operation timed out
+[2026-03-26T06:24:19.270003Z] [automation] [INFO] Retrying LLM call in 2s (next_endpoint=https://fast.vpsairobot.com/v1/responses)
+[2026-03-26T06:24:23.736956Z] [automation] [INFO] Task completed AUTO-20260325-874 with status failed
+[2026-03-26T06:24:23.738256Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+

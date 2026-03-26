@@ -562,3 +562,23 @@ malformed-output 回放并归档证据，口径如下：
    - endpoint availability（例如 fallback `http_401/http_403/http_5xx`）
 5. 若存在 failover marker 但 availability 不达标，结论应为
    “路径可观测但不可推广”，并显式创建下一条 remediation blocker。  
+
+### BL-092 fallback 凭证对齐后 rerun 口径
+
+当 BL-091 类型问题由 `fallback auth unavailable` 进入 `credential/profile alignment`
+修复后，rerun 口径补充如下：
+
+1. profile 支持主备分离凭证：
+   - 主路径使用 `api_key_env`
+   - fallback 路径可使用 `fallback_api_key_env`（或等价字段）
+2. preflight 必须分别记录 primary/fallback 状态码，并把 fallback `200` 仅作为
+   “可用性恢复”证据，不等于推广通过。  
+3. rerun 判定仍使用 BL-091 同一 guardrail：
+   - 任一 terminal rejection
+   - `processed_rate < 0.75`
+   - `pass_verdict_rate < 0.75`
+4. 若 fallback 可用性恢复但窗口仍未达标，必须将原因分层记录：
+   - endpoint class（如 `http_502/timeout`）
+   - runtime/workspace class（如 `workspace_missing_repo`）
+5. 该情形下结论必须是“对齐成功但推广未恢复”，并创建下一条稳定性 blocker，
+   禁止把 BL-092 口径误写为“已可推广”。  

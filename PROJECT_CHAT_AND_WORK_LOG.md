@@ -5201,3 +5201,58 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl091/tmp/bl091_canary_observation_metrics.json`
 - representative runtime artifact:
   - `runtime_archives/bl091/runtime/automation-runtime.s01.log`
+
+### 102. BL-092 Fallback Credential/Profile Alignment Rerun (Threshold Not Cleared)
+
+User objective:
+
+- continue strict no-drift flow
+- restore fallback credential/profile availability after BL-091 rollback
+- rerun real-endpoint canary and verify whether rollout thresholds recover
+
+Main work areas:
+
+- activated `BL-20260326-092` and mirrored to issue `#177`
+- delivered split-key profile capability for real failover topology:
+  - profile loader now supports `fallback_api_key_env`
+  - runtime call path can use fallback API key on fallback URLs
+  - regression tests added for fallback-key env/header behavior
+- executed BL-092 governed rerun window (`s01..s04`) and archived evidence under
+  `runtime_archives/bl092/`:
+  - probe matrix (`bl092_probe_matrix.tsv`)
+  - per-run execute/runtime/state snapshots
+  - rerun matrix + metrics
+- observed rerun outcomes:
+  - fallback preflight availability restored (`fast.vpsairobot.com` endpoints `200`)
+  - canary window results: `processed=1/4`, `rejected=3/4`, `pass_verdict_rate=0.25`
+  - failover marker/fallback hit signal remained `4/4`
+  - mixed residual failures:
+    - `workspace_missing_repo` (non-deterministic workspace/runtime drift symptom)
+    - terminal primary `http_502` exhaustion
+- applied rollback guardrails and kept rollback active
+- updated backlog:
+  - `BL-20260326-092` moved to `blocked`
+  - queued next blocker `BL-20260326-093` and mirrored to issue `#178`
+
+Primary output:
+
+- [CANARY_FALLBACK_CREDENTIAL_ALIGNMENT_RERUN_REPORT.md](/Users/lingguozhong/openclaw-team/CANARY_FALLBACK_CREDENTIAL_ALIGNMENT_RERUN_REPORT.md)
+
+Key result:
+
+- fallback credential/profile alignment was restored at preflight level, but
+  promotion thresholds were not recovered in rerun canary, so rollout remains
+  blocked and follow-up stabilization work is required.
+
+Verification snapshot on 2026-03-26:
+
+- probe matrix:
+  - `runtime_archives/bl092/tmp/bl092_probe_matrix.tsv`
+- rerun matrix:
+  - `runtime_archives/bl092/tmp/bl092_canary_rerun_matrix.tsv`
+- rerun metrics:
+  - `runtime_archives/bl092/tmp/bl092_canary_rerun_metrics.json`
+- representative runtime artifacts:
+  - `runtime_archives/bl092/runtime/automation-runtime.s02.log`
+  - `runtime_archives/bl092/runtime/automation-runtime.s03.log`
+  - `runtime_archives/bl092/runtime/automation-runtime.s04.log`

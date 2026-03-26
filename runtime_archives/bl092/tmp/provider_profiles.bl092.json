@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "bl092_real_failover_canary_fixed": {
+      "api_base": "https://aixj.vip/v1",
+      "model_name": "gpt-5-codex",
+      "wire_api": "responses",
+      "api_key_env": "OPENAI_API_KEY_PRIMARY",
+      "fallback_api_key_env": "OPENAI_API_KEY_BL092",
+      "fallback_response_urls": [
+        "https://fast.vpsairobot.com/responses",
+        "https://fast.vpsairobot.com/v1/responses"
+      ]
+    }
+  }
+}

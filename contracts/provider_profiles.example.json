@@ -11,6 +11,7 @@
       "model_name": "gpt-5-codex",
       "wire_api": "responses",
       "api_key_env": "OPENAI_API_KEY_AIXJ_VIP",
+      "fallback_api_key_env": "OPENAI_API_KEY_FAST",
       "fallback_api_bases": [
         "https://aixj.vip"
       ]

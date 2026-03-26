@@ -359,10 +359,38 @@ def resolve_profile_api_key(profile_name, profile):
     return None
 
 
+def resolve_profile_fallback_api_key(profile_name, profile):
+    direct_key = first_profile_value(profile, "fallback_api_key", "fallback_openai_api_key")
+    if direct_key:
+        return direct_key
+
+    env_name = first_profile_value(profile, "fallback_api_key_env")
+    if env_name:
+        env_value = first_env(env_name)
+        if env_value:
+            return env_value
+        raise RuntimeError(
+            f"Provider profile '{profile_name}' requires env var '{env_name}' for fallback API key, "
+            "but it is not set"
+        )
+
+    secret_name = first_profile_value(profile, "fallback_api_key_secret")
+    if secret_name:
+        secret_value = read_secret(secret_name)
+        if secret_value:
+            return secret_value
+        raise RuntimeError(
+            f"Provider profile '{profile_name}' requires docker secret '{secret_name}' for fallback API key, "
+            "but it is not available"
+        )
+    return None
+
+
 def resolve_provider_profile_env(profile_name):
     profile, profiles_path = load_provider_profile(profile_name)
     profile_env = {
         "OPENAI_API_KEY": resolve_profile_api_key(profile_name, profile),
+        "ARGUS_LLM_FALLBACK_API_KEY": resolve_profile_fallback_api_key(profile_name, profile),
         "OPENAI_API_BASE": first_profile_value(profile, "api_base", "openai_api_base", "base_url"),
         "OPENAI_MODEL_NAME": first_profile_value(profile, "model_name", "openai_model_name", "model"),
         "ARGUS_LLM_WIRE_API": first_profile_value(
@@ -433,6 +461,10 @@ def build_worker_env(worker):
     env["ARGUS_LLM_MAX_RETRIES"] = first_env("ARGUS_LLM_MAX_RETRIES")
     env["ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES"] = first_env("ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES")
     env["ARGUS_LLM_WIRE_API"] = first_env("ARGUS_LLM_WIRE_API", "OPENAI_WIRE_API", "WIRE_API")
+    env["ARGUS_LLM_FALLBACK_API_KEY"] = first_env(
+        "ARGUS_LLM_FALLBACK_API_KEY",
+        "OPENAI_FALLBACK_API_KEY",
+    )
     env["ARGUS_LLM_FALLBACK_CHAT_URLS"] = first_env("ARGUS_LLM_FALLBACK_CHAT_URLS")
     env["ARGUS_LLM_FALLBACK_RESPONSE_URLS"] = first_env("ARGUS_LLM_FALLBACK_RESPONSE_URLS")
     env["ARGUS_LLM_FALLBACK_API_BASES"] = first_env("ARGUS_LLM_FALLBACK_API_BASES")

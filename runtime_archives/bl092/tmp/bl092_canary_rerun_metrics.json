@@ -1,0 +1,20 @@
+{
+  "sample_size": 4,
+  "processed": 1,
+  "rejected": 3,
+  "processed_rate": 0.25,
+  "pass_verdict": 1,
+  "pass_verdict_rate": 0.25,
+  "complete_failover_signal": 4,
+  "complete_failover_signal_rate": 1.0,
+  "observed_automation_error_classes": [
+    "http_502",
+    "workspace_missing_repo"
+  ],
+  "rollback_triggered": true,
+  "rollback_reasons": [
+    "terminal_rejection_present",
+    "processed_rate_below_0.75",
+    "pass_verdict_rate_below_0.75"
+  ]
+}

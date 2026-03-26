@@ -170,11 +170,16 @@ def get_llm_settings():
         or first_env("ARGUS_LLM_WIRE_API", "OPENAI_WIRE_API", "WIRE_API")
         or DEFAULT_WIRE_API
     )
+    fallback_api_key = (
+        read_secret("openai_fallback_api_key", "fallback_api_key")
+        or first_env("ARGUS_LLM_FALLBACK_API_KEY", "OPENAI_FALLBACK_API_KEY")
+    )
     chat_url = normalize_chat_endpoint(api_base)
     responses_url = normalize_responses_endpoint(api_base)
     endpoint_url = responses_url if configured_wire_api == "responses" else chat_url
     return {
         "api_key": api_key,
+        "fallback_api_key": fallback_api_key,
         "api_base": api_base,
         "wire_api": configured_wire_api,
         "chat_url": chat_url,
@@ -442,6 +447,25 @@ def llm_candidate_urls(llm_settings):
     return deduped
 
 
+def llm_fallback_auth_urls():
+    urls = []
+    urls.extend(llm_fallback_chat_urls())
+    urls.extend(llm_fallback_response_urls())
+    for base in llm_fallback_api_bases():
+        urls.append(normalize_chat_endpoint(base))
+        urls.append(normalize_responses_endpoint(base))
+
+    deduped = []
+    seen = set()
+    for url in urls:
+        value = str(url or "").strip()
+        if not value or value in seen:
+            continue
+        seen.add(value)
+        deduped.append(value)
+    return deduped
+
+
 def endpoint_api_base(endpoint_url):
     base = str(endpoint_url or "").strip().rstrip("/")
     if base.endswith("/chat/completions"):
@@ -643,12 +667,20 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
     timeout_recovery_retries_remaining = llm_timeout_recovery_retries()
     endpoint_urls = llm_candidate_urls(llm_settings)
     configured_wire_api = normalize_wire_api(llm_settings.get("wire_api", DEFAULT_WIRE_API))
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {llm_settings['api_key']}",
-        "User-Agent": HTTP_USER_AGENT,
-        "Connection": "close",
-    }
+    fallback_key = llm_settings.get("fallback_api_key")
+    fallback_auth_urls = set(llm_fallback_auth_urls())
+
+    def build_headers(endpoint_url):
+        api_key = llm_settings["api_key"]
+        if fallback_key and endpoint_url in fallback_auth_urls:
+            api_key = fallback_key
+        return {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+            "User-Agent": HTTP_USER_AGENT,
+            "Connection": "close",
+        }
+
     auth_fallback_retry_used = False
     attempt = 0
     while attempt < max_attempts:
@@ -663,7 +695,7 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
                 endpoint_url=endpoint_url,
                 wire_api=wire_api,
                 payload=payload,
-                headers=headers,
+                headers=build_headers(endpoint_url),
                 timeout_seconds=timeout_seconds,
             )
         except Exception as e:
@@ -696,7 +728,7 @@ def call_llm(system_prompt, user_prompt, worker, llm_settings):
                             endpoint_url=responses_url,
                             wire_api="responses",
                             payload=response_payload,
-                            headers=headers,
+                            headers=build_headers(responses_url),
                             timeout_seconds=timeout_seconds,
                         )
                     except Exception as responses_error:
