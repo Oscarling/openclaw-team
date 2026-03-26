@@ -4946,3 +4946,57 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl086/tmp/bl086_timeout_bottleneck_summary.tsv`
 - aggregated metrics:
   - `runtime_archives/bl086/tmp/bl086_timeout_bottleneck_metrics.json`
+
+### 97. BL-087 Governed Timeout Failover Drill Validation
+
+User objective:
+
+- continue strict no-drift flow
+- move from timeout bottleneck quantification to timeout-path mitigation verification
+- validate failover mechanics with archived, replayable evidence
+
+Main work areas:
+
+- activated `BL-20260326-087` and mirrored to issue `#167`
+- executed one governed failover drill with controlled endpoints:
+  - primary endpoint forced `HTTP 524`
+  - fallback endpoint returned contract-valid success payloads
+  - controls pinned: `ARGUS_LLM_MAX_RETRIES=2`, `ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES=0`, baseline transient/JSON budgets unchanged
+- archived BL-087 evidence in `runtime_archives/bl087/`:
+  - execute JSON/stderr
+  - automation/critic runtime+output+task snapshots
+  - preview/result sidecar snapshots
+  - primary/fallback request traces
+  - drill summary/metrics files
+- validated failover path signals:
+  - execute: `processed=1`, `rejected=0`, `critic_verdict=pass`
+  - runtime logs (automation + critic) include:
+    - `class=http_524` on primary endpoint
+    - retry to configured fallback endpoint
+    - successful task completion
+  - request traces confirm `primary_hits=2`, `fallback_hits=2`
+- updated runtime contract with BL-087 failover drill governance section
+- completed backlog and queued next blocker:
+  - `BL-20260326-087` marked `done`
+  - queued `BL-20260326-088` (`planned` / `next`)
+
+Primary output:
+
+- [TIMEOUT_FAILOVER_DRILL_RUNBOOK_REPORT.md](/Users/lingguozhong/openclaw-team/TIMEOUT_FAILOVER_DRILL_RUNBOOK_REPORT.md)
+
+Key result:
+
+- timeout failover mechanics are now verified under governed drill conditions
+  with explicit runtime and request-trace evidence, while baseline defaults stay
+  unchanged.
+
+Verification snapshot on 2026-03-26:
+
+- drill summary:
+  - `runtime_archives/bl087/tmp/bl087_failover_drill_summary.tsv`
+- drill metrics:
+  - `runtime_archives/bl087/tmp/bl087_failover_drill_metrics.json`
+- representative runtime/state artifacts:
+  - `runtime_archives/bl087/runtime/automation-runtime.failover.log`
+  - `runtime_archives/bl087/runtime/critic-runtime.failover.log`
+  - `runtime_archives/bl087/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.failover.json`

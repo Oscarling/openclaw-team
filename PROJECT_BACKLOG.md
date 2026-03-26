@@ -1523,14 +1523,31 @@ Allowed enum values:
 ### BL-20260326-087
 - title: Run governed timeout failover drill with fallback endpoint profile and rollback criteria
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-086
 - start_when: BL-086 confirms timeout remains dominant and runtime contract prioritizes timeout-path mitigation
 - done_when: A governed failover drill validates timeout recovery behavior using fallback endpoint configuration, with activation/rollback criteria and archived execute/runtime/state evidence
 - source: `TIMEOUT_BOTTLENECK_CONFIDENCE_WINDOW_REPORT.md` on 2026-03-26 shows timeout share among failures `81.82%`, indicating next mitigation should test timeout failover path under governance
+- link: /Users/lingguozhong/openclaw-team/TIMEOUT_FAILOVER_DRILL_RUNBOOK_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/167
+- evidence: `TIMEOUT_FAILOVER_DRILL_RUNBOOK_REPORT.md` archives BL-087 drill evidence under `runtime_archives/bl087/`; runtime logs confirm `http_524` primary failures followed by retry to fallback endpoint for both automation and critic, request traces record `primary_hits=2` and `fallback_hits=2`, and execute outcome is `processed=1` with `critic_verdict=pass`
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-088
+- title: Validate timeout failover behavior in production-like provider profile window
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-087
+- start_when: BL-087 controlled drill confirms fallback path mechanics work under governed synthetic timeout conditions
+- done_when: A short production-like governed window validates timeout failover behavior with real provider profile controls and archives evidence that separates endpoint/network failures from prompt/schema path outcomes
+- source: `TIMEOUT_FAILOVER_DRILL_RUNBOOK_REPORT.md` on 2026-03-26 validates failover mechanics in controlled mode, but production-like confidence still requires real profile window evidence
 - link: -
 - issue: -
 - evidence: -

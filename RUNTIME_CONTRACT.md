@@ -468,3 +468,22 @@ malformed-output 回放并归档证据，口径如下：
    - `timeout_share_among_failures >= 0.6`
    - 且 `json_invalid_terminal_rate` 接近 `0`
    则默认判定 timeout 为当前首要阻塞项，不将主失败归因于 JSON 修复预算。
+
+### BL-087 timeout failover 受管演练口径
+
+当需要验证 timeout 路径的 failover 可用性时，按以下口径执行一次受管 drill：
+
+1. 激活条件：  
+   - 近期窗口中 timeout 仍是主失败类别；  
+   - 需要验证 fallback 路径是否可恢复 automation/critic 执行。  
+2. 固定执行控制：  
+   - 主 endpoint 置为可控 timeout/`http_524` 路径；  
+   - fallback endpoint 显式设置；  
+   - `ARGUS_LLM_MAX_RETRIES=2`，`ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES=0`。  
+3. 证据必须同时覆盖：
+   - execute 结果（`processed/rejected/critic_verdict`）
+   - automation + critic runtime 日志中的 failover 标记（`class=http_524` 与 `next_endpoint=<fallback>`）
+   - primary/fallback 请求轨迹计数
+4. 回滚规则：  
+   - 演练结束即恢复默认 endpoint 解析路径；  
+   - 不把 drill 端点固化为日常 baseline。  
