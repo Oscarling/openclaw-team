@@ -1,0 +1,15 @@
+=== model=gpt-5.4 ===
+https://fast.vpsairobot.com/v1/responses -> 200
+https://fast.vpsairobot.com/responses -> 200
+https://fast.vpsairobot.com/v1/chat/completions -> 200
+
+=== model=gpt-5 ===
+https://fast.vpsairobot.com/v1/responses -> 200
+https://fast.vpsairobot.com/responses -> 200
+https://fast.vpsairobot.com/v1/chat/completions -> 200
+
+=== model=gpt-5-codex ===
+https://fast.vpsairobot.com/v1/responses -> 200
+https://fast.vpsairobot.com/responses -> 200
+https://fast.vpsairobot.com/v1/chat/completions -> 200
+

@@ -1,0 +1,18 @@
+{
+  "status": "done",
+  "processed": 1,
+  "rejected": 0,
+  "skipped": 0,
+  "test_mode": "off",
+  "allow_replay": true,
+  "results": [
+    {
+      "status": "processed",
+      "decision_reason": "critic_verdict=pass",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.json",
+      "result_sidecar": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.json",
+      "critic_verdict": "pass"
+    }
+  ]
+}

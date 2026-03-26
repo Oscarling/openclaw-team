@@ -1336,14 +1336,31 @@ Allowed enum values:
 ### BL-20260326-076
 - title: Mitigate persistent upstream http_524 after timeout-recovery hardening to restore governed automation success
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-075
 - start_when: BL-075 source hardening is merged and governed replay confirms timeout-recovery propagation/extension works (`attempts 2->4`) but still ends terminally on upstream `http_524`
 - done_when: One governed replay under aligned fast-provider profile reaches automation success (and ideally critic handoff) without terminal `http_524` exhaustion, or conclusively validates an alternate stable provider path under the same governed contract
 - source: `FAST_PROVIDER_GATEWAY_TIMEOUT_RESILIENCE_HARDENING_REPORT.md` on 2026-03-26 records propagation/resilience improvements but persistent terminal `http_524` at upstream endpoint
+- link: /Users/lingguozhong/openclaw-team/PERSISTENT_HTTP524_PATH_MITIGATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/145
+- evidence: `runtime_archives/bl076/tmp/bl076_probe_matrix.txt` confirmed `200` probes on `https://fast.vpsairobot.com/v1/{responses,chat/completions}` for models `gpt-5.4`, `gpt-5`, and `gpt-5-codex`; governed replay experiment A using profile `bl076_fast_chat` (`wire_api=chat_completions`, model `gpt-5-codex`) returned `processed=1` / `critic_verdict=pass` in `runtime_archives/bl076/tmp/bl076_execute_replay_experiment_a.json`, with automation and critic both `success` (`runtime_archives/bl076/runtime/*experiment-a*`, `runtime_archives/bl076/state/*`)
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-077
+- title: Productize BL-076 validated chat path into repeatable governed provider-profile baseline
+- type: mainline
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-076
+- start_when: BL-076 confirms governed replay can pass via validated `chat_completions` path under aligned fast provider
+- done_when: A repository-managed provider profile baseline (without ad-hoc temporary profile files) is documented and validated so future governed executes can reuse the BL-076 stable path with minimal manual runtime setup
+- source: `PERSISTENT_HTTP524_PATH_MITIGATION_REPORT.md` on 2026-03-26 records a successful governed pass through temporary experiment profile `bl076_fast_chat`
 - link: -
 - issue: -
 - evidence: -
