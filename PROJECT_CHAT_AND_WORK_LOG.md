@@ -5371,3 +5371,50 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl094/runtime/automation-runtime.s02.log`
   - `runtime_archives/bl094/runtime/automation-runtime.s03.log`
   - `runtime_archives/bl094/runtime/automation-runtime.s04.log`
+
+### 105. BL-095 Route Discovery Probes (No Stable Route Yet)
+
+User objective:
+
+- continue strict no-drift local-first flow
+- avoid blind retries and identify whether a stable route exists
+- keep decisions evidence-driven before next canary attempt
+
+Main work areas:
+
+- activated `BL-20260326-095` under local-first mode (not yet mirrored to issue)
+- ran endpoint/model/payload probe matrix:
+  - primary `aixj.vip` path remained `http_502` for all tested models/payloads
+  - fallback `fast.vpsairobot.com` path accepted lightweight probes (`200`)
+- ran fallback payload-size sweep with simple payload strings:
+  - both fallback endpoints returned `200` through tested simple sizes
+- ran real automation-prompt shape probe with compaction limit sweep:
+  - `/responses`: timeout across all tested limits
+  - `/v1/responses`: mostly timeout; one transient success appeared once
+- ran reliability retest on the transiently-successful setting
+  (`/v1/responses`, `field_limit=1200`):
+  - immediate `4/4` timeout, confirming non-stable behavior
+- updated backlog:
+  - `BL-20260326-095` moved to `blocked` with evidence
+  - queued next blocker `BL-20260326-096` (`planned`)
+
+Primary output:
+
+- [ENDPOINT_CHAIN_ROUTE_DISCOVERY_PROBE_REPORT.md](/Users/lingguozhong/openclaw-team/ENDPOINT_CHAIN_ROUTE_DISCOVERY_PROBE_REPORT.md)
+
+Key result:
+
+- current topology has no repeatable stable route for the real automation prompt
+  shape; endpoint-chain blocker remains active and canary clearance is still
+  gated.
+
+Verification snapshot on 2026-03-26:
+
+- endpoint/model/payload matrix:
+  - `runtime_archives/bl095/tmp/bl095_probe_matrix.tsv`
+- fallback payload-size sweep:
+  - `runtime_archives/bl095/tmp/bl095_payload_sweep.tsv`
+- real prompt limit probe:
+  - `runtime_archives/bl095/tmp/bl095_prompt_limit_probe.tsv`
+- limit reliability retest:
+  - `runtime_archives/bl095/tmp/bl095_limit1200_repeats.tsv`

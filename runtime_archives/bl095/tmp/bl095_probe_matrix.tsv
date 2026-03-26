@@ -1,0 +1,25 @@
+endpoint	key_role	model	payload	exit_code	http_code	elapsed_sec	detail
+https://aixj.vip/v1/responses	primary	gpt-5-codex	ping	0	502	2.742	error code: 502
+https://aixj.vip/v1/responses	primary	gpt-5-codex	heavy_inputs	0	502	3.752	error code: 502
+https://aixj.vip/v1/responses	primary	gpt-5	ping	0	502	2.267	error code: 502
+https://aixj.vip/v1/responses	primary	gpt-5	heavy_inputs	0	502	2.315	error code: 502
+https://aixj.vip/v1/responses	primary	gpt-5.3-codex	ping	0	502	3.594	error code: 502
+https://aixj.vip/v1/responses	primary	gpt-5.3-codex	heavy_inputs	0	502	2.814	error code: 502
+https://aixj.vip/responses	primary	gpt-5-codex	ping	0	502	2.124	error code: 502
+https://aixj.vip/responses	primary	gpt-5-codex	heavy_inputs	0	502	1.950	error code: 502
+https://aixj.vip/responses	primary	gpt-5	ping	0	502	2.845	error code: 502
+https://aixj.vip/responses	primary	gpt-5	heavy_inputs	0	502	2.142	error code: 502
+https://aixj.vip/responses	primary	gpt-5.3-codex	ping	0	502	2.746	error code: 502
+https://aixj.vip/responses	primary	gpt-5.3-codex	heavy_inputs	0	502	3.331	error code: 502
+https://fast.vpsairobot.com/responses	fallback	gpt-5-codex	ping	0	200	4.103	{"id":"resp_05fea42d3c1ca0190169c4eed87adc8191bdd15f7c0430cc95","object":"response","created_at":1774513880,"status":"completed","background":false,"completed_a
+https://fast.vpsairobot.com/responses	fallback	gpt-5-codex	heavy_inputs	1	0	45.922	The read operation timed out
+https://fast.vpsairobot.com/responses	fallback	gpt-5	ping	0	200	5.301	{"id":"resp_0a6c64293846b8c80169c4ef0b2ba88191b59e926b48c8a29d","object":"response","created_at":1774513931,"status":"completed","background":false,"completed_a
+https://fast.vpsairobot.com/responses	fallback	gpt-5	heavy_inputs	1	0	45.896	The read operation timed out
+https://fast.vpsairobot.com/responses	fallback	gpt-5.3-codex	ping	0	200	7.322	{"id":"resp_0703c622ec8fbf170169c4ef3c9650819181b7e4d9dc00abef","object":"response","created_at":1774513980,"status":"completed","background":false,"completed_a
+https://fast.vpsairobot.com/responses	fallback	gpt-5.3-codex	heavy_inputs	1	0	45.641	The read operation timed out
+https://fast.vpsairobot.com/v1/responses	fallback	gpt-5-codex	ping	0	200	2.705	{"id":"resp_08e5ba006342afa20169c4ef71ff388191886f7e2b4891ebe9","object":"response","created_at":1774514034,"status":"completed","background":false,"completed_a
+https://fast.vpsairobot.com/v1/responses	fallback	gpt-5-codex	heavy_inputs	1	0	45.899	The read operation timed out
+https://fast.vpsairobot.com/v1/responses	fallback	gpt-5	ping	0	200	5.633	{"id":"resp_0486a3fdcb2411e30169c4efa400e08191b8c638bd49a24c7d","object":"response","created_at":1774514084,"status":"completed","background":false,"completed_a
+https://fast.vpsairobot.com/v1/responses	fallback	gpt-5	heavy_inputs	1	0	46.823	The read operation timed out
+https://fast.vpsairobot.com/v1/responses	fallback	gpt-5.3-codex	ping	0	200	2.710	{"id":"resp_0187d4420fa9032b0169c4efd69e108191a46b50dcd9939cc4","object":"response","created_at":1774514134,"status":"completed","background":false,"completed_a
+https://fast.vpsairobot.com/v1/responses	fallback	gpt-5.3-codex	heavy_inputs	1	0	0.435	<urlopen error EOF occurred in violation of protocol (_ssl.c:1129)>

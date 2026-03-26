@@ -1659,7 +1659,7 @@ Allowed enum values:
 ### BL-20260326-095
 - title: Recover fallback endpoint stability after BL-094 by isolating remote-closed path under governed canary guardrails
 - type: blocker
-- status: planned
+- status: blocked
 - phase: next
 - priority: p1
 - owner: Oscarling
@@ -1667,6 +1667,23 @@ Allowed enum values:
 - start_when: BL-094 confirms prompt compaction is active but 4-sample rerun still fails entirely on endpoint-chain instability (`http_502` + fallback `remote_closed/timeout`)
 - done_when: A governed 4-sample real-endpoint window reaches `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` with rollback guardrails not triggered, and evidence proves fallback path no longer degrades to `remote_closed/timeout` under selected provider/endpoint controls
 - source: `CANARY_ENDPOINT_CHAIN_RECOVERY_PROMPT_COMPACTION_REPORT.md` on 2026-03-26 records that prompt-size mitigation does not clear endpoint-chain blocker
+- link: /Users/lingguozhong/openclaw-team/ENDPOINT_CHAIN_ROUTE_DISCOVERY_PROBE_REPORT.md
+- issue: -
+- evidence: `ENDPOINT_CHAIN_ROUTE_DISCOVERY_PROBE_REPORT.md` with `runtime_archives/bl095/tmp/bl095_probe_matrix.tsv`, `bl095_payload_sweep.tsv`, `bl095_prompt_limit_probe.tsv`, and `bl095_limit1200_repeats.tsv` shows primary route remains fixed `http_502`, fallback simple probes are `200`, but real automation prompt shape still times out under 45s budget across tested compaction limits (including 4/4 timeout retest at `field_limit=1200`)
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-096
+- title: Establish a stable provider/endpoint route for real automation prompt execution before canary clearance
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-095
+- start_when: BL-095 confirms current provider topology has no stable route for real automation prompt shape despite endpoint/model/compaction probes
+- done_when: A candidate provider/endpoint route is validated with repeatable real-automation prompt success and then confirmed by governed 4-sample canary meeting `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` without rollback trigger
+- source: `ENDPOINT_CHAIN_ROUTE_DISCOVERY_PROBE_REPORT.md` on 2026-03-26 records shape-dependent timeout saturation on current fallback route and persistent primary `http_502`
 - link: -
 - issue: -
 - evidence: -
