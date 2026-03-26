@@ -1,0 +1,17 @@
+{
+  "profiles": {
+    "bl075_fast_backup": {
+      "api_base": "https://fast.vpsairobot.com/v1",
+      "model_name": "gpt-5.4",
+      "wire_api": "responses",
+      "api_key_env": "OPENAI_API_KEY_BL075",
+      "fallback_response_urls": [
+        "https://fast.vpsairobot.com/v1/responses",
+        "https://fast.vpsairobot.com/responses"
+      ],
+      "fallback_api_bases": [
+        "https://fast.vpsairobot.com/v1"
+      ]
+    }
+  }
+}

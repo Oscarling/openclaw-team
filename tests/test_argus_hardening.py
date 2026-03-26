@@ -218,6 +218,7 @@ class ArgusHardeningTests(unittest.TestCase):
                 "OPENAI_API_KEY_BACKUP": "backup-key",
                 "OPENAI_API_BASE": "https://primary-provider.invalid/v1",
                 "OPENAI_MODEL_NAME": "primary-model",
+                "ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES": "0",
             },
             clear=False,
         ):
@@ -232,6 +233,7 @@ class ArgusHardeningTests(unittest.TestCase):
             "https://backup-provider.invalid/v1/responses,https://backup-provider.invalid/responses",
         )
         self.assertEqual(env["ARGUS_LLM_FALLBACK_API_BASES"], "https://backup-provider.invalid/v1")
+        self.assertEqual(env["ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES"], "0")
         self.assertEqual(env["ARGUS_PROVIDER_PROFILE"], "backup")
         self.assertEqual(Path(env["ARGUS_PROVIDER_PROFILES_FILE"]).resolve(), profiles_path.resolve())
 
@@ -1091,6 +1093,77 @@ class ArgusHardeningTests(unittest.TestCase):
         )
         self.assertEqual([timeout for _url, timeout in calls], [120, 120, 120, 120])
         self.assertEqual(primary_attempts["count"], 3)
+        self.assertEqual(json.loads(content)["status"], "success")
+
+    def test_call_llm_grants_timeout_recovery_retry_for_http_524(self) -> None:
+        calls: list[tuple[str, int]] = []
+        attempts = {"count": 0}
+
+        class FakeResponse:
+            def __enter__(self) -> "FakeResponse":
+                return self
+
+            def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+                return False
+
+            def read(self) -> bytes:
+                payload = {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps({"status": "success", "summary": "ok"})
+                            }
+                        }
+                    ]
+                }
+                return json.dumps(payload).encode("utf-8")
+
+        class GatewayTimeoutRecoveryOpener:
+            def open(self, req: Any, timeout: int | None = None) -> FakeResponse:
+                calls.append((req.full_url, timeout or 0))
+                attempts["count"] += 1
+                if attempts["count"] <= 2:
+                    raise urllib.error.HTTPError(
+                        req.full_url,
+                        524,
+                        "A timeout occurred",
+                        None,
+                        None,
+                    )
+                return FakeResponse()
+
+        with mock.patch.object(worker_runtime, "NO_PROXY_OPENER", GatewayTimeoutRecoveryOpener()):
+            with mock.patch.object(worker_runtime.time, "sleep", return_value=None):
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "ARGUS_LLM_MAX_RETRIES": "2",
+                        "ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES": "1",
+                    },
+                    clear=False,
+                ):
+                    content = worker_runtime.call_llm(
+                        "system",
+                        "user",
+                        "automation",
+                        {
+                            "api_key": "key",
+                            "api_base": "https://primary.invalid/v1",
+                            "chat_url": "https://primary.invalid/v1/chat/completions",
+                            "model_name": "demo-model",
+                        },
+                    )
+
+        self.assertEqual(
+            [url for url, _timeout in calls],
+            [
+                "https://primary.invalid/v1/chat/completions",
+                "https://primary.invalid/v1/chat/completions",
+                "https://primary.invalid/v1/chat/completions",
+            ],
+        )
+        self.assertEqual([timeout for _url, timeout in calls], [120, 120, 120])
+        self.assertEqual(attempts["count"], 3)
         self.assertEqual(json.loads(content)["status"], "success")
 
     def test_call_llm_can_disable_timeout_recovery_retry(self) -> None:

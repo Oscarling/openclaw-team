@@ -4331,3 +4331,53 @@ Verification snapshot on 2026-03-25:
 - runtime log: `runtime_archives/bl074/runtime/automation-runtime.attempt-1.gpt5.log`
 - both runs: `status=done`, `processed=0`, `rejected=1`, terminal
   `class=http_524`
+
+### 85. BL-075 Fast-Provider Gateway Timeout Resilience + Timeout-Recovery Propagation Hardening
+
+User objective:
+
+- continue strict process execution without drift
+- close BL-074 observed propagation gap and harden runtime behavior for persistent
+  `http_524` gateway timeouts under governed replay
+
+Main work areas:
+
+- activated `BL-20260325-075` and mirrored to issue `#143`
+- source-side hardening:
+  - `skills/delegate_task.py` now propagates
+    `ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES` into worker env
+  - `dispatcher/worker_runtime.py` now treats `http_524` as eligible for
+    timeout-recovery extension (alongside native `timeout`)
+- focused regression updates in `tests/test_argus_hardening.py`:
+  - provider-profile env propagation of timeout-recovery knob
+  - `http_524` recovery extension behavior in `call_llm`
+- governed elevated replay executed with aligned profile and archived evidence in
+  `runtime_archives/bl075/`
+- produced BL-075 report and advanced backlog:
+  - `BL-20260325-075` marked `done`
+  - queued next blocker `BL-20260326-076` (`planned` / `next`)
+
+Primary output:
+
+- [FAST_PROVIDER_GATEWAY_TIMEOUT_RESILIENCE_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/FAST_PROVIDER_GATEWAY_TIMEOUT_RESILIENCE_HARDENING_REPORT.md)
+
+Key result:
+
+- propagation gap is closed in live replay:
+  - runtime startup shows `timeout_recovery_retries=2`
+- resilience extension is active in live replay:
+  - attempts extended `2 -> 3 -> 4` on repeated `http_524`
+- terminal blocker remains upstream gateway timeout:
+  - automation still ends with
+    `LLM call exhausted (attempts=4/4, class=http_524, endpoint=https://fast.vpsairobot.com/responses, retryable=True)`
+- next blocker is no longer propagation/eligibility hardening, but persistent
+  upstream `http_524` after strengthened recovery budget path
+
+Verification snapshot on 2026-03-26:
+
+- `python3 -m unittest -v tests/test_argus_hardening.py` passed (`22/22`)
+- governed replay evidence:
+  - `runtime_archives/bl075/tmp/bl075_execute_replay.json`
+  - `runtime_archives/bl075/runtime/automation-runtime.attempt-1.log`
+  - `runtime_archives/bl075/runtime/automation-output.json`
+  - `runtime_archives/bl075/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.json`
