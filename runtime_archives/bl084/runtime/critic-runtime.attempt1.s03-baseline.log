@@ -1,0 +1,19 @@
+task_id: CRITIC-20260325-290
+worker: critic
+attempt: 1
+container_name: argus-critic-critic-20260325-290
+worker_image: argus-worker:latest
+started_at: 2026-03-26T03:28:26.699854Z
+finished_at: 2026-03-26T03:30:27.338365Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-26T03:28:26.939116Z] [critic] [INFO] Worker started using endpoint https://fast.vpsairobot.com/v1/chat/completions (wire_api=chat_completions, timeout=120s, attempts=1, timeout_recovery_retries=0, json_repair_attempts=1)
+[2026-03-26T03:30:27.197091Z] [critic] [WARN] LLM call failed attempt 1/1 (endpoint=https://fast.vpsairobot.com/v1/chat/completions, class=timeout, retryable=True): The read operation timed out
+[2026-03-26T03:30:27.197647Z] [critic] [ERROR] Task failed CRITIC-20260325-290: LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/v1/chat/completions, retryable=True): The read operation timed out
+[2026-03-26T03:30:27.203611Z] [critic] [INFO] Worker exiting from /app/workspaces/critic/CRITIC-20260325-290
+
+=== stderr ===
+

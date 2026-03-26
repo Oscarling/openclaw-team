@@ -4793,3 +4793,55 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl083/tmp/bl083_execute_replay_run01-b2.json`
   - `runtime_archives/bl083/runtime/automation-runtime.run01-b2.log`
   - `runtime_archives/bl083/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.run01-b2.json`
+
+### 94. BL-084 JSON-Repair Engagement Confidence Window Quantification
+
+User objective:
+
+- continue strict no-drift flow
+- quantify real-run JSON-repair engagement across time-spread governed samples
+- verify guardrail impact under baseline controls
+
+Main work areas:
+
+- activated `BL-20260326-084` and mirrored to issue `#161`
+- executed 4-run time-spread governed replay matrix under baseline controls:
+  - `ARGUS_PROVIDER_PROFILE=fast_chat_governed_baseline`
+  - `ARGUS_LLM_MAX_RETRIES=1`
+  - `ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES=0`
+  - `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`
+  - `ARGUS_LLM_JSON_REPAIR_ATTEMPTS=1`
+- archived BL-084 evidence in `runtime_archives/bl084/`:
+  - matrix TSV
+  - per-run execute JSON/stderr
+  - automation/critic runtime+output+task snapshots
+  - preview/result sidecar snapshots
+- measured confidence-window outcomes:
+  - JSON-repair engagement (`json_output_repair_attempts_used > 0`): `0/4`
+  - terminal JSON-invalid failures: `0/4`
+  - dominant terminal class: `timeout` (`4/4`)
+- froze guidance unchanged and updated contract:
+  - keep `ARGUS_LLM_JSON_REPAIR_ATTEMPTS=1`
+  - keep `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`
+- produced BL-084 report and advanced backlog:
+  - `BL-20260326-084` marked `done`
+  - queued `BL-20260326-085` (`planned` / `next`)
+
+Primary output:
+
+- [JSON_REPAIR_ENGAGEMENT_CONFIDENCE_WINDOW_REPORT.md](/Users/lingguozhong/openclaw-team/JSON_REPAIR_ENGAGEMENT_CONFIDENCE_WINDOW_REPORT.md)
+
+Key result:
+
+- sampled window confirms no recurrence of terminal JSON-invalid failures and no
+  observed JSON-repair engagement; current reliability bottleneck remains
+  timeout-dominant upstream behavior rather than JSON validity path.
+
+Verification snapshot on 2026-03-26:
+
+- matrix summary:
+  - `runtime_archives/bl084/tmp/bl084_json_repair_confidence_matrix.tsv`
+- representative runtime/state artifacts:
+  - `runtime_archives/bl084/runtime/automation-runtime.s02-baseline.log`
+  - `runtime_archives/bl084/runtime/critic-output.s02-baseline.json`
+  - `runtime_archives/bl084/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.s04-baseline.json`

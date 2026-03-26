@@ -1,0 +1,13 @@
+{
+  "task_id": "CRITIC-20260325-290",
+  "worker": "critic",
+  "status": "failed",
+  "summary": "Worker execution failed",
+  "artifacts": [],
+  "errors": [
+    "LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/v1/chat/completions, retryable=True): The read operation timed out"
+  ],
+  "metadata": {},
+  "duration_ms": 120261,
+  "timestamp": "2026-03-26T03:30:27.200133Z"
+}

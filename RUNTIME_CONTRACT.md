@@ -421,3 +421,15 @@ Argus 当前已经从“只讨论架构”推进到：
 - `runtime/automation-*` 与 `runtime/critic-*`
 - `state/<preview>.result*.json` 与 `state/<preview>*.json`
 - 汇总记录触发原因、回滚时点与结论
+
+### BL-084 JSON 修复路径运行建议（置信窗口）
+
+针对 `ARGUS_LLM_JSON_REPAIR_ATTEMPTS` 的运行建议：
+
+1. 默认保持 `ARGUS_LLM_JSON_REPAIR_ATTEMPTS=1`（有界修复）。  
+2. 不提高默认值，除非新增证据显示修复路径高频触发且对通过率有稳定正收益。  
+3. 置信窗口观察口径至少包含：
+   - `json_output_repair_attempts_used` 触发率
+   - `json_invalid_terminal` 终止率
+   - `processed`/`critic_verdict` 与 wall-time
+4. 若窗口内失败主因仍是 `timeout`，优先处理上游时延/可用性，不将其误归因为 JSON 修复策略。  

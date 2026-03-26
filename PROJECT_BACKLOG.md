@@ -1472,14 +1472,31 @@ Allowed enum values:
 ### BL-20260326-084
 - title: Quantify JSON-repair path engagement and guardrail impact across time-spread governed replays
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-083
 - start_when: BL-083 lands bounded JSON-output repair and single-run governed replay evidence under fixed controls
 - done_when: A time-spread governed replay window measures how often JSON-repair is engaged (`json_output_repair_attempts_used`) and verifies that repair does not regress latency or verdict quality under baseline controls
 - source: `JSON_OUTPUT_VALIDITY_RECOVERY_HARDENING_REPORT.md` on 2026-03-26 confirms BL-083 path correctness and one governed pass, but longer-window operational confidence for repair engagement frequency is still unquantified
+- link: /Users/lingguozhong/openclaw-team/JSON_REPAIR_ENGAGEMENT_CONFIDENCE_WINDOW_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/161
+- evidence: `JSON_REPAIR_ENGAGEMENT_CONFIDENCE_WINDOW_REPORT.md` records a 4-run time-spread governed matrix in `runtime_archives/bl084/tmp/bl084_json_repair_confidence_matrix.tsv`; measured JSON-repair engagement is `0/4`, terminal JSON-invalid failures are `0/4`, and dominant terminal class remains `timeout`, so baseline guidance is unchanged (`ARGUS_LLM_JSON_REPAIR_ATTEMPTS=1`, `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`)
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-085
+- title: Targeted JSON-repair path exercise under controlled malformed-output replay to validate engaged-path quality
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-084
+- start_when: BL-084 confirms time-spread production-like window has zero JSON-repair engagements and timeout-dominant failures
+- done_when: A controlled malformed-output replay exercise triggers JSON-repair path deterministically, validates engaged-path verdict/latency behavior with archived evidence, and confirms no contract drift in output schema guarantees
+- source: `JSON_REPAIR_ENGAGEMENT_CONFIDENCE_WINDOW_REPORT.md` on 2026-03-26 shows `json_output_repair_attempts_used` engagement `0/4`, so engaged-path operational quality still needs explicit controlled validation
 - link: -
 - issue: -
 - evidence: -
