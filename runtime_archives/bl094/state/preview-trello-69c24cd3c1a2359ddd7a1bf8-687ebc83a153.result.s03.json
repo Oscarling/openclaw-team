@@ -1,0 +1,11 @@
+{
+  "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153",
+  "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.json",
+  "executed_at": "2026-03-26T08:10:31.965210Z",
+  "status": "rejected",
+  "decision_reason": "Automation task failed: {\"task_id\": \"AUTO-20260325-874\", \"worker\": \"automation\", \"status\": \"failed\", \"summary\": \"Task AUTO-20260325-874 finished without a usable summary.\", \"artifacts\": [], \"timestamp\": \"2026-03-26T08:10:31.794865Z\", \"duration_ms\": 8427, \"errors\": [\"Unable to proceed because repository files are not accessible in this environment.\"]}",
+  "critic_verdict": "needs_revision",
+  "automation_transient_retries_used": 1,
+  "automation_workspace_retries_used": 0,
+  "test_mode": "off"
+}

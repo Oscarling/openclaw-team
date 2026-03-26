@@ -1,0 +1,12 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "failed",
+  "summary": "Task AUTO-20260325-874 finished without a usable summary.",
+  "artifacts": [],
+  "timestamp": "2026-03-26T08:10:31.794865Z",
+  "duration_ms": 8427,
+  "errors": [
+    "Unable to proceed because repository files are not accessible in this environment."
+  ]
+}

@@ -1,0 +1,23 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-26T07:55:14.079265Z
+finished_at: 2026-03-26T07:57:57.974591Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-26T07:55:14.285878Z] [automation] [INFO] Worker started using endpoint https://aixj.vip/v1/responses (wire_api=responses, timeout=120s, attempts=3, timeout_recovery_retries=1, json_repair_attempts=1)
+[2026-03-26T07:55:17.098685Z] [automation] [WARN] LLM call failed attempt 1/3 (endpoint=https://aixj.vip/v1/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-26T07:55:17.098743Z] [automation] [INFO] Retrying LLM call in 1s (next_endpoint=https://fast.vpsairobot.com/responses)
+[2026-03-26T07:57:18.347166Z] [automation] [WARN] LLM call failed attempt 2/3 (endpoint=https://fast.vpsairobot.com/responses, class=timeout, retryable=True): The read operation timed out
+[2026-03-26T07:57:18.347337Z] [automation] [INFO] Retrying LLM call in 2s (next_endpoint=https://fast.vpsairobot.com/v1/responses)
+[2026-03-26T07:57:57.786030Z] [automation] [WARN] LLM call failed attempt 3/3 (endpoint=https://fast.vpsairobot.com/v1/responses, class=remote_closed, retryable=True): Remote end closed connection without response
+[2026-03-26T07:57:57.786307Z] [automation] [ERROR] Task failed AUTO-20260325-874: LLM call exhausted (attempts=3/3, class=remote_closed, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): Remote end closed connection without response
+[2026-03-26T07:57:57.796521Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+

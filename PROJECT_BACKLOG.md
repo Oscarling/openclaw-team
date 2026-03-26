@@ -1642,7 +1642,7 @@ Allowed enum values:
 ### BL-20260326-094
 - title: Recover real-endpoint canary success under persistent primary 502 and fallback timeout chain
 - type: blocker
-- status: planned
+- status: blocked
 - phase: now
 - priority: p1
 - owner: Oscarling
@@ -1650,8 +1650,25 @@ Allowed enum values:
 - start_when: BL-093 confirms workspace-retry hardening but rerun window still fails threshold entirely on endpoint-chain instability (`http_502` + fallback timeout)
 - done_when: A governed 4-sample real-endpoint window reaches `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` with rollback guardrails not triggered, and evidence clearly attributes residual failures by endpoint class
 - source: `CANARY_WORKSPACE_RETRY_STABILIZATION_REPORT.md` on 2026-03-26 shows workspace drift not reproduced but canary still fully blocked by endpoint-chain failures
-- link: -
+- link: /Users/lingguozhong/openclaw-team/CANARY_ENDPOINT_CHAIN_RECOVERY_PROMPT_COMPACTION_REPORT.md
 - issue: https://github.com/Oscarling/openclaw-team/issues/180
+- evidence: `CANARY_ENDPOINT_CHAIN_RECOVERY_PROMPT_COMPACTION_REPORT.md` and `runtime_archives/bl094/tmp/bl094_canary_observation_metrics.json` capture BL-094 controlled prompt-compaction rerun (`ARGUS_AUTOMATION_PROMPT_FIELD_MAX_CHARS=1200`) with prompt size reduction but unchanged canary outcome (`processed=0/4`, `pass_verdict_rate=0.0`), complete failover signal `4/4`, and endpoint-chain terminal classes (`http_502`/`remote_closed`) that continue to trigger rollback guardrails
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-095
+- title: Recover fallback endpoint stability after BL-094 by isolating remote-closed path under governed canary guardrails
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-094
+- start_when: BL-094 confirms prompt compaction is active but 4-sample rerun still fails entirely on endpoint-chain instability (`http_502` + fallback `remote_closed/timeout`)
+- done_when: A governed 4-sample real-endpoint window reaches `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` with rollback guardrails not triggered, and evidence proves fallback path no longer degrades to `remote_closed/timeout` under selected provider/endpoint controls
+- source: `CANARY_ENDPOINT_CHAIN_RECOVERY_PROMPT_COMPACTION_REPORT.md` on 2026-03-26 records that prompt-size mitigation does not clear endpoint-chain blocker
+- link: -
+- issue: -
 - evidence: -
 - last_reviewed_at: 2026-03-26
 - opened_at: 2026-03-26

@@ -1,0 +1,26 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-26T08:14:45.691098Z
+finished_at: 2026-03-26T08:18:58.852425Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-26T08:14:45.895668Z] [automation] [INFO] Worker started using endpoint https://aixj.vip/v1/responses (wire_api=responses, timeout=120s, attempts=3, timeout_recovery_retries=1, json_repair_attempts=1)
+[2026-03-26T08:14:47.328808Z] [automation] [WARN] LLM call failed attempt 1/3 (endpoint=https://aixj.vip/v1/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-26T08:14:47.328889Z] [automation] [INFO] Retrying LLM call in 1s (next_endpoint=https://fast.vpsairobot.com/responses)
+[2026-03-26T08:16:48.845464Z] [automation] [WARN] LLM call failed attempt 2/3 (endpoint=https://fast.vpsairobot.com/responses, class=timeout, retryable=True): The read operation timed out
+[2026-03-26T08:16:48.845847Z] [automation] [INFO] Retrying LLM call in 2s (next_endpoint=https://fast.vpsairobot.com/v1/responses)
+[2026-03-26T08:18:53.156279Z] [automation] [INFO] Granted timeout recovery retry; extended max attempts to 4 (remaining=0)
+[2026-03-26T08:18:53.156538Z] [automation] [WARN] LLM call failed attempt 3/4 (endpoint=https://fast.vpsairobot.com/v1/responses, class=timeout, retryable=True): The read operation timed out
+[2026-03-26T08:18:53.156567Z] [automation] [INFO] Retrying LLM call in 4s (next_endpoint=https://aixj.vip/v1/responses)
+[2026-03-26T08:18:58.702609Z] [automation] [WARN] LLM call failed attempt 4/4 (endpoint=https://aixj.vip/v1/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-26T08:18:58.702728Z] [automation] [ERROR] Task failed AUTO-20260325-874: LLM call exhausted (attempts=4/4, class=http_502, endpoint=https://aixj.vip/v1/responses, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-26T08:18:58.709361Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+

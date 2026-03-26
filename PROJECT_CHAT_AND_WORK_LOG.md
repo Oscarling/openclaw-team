@@ -5312,3 +5312,62 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl093/runtime/automation-runtime.s02.log`
   - `runtime_archives/bl093/runtime/automation-runtime.s03.log`
   - `runtime_archives/bl093/runtime/automation-runtime.s04.log`
+
+### 104. BL-094 Prompt-Compaction Canary Rerun (Endpoint Chain Still Blocking)
+
+User objective:
+
+- continue strict no-drift flow
+- avoid direction drift under local-first staged upload mode
+- verify whether prompt-size shaping can recover real-endpoint canary thresholds
+
+Main work areas:
+
+- activated `BL-20260326-094` and continued on issue `#180` in local-first mode
+- implemented bounded automation prompt-field compaction hardening:
+  - new env control `ARGUS_AUTOMATION_PROMPT_FIELD_MAX_CHARS`
+  - only applies to `worker=automation`
+  - `Prompt Compact Notes` added to prompt body for traceability
+- added focused regression coverage:
+  - default path keeps full fields unchanged
+  - env-driven path compacts large fields deterministically
+- executed BL-094 governed real-endpoint window (`s01..s04`) and archived evidence under
+  `runtime_archives/bl094/`:
+  - probe matrix
+  - per-run execute/runtime/state snapshots
+  - window matrix + aggregated metrics
+- observed BL-094 window outcomes:
+  - fallback preflight remained available (`200`)
+  - complete failover marker remained `4/4`
+  - terminal results `processed=0/4`, `pass_verdict_rate=0.0`
+  - dominant failure chain remained endpoint-side (`http_502`, `remote_closed`, timeout chain)
+  - one sample produced model-side failed summary (`repository files are not accessible`) but still ended `rejected`
+- verified compaction is effective on captured canary task:
+  - prompt size reduced from `13136` to `6505` chars with field truncation notes
+- applied rollback guardrails and kept rollout blocked
+- updated backlog:
+  - `BL-20260326-094` set to `blocked`
+  - queued next blocker `BL-20260326-095` (`planned`, local-first not yet mirrored)
+
+Primary output:
+
+- [CANARY_ENDPOINT_CHAIN_RECOVERY_PROMPT_COMPACTION_REPORT.md](/Users/lingguozhong/openclaw-team/CANARY_ENDPOINT_CHAIN_RECOVERY_PROMPT_COMPACTION_REPORT.md)
+
+Key result:
+
+- prompt compaction mitigation is active and test-covered, but canary thresholds
+  remain blocked by endpoint-chain instability; rollout cannot progress.
+
+Verification snapshot on 2026-03-26:
+
+- probe matrix:
+  - `runtime_archives/bl094/tmp/bl094_probe_matrix.tsv`
+- window matrix:
+  - `runtime_archives/bl094/tmp/bl094_canary_observation_matrix.tsv`
+- window metrics:
+  - `runtime_archives/bl094/tmp/bl094_canary_observation_metrics.json`
+- representative runtime artifacts:
+  - `runtime_archives/bl094/runtime/automation-runtime.s01.log`
+  - `runtime_archives/bl094/runtime/automation-runtime.s02.log`
+  - `runtime_archives/bl094/runtime/automation-runtime.s03.log`
+  - `runtime_archives/bl094/runtime/automation-runtime.s04.log`
