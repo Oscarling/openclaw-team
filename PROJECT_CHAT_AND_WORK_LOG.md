@@ -5256,3 +5256,59 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl092/runtime/automation-runtime.s02.log`
   - `runtime_archives/bl092/runtime/automation-runtime.s03.log`
   - `runtime_archives/bl092/runtime/automation-runtime.s04.log`
+
+### 103. BL-093 Workspace-Retry Stabilization Window (Endpoint Chain Still Blocking)
+
+User objective:
+
+- continue strict no-drift flow
+- suppress intermittent workspace-presence failure drift in real-endpoint rerun
+- verify whether canary thresholds can recover after targeted retry hardening
+
+Main work areas:
+
+- activated `BL-20260326-093` and continued on issue `#178`
+- implemented bounded workspace-presence retry guardrail in approved-preview execute path:
+  - new workspace failure signature detection
+  - dedicated retry budget (`ARGUS_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS`)
+  - sidecar/result telemetry field `automation_workspace_retries_used`
+- added regression coverage:
+  - workspace-presence failure now retries and can recover in unit test
+- executed BL-093 governed real-endpoint window (`s01..s04`) and archived evidence under
+  `runtime_archives/bl093/`:
+  - probe matrix
+  - per-run execute/runtime/state snapshots
+  - window matrix + aggregated metrics
+- observed BL-093 window outcomes:
+  - fallback preflight remained available (`200`)
+  - complete failover marker remained `4/4`
+  - terminal results `processed=0/4`, `pass_verdict_rate=0.0`
+  - dominant failure class was endpoint-chain `http_502` (with fallback timeout path)
+  - `workspace_missing_repo` class was not reproduced in this window
+- applied rollback guardrails and kept rollout blocked
+- updated backlog:
+  - `BL-20260326-093` set to `blocked`
+  - queued next blocker `BL-20260326-094` and mirrored to issue `#180`
+
+Primary output:
+
+- [CANARY_WORKSPACE_RETRY_STABILIZATION_REPORT.md](/Users/lingguozhong/openclaw-team/CANARY_WORKSPACE_RETRY_STABILIZATION_REPORT.md)
+
+Key result:
+
+- workspace-retry hardening landed and is test-covered, but real-endpoint canary
+  remains blocked by endpoint-chain instability; threshold recovery did not occur.
+
+Verification snapshot on 2026-03-26:
+
+- probe matrix:
+  - `runtime_archives/bl093/tmp/bl093_probe_matrix.tsv`
+- window matrix:
+  - `runtime_archives/bl093/tmp/bl093_canary_window_matrix.tsv`
+- window metrics:
+  - `runtime_archives/bl093/tmp/bl093_canary_window_metrics.json`
+- representative runtime artifacts:
+  - `runtime_archives/bl093/runtime/automation-runtime.s01.log`
+  - `runtime_archives/bl093/runtime/automation-runtime.s02.log`
+  - `runtime_archives/bl093/runtime/automation-runtime.s03.log`
+  - `runtime_archives/bl093/runtime/automation-runtime.s04.log`

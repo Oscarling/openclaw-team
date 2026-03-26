@@ -582,3 +582,36 @@ malformed-output 回放并归档证据，口径如下：
    - runtime/workspace class（如 `workspace_missing_repo`）
 5. 该情形下结论必须是“对齐成功但推广未恢复”，并创建下一条稳定性 blocker，
    禁止把 BL-092 口径误写为“已可推广”。  
+
+### BL-093 workspace-presence retry 稳定化口径
+
+当真实窗口出现间歇性 workspace/repository 可见性失败文案时，允许最小化补强：
+
+1. 仅在 execute 控制层添加有界重试，不改 baseline LLM 默认预算。  
+2. workspace-presence retry 必须是独立预算并可配置上限（默认 `1`）。  
+3. 该重试仅用于可识别的 workspace/repository presence 失败信号，
+   不得放宽到通用业务失败。  
+4. 报告必须同时给出：
+   - `automation_workspace_retries_used`
+   - workspace failure class 是否在窗口中复现
+   - 与 endpoint class 的分层归因
+5. 即使 workspace 类问题下降或消失，只要 canary 阈值未达标，
+   仍判定为“不可推广”并进入下一 blocker。  
+
+### BL-094 endpoint-chain recovery 口径
+
+若 BL-093 后窗口失败主类收敛到 endpoint-chain（如 primary `http_502` +
+fallback timeout），执行口径如下：
+
+1. 不得将 endpoint-chain 失败误归因于本地 runtime/workspace。  
+2. 继续沿用 BL-091 guardrail：
+   - 任一 terminal rejection
+   - `processed_rate < 0.75`
+   - `pass_verdict_rate < 0.75`
+3. 证据必须覆盖：
+   - probe matrix（主备可达性）
+   - per-run runtime 中 `class` 与 `next_endpoint` 链路
+   - matrix + metrics 的 error class 聚合
+4. 结论用语要求：
+   - “路径可观测但 endpoint 链路不可推广”
+   - 并显式记录下一步恢复策略（例如 provider/model/profile 受控对比）  
