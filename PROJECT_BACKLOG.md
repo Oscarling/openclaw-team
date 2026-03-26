@@ -1744,7 +1744,7 @@ Allowed enum values:
 ### BL-20260326-100
 - title: Productize local probe script and no-key wait-mode hardening while BL-099 is blocked
 - type: debt
-- status: planned
+- status: done
 - phase: next
 - priority: p1
 - owner: Oscarling
@@ -1752,8 +1752,8 @@ Allowed enum values:
 - start_when: BL-099 is blocked due unavailable authenticated provider/base+key route
 - done_when: A repo-tracked probe script/runbook replaces ad-hoc `/tmp` probing and produces reproducible handshake evidence without exposing secrets
 - source: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md` on 2026-03-26 records current input-side block
-- link: -
+- link: /Users/lingguozhong/openclaw-team/WAIT_MODE_PROBE_SCRIPT_PRODUCTIZATION_REPORT.md
 - issue: -
-- evidence: -
+- evidence: `scripts/provider_handshake_probe.py` and validation matrices `runtime_archives/bl100/tmp/provider_handshake_probe_missing_key.tsv` + `runtime_archives/bl100/tmp/provider_handshake_probe_key3.tsv` prove the no-key wait-mode handshake probe is now reproducible in-repo with key-tail masking and deterministic TSV output
 - last_reviewed_at: 2026-03-26
 - opened_at: 2026-03-26

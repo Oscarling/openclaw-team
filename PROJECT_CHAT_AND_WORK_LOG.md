@@ -5604,3 +5604,38 @@ Verification snapshot on 2026-03-26:
 - backlog updates:
   - `BL-20260326-099` -> `blocked`
   - `BL-20260326-100` queued as local wait-period hardening (`planned`)
+
+### 111. BL-100 Wait-Mode Probe Script Productization (Done)
+
+User objective:
+
+- continue local progress without new provider/base+key inputs
+- harden/scriptize probe workflow for faster future onboarding
+
+Main work areas:
+
+- added repo-tracked probe utility:
+  - `scripts/provider_handshake_probe.py`
+- replaced ad-hoc probe path with deterministic TSV output and key-tail masking
+- validated script in two modes:
+  - missing-key mode (`000/missing_key` matrix)
+  - Desktop `备用key3` mode (`401/403` matrix)
+- updated backlog:
+  - `BL-20260326-100` set to `done` with evidence report link
+
+Primary output:
+
+- [WAIT_MODE_PROBE_SCRIPT_PRODUCTIZATION_REPORT.md](/Users/lingguozhong/openclaw-team/WAIT_MODE_PROBE_SCRIPT_PRODUCTIZATION_REPORT.md)
+
+Key result:
+
+- no-key wait-mode route probing is now productized in-repo and can be reused
+  immediately when new provider/base+key inputs arrive.
+
+Verification snapshot on 2026-03-26:
+
+- script:
+  - `scripts/provider_handshake_probe.py`
+- matrices:
+  - `runtime_archives/bl100/tmp/provider_handshake_probe_missing_key.tsv`
+  - `runtime_archives/bl100/tmp/provider_handshake_probe_key3.tsv`
