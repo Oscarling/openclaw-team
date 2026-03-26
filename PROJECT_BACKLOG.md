@@ -1455,14 +1455,31 @@ Allowed enum values:
 ### BL-20260326-083
 - title: Harden automation JSON-output validity recovery path after budget-2 drill failure signal
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-082
 - start_when: BL-082 drill archives show a terminal automation failure containing `LLM output not valid JSON` under controlled replay
 - done_when: Automation path adds bounded JSON-validity recovery/repair handling (with focused tests) and governed replay evidence confirms the new path improves completion robustness without relaxing baseline safety constraints
 - source: `BUDGET2_ESCALATION_RUNBOOK_PRODUCTIZATION_REPORT.md` on 2026-03-26 records BL-082 drill rejection with terminal reason `LLM output not valid JSON`, indicating a remaining reliability blocker outside retry-budget policy
+- link: /Users/lingguozhong/openclaw-team/JSON_OUTPUT_VALIDITY_RECOVERY_HARDENING_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/159
+- evidence: `dispatcher/worker_runtime.py` now adds bounded JSON-output repair control (`ARGUS_LLM_JSON_REPAIR_ATTEMPTS`, default `1`, max `2`) with fail-closed fallback and repair telemetry (`metadata.json_output_repair_attempts_used`); focused regressions in `tests/test_argus_hardening.py` cover both successful one-shot repair and budget-zero fail-closed behavior; governed replay evidence in `runtime_archives/bl083/tmp/bl083_replay_summary.tsv` records `processed=1`, `critic_verdict=pass`, and `json_invalid_terminal=no`
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-084
+- title: Quantify JSON-repair path engagement and guardrail impact across time-spread governed replays
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-083
+- start_when: BL-083 lands bounded JSON-output repair and single-run governed replay evidence under fixed controls
+- done_when: A time-spread governed replay window measures how often JSON-repair is engaged (`json_output_repair_attempts_used`) and verifies that repair does not regress latency or verdict quality under baseline controls
+- source: `JSON_OUTPUT_VALIDITY_RECOVERY_HARDENING_REPORT.md` on 2026-03-26 confirms BL-083 path correctness and one governed pass, but longer-window operational confidence for repair engagement frequency is still unquantified
 - link: -
 - issue: -
 - evidence: -

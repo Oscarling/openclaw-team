@@ -4744,3 +4744,52 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl082/tmp/bl082_execute_replay_drill-b2.json`
   - `runtime_archives/bl082/runtime/automation-runtime.drill-b2.log`
   - `runtime_archives/bl082/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.drill-b2.json`
+
+### 93. BL-083 Automation JSON-Output Validity Recovery Hardening And Governed Validation
+
+User objective:
+
+- continue strict no-drift flow
+- harden automation path against terminal `LLM output not valid JSON`
+- keep bounded controls and avoid baseline drift
+
+Main work areas:
+
+- activated `BL-20260326-083` and mirrored to issue `#159`
+- implemented bounded JSON-repair recovery in runtime:
+  - added `ARGUS_LLM_JSON_REPAIR_ATTEMPTS` (default `1`, max `2`)
+  - when initial LLM output is not a JSON object, runtime performs bounded
+    repair attempts with strict JSON-only prompts
+  - preserved fail-closed semantics when recovery fails or budget is `0`
+  - emitted repair telemetry via `metadata.json_output_repair_attempts_used`
+- added focused regressions in `tests/test_argus_hardening.py`:
+  - `test_run_worker_repairs_invalid_json_output_once_then_succeeds`
+  - `test_run_worker_json_repair_budget_zero_keeps_fail_closed`
+- ran focused validation suite:
+  - `python3 -m unittest -v tests/test_argus_hardening.py tests/test_execute_approved_previews.py` (`34/34` pass)
+- executed governed replay under fixed controls and archived evidence in
+  `runtime_archives/bl083/`
+- produced BL-083 report and advanced backlog:
+  - `BL-20260326-083` marked `done`
+  - queued `BL-20260326-084` (`planned` / `next`)
+
+Primary output:
+
+- [JSON_OUTPUT_VALIDITY_RECOVERY_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/JSON_OUTPUT_VALIDITY_RECOVERY_HARDENING_REPORT.md)
+
+Key result:
+
+- runtime now has bounded JSON-validity recovery with fail-closed guarantees;
+  governed replay sample completed `processed=1` / `critic_verdict=pass` and did
+  not terminate on `LLM output not valid JSON`.
+
+Verification snapshot on 2026-03-26:
+
+- focused tests:
+  - `python3 -m unittest -v tests/test_argus_hardening.py tests/test_execute_approved_previews.py`
+- governed replay summary:
+  - `runtime_archives/bl083/tmp/bl083_replay_summary.tsv`
+- representative governed artifacts:
+  - `runtime_archives/bl083/tmp/bl083_execute_replay_run01-b2.json`
+  - `runtime_archives/bl083/runtime/automation-runtime.run01-b2.log`
+  - `runtime_archives/bl083/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.run01-b2.json`

@@ -1305,6 +1305,109 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertIn("class=tls_eof", message)
         self.assertIn("attempts=2/2", message)
 
+    def test_run_worker_repairs_invalid_json_output_once_then_succeeds(self) -> None:
+        task_id = "AUTO-20260326-901"
+        task_dir = self.tmpdir / "workspaces" / "automation" / task_id
+        task_dir.mkdir(parents=True, exist_ok=True)
+        task = build_task(
+            task_id=task_id,
+            worker="automation",
+            objective="Generate script output",
+            expected_outputs=[{"path": "artifacts/scripts/repair_demo.py", "type": "script"}],
+        )
+        (task_dir / "task.json").write_text(json.dumps(task, ensure_ascii=False), encoding="utf-8")
+
+        repaired_payload = json.dumps(
+            {
+                "status": "success",
+                "summary": "Recovered valid JSON payload.",
+                "file_contents": {
+                    "artifacts/scripts/repair_demo.py": "print('ok')\n",
+                },
+            },
+            ensure_ascii=False,
+        )
+        with mock.patch.object(
+            worker_runtime,
+            "get_llm_settings",
+            return_value={
+                "api_key": "test-key",
+                "api_base": "https://example.invalid/v1",
+                "chat_url": "https://example.invalid/v1/chat/completions",
+                "responses_url": "https://example.invalid/v1/responses",
+                "endpoint_url": "https://example.invalid/v1/chat/completions",
+                "model_name": "gpt-5-codex",
+                "wire_api": "chat_completions",
+            },
+        ):
+            with mock.patch.object(worker_runtime, "load_soul", return_value="You are automation."):
+                with mock.patch.object(
+                    worker_runtime,
+                    "call_llm",
+                    side_effect=["not-json-at-all", repaired_payload],
+                ) as mocked_call:
+                    with mock.patch.dict(
+                        os.environ,
+                        {"ARGUS_LLM_JSON_REPAIR_ATTEMPTS": "1"},
+                        clear=False,
+                    ):
+                        worker_runtime.run_worker(
+                            task_dir=task_dir,
+                            worker_override="automation",
+                            base_dir=self.tmpdir,
+                        )
+
+        output = json.loads((task_dir / "output.json").read_text(encoding="utf-8"))
+        self.assertEqual(output.get("status"), "success")
+        self.assertEqual(output.get("artifacts"), [{"path": "artifacts/scripts/repair_demo.py", "type": "script"}])
+        self.assertEqual(output.get("metadata", {}).get("json_output_repair_attempts_used"), 1)
+        self.assertEqual(mocked_call.call_count, 2)
+
+    def test_run_worker_json_repair_budget_zero_keeps_fail_closed(self) -> None:
+        task_id = "AUTO-20260326-902"
+        task_dir = self.tmpdir / "workspaces" / "automation" / task_id
+        task_dir.mkdir(parents=True, exist_ok=True)
+        task = build_task(
+            task_id=task_id,
+            worker="automation",
+            objective="Generate script output",
+            expected_outputs=[{"path": "artifacts/scripts/repair_demo_fail.py", "type": "script"}],
+        )
+        (task_dir / "task.json").write_text(json.dumps(task, ensure_ascii=False), encoding="utf-8")
+
+        with mock.patch.object(
+            worker_runtime,
+            "get_llm_settings",
+            return_value={
+                "api_key": "test-key",
+                "api_base": "https://example.invalid/v1",
+                "chat_url": "https://example.invalid/v1/chat/completions",
+                "responses_url": "https://example.invalid/v1/responses",
+                "endpoint_url": "https://example.invalid/v1/chat/completions",
+                "model_name": "gpt-5-codex",
+                "wire_api": "chat_completions",
+            },
+        ):
+            with mock.patch.object(worker_runtime, "load_soul", return_value="You are automation."):
+                with mock.patch.object(worker_runtime, "call_llm", return_value="still-not-json") as mocked_call:
+                    with mock.patch.dict(
+                        os.environ,
+                        {"ARGUS_LLM_JSON_REPAIR_ATTEMPTS": "0"},
+                        clear=False,
+                    ):
+                        worker_runtime.run_worker(
+                            task_dir=task_dir,
+                            worker_override="automation",
+                            base_dir=self.tmpdir,
+                        )
+
+        output = json.loads((task_dir / "output.json").read_text(encoding="utf-8"))
+        self.assertEqual(output.get("status"), "failed")
+        joined_errors = " | ".join(output.get("errors", []))
+        self.assertIn("LLM output not valid JSON", joined_errors)
+        self.assertIn("json_repair_attempts_used=0/0", joined_errors)
+        self.assertEqual(mocked_call.call_count, 1)
+
 
 if __name__ == "__main__":
     unittest.main()
