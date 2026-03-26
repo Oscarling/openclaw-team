@@ -83,6 +83,8 @@ def read_int_env(name, default, *, minimum=1):
 DEFAULT_LLM_TIMEOUT_SECONDS = 120
 DEFAULT_LLM_MAX_RETRIES = 3
 DEFAULT_LLM_TIMEOUT_RECOVERY_RETRIES = 1
+DEFAULT_LLM_JSON_REPAIR_ATTEMPTS = 1
+MAX_LLM_JSON_REPAIR_ATTEMPTS = 2
 TIMEOUT_RECOVERY_ERROR_CLASSES = {"timeout", "http_524"}
 MAX_ARTIFACT_SIZE = 2 * 1024 * 1024  # 2MB
 NO_PROXY_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -204,6 +206,15 @@ def llm_timeout_recovery_retries():
         DEFAULT_LLM_TIMEOUT_RECOVERY_RETRIES,
         minimum=0,
     )
+
+
+def llm_json_repair_attempts():
+    value = read_int_env(
+        "ARGUS_LLM_JSON_REPAIR_ATTEMPTS",
+        DEFAULT_LLM_JSON_REPAIR_ATTEMPTS,
+        minimum=0,
+    )
+    return min(value, MAX_LLM_JSON_REPAIR_ATTEMPTS)
 
 
 def llm_fallback_chat_urls():
@@ -780,6 +791,76 @@ def extract_json(text):
     return None
 
 
+def build_json_repair_system_prompt():
+    return (
+        "You are a strict JSON repair engine for Argus worker runtime. "
+        "Return exactly one valid JSON object and nothing else."
+    )
+
+
+def build_json_repair_user_prompt(raw_output):
+    return f"""
+Repair the following model output into one valid JSON object.
+
+Allowed top-level fields:
+- status
+- summary
+- artifacts
+- errors
+- notes
+- metadata
+- file_contents
+
+Rules:
+- status must be one of: success, failed, partial
+- do not include markdown fences
+- return only the JSON object
+
+Original model output:
+<<<BEGIN_ORIGINAL_OUTPUT
+{raw_output}
+END_ORIGINAL_OUTPUT>>>
+"""
+
+
+def repair_json_object_via_llm(raw_output, worker, llm_settings, repair_budget):
+    attempts_used = 0
+    candidate_text = raw_output
+    for attempt in range(1, repair_budget + 1):
+        attempts_used = attempt
+        try:
+            repaired_text = call_llm(
+                build_json_repair_system_prompt(),
+                build_json_repair_user_prompt(candidate_text),
+                worker,
+                llm_settings,
+            )
+        except Exception as exc:
+            log(
+                worker,
+                "WARN",
+                f"JSON repair attempt {attempt}/{repair_budget} failed: {exc}",
+            )
+            continue
+
+        repaired = extract_json(repaired_text)
+        if isinstance(repaired, dict):
+            log(
+                worker,
+                "INFO",
+                f"Recovered JSON object via repair attempt {attempt}/{repair_budget}",
+            )
+            return repaired, attempts_used
+
+        candidate_text = repaired_text
+        log(
+            worker,
+            "WARN",
+            f"JSON repair attempt {attempt}/{repair_budget} did not return a JSON object",
+        )
+    return None, attempts_used
+
+
 # ==========================================
 # Task contract helpers
 # ==========================================
@@ -1150,16 +1231,39 @@ def run_worker(task_dir=None, worker_override=None, base_dir=None, llm_override=
                     f"{llm_settings.get('endpoint_url', llm_settings.get('chat_url', ''))} "
                     f"(wire_api={llm_settings.get('wire_api', DEFAULT_WIRE_API)}, "
                     f"timeout={llm_timeout_seconds()}s, attempts={llm_max_retries()}, "
-                    f"timeout_recovery_retries={llm_timeout_recovery_retries()})",
+                    f"timeout_recovery_retries={llm_timeout_recovery_retries()}, "
+                    f"json_repair_attempts={llm_json_repair_attempts()})",
                 )
                 soul = load_soul(worker)
                 user_prompt = build_user_prompt(task)
                 llm_output = call_llm(soul, user_prompt, worker, llm_settings)
                 parsed = extract_json(llm_output)
+                repair_budget = llm_json_repair_attempts()
+                repair_attempts_used = 0
+                initial_parse_was_object = isinstance(parsed, dict)
+                if not initial_parse_was_object and repair_budget > 0:
+                    parsed, repair_attempts_used = repair_json_object_via_llm(
+                        llm_output,
+                        worker,
+                        llm_settings,
+                        repair_budget,
+                    )
                 if parsed is None:
-                    raise RuntimeError("LLM output not valid JSON")
+                    raise RuntimeError(
+                        "LLM output not valid JSON "
+                        f"(json_repair_attempts_used={repair_attempts_used}/{repair_budget})"
+                    )
                 if not isinstance(parsed, dict):
-                    raise RuntimeError("LLM output must be a JSON object")
+                    raise RuntimeError(
+                        "LLM output must be a JSON object "
+                        f"(json_repair_attempts_used={repair_attempts_used}/{repair_budget})"
+                    )
+                if repair_attempts_used > 0:
+                    metadata = parsed.get("metadata")
+                    if not isinstance(metadata, dict):
+                        metadata = {}
+                    metadata["json_output_repair_attempts_used"] = repair_attempts_used
+                    parsed["metadata"] = metadata
         elif not isinstance(parsed, dict):
             raise RuntimeError("Test mode payload must be a JSON object")
 

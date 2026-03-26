@@ -1,0 +1,2 @@
+label	status	processed	rejected	critic_verdict	retries_used	wall_seconds	auto_error_class	json_invalid_terminal	decision_reason
+run01-b2	done	1	0	pass	0	131		no	critic_verdict=pass
