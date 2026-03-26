@@ -4593,3 +4593,52 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl079/runtime/automation-runtime.run01.budget1.final.log`
   - `runtime_archives/bl079/runtime/critic-output.run01.budget1.final.json`
   - `runtime_archives/bl079/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.run01.budget1.final.json`
+
+### 90. BL-080 Retry Budget Tradeoff Quantification And Guidance Freeze
+
+User objective:
+
+- continue strict no-drift flow
+- quantify governed replay tradeoff between transient retry budgets `1` and `2`
+- freeze default/profile guidance from evidence
+
+Main work areas:
+
+- activated `BL-20260326-080` and mirrored to issue `#153`
+- executed controlled governed replay matrix under repo baseline profile:
+  - budget `1`: `run01`, `run02`
+  - budget `2`: `run01`, `run02`
+- archived evidence under `runtime_archives/bl080/`:
+  - matrix summary TSV
+  - per-run execute JSON/stderr
+  - automation/critic runtime+output+task snapshots
+  - preview/result sidecar snapshots
+- computed and compared pass-rate + wall-time tradeoff:
+  - budget `1`: processed `0/2`, avg wall `174.0s`
+  - budget `2`: processed `0/2`, avg wall `312.5s`
+  - budget `2` wall-time penalty: `+79.6%`
+- froze runtime guidance:
+  - default remains `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`
+  - budget `2` only for temporary controlled override windows
+- updated backlog:
+  - `BL-20260326-080` marked `done`
+  - queued next blocker `BL-20260326-081` (`planned` / `next`)
+
+Primary outputs:
+
+- [RETRY_BUDGET_TRADEOFF_EVALUATION_REPORT.md](/Users/lingguozhong/openclaw-team/RETRY_BUDGET_TRADEOFF_EVALUATION_REPORT.md)
+- [RUNTIME_CONTRACT.md](/Users/lingguozhong/openclaw-team/RUNTIME_CONTRACT.md)
+
+Key result:
+
+- current evidence does not justify raising default retry budget from `1` to `2`
+  because pass-rate did not improve while latency increased materially.
+
+Verification snapshot on 2026-03-26:
+
+- matrix summary:
+  - `runtime_archives/bl080/tmp/bl080_budget_tradeoff_matrix.tsv`
+- representative runtime/state evidence:
+  - `runtime_archives/bl080/runtime/automation-runtime.b1-run02.log`
+  - `runtime_archives/bl080/runtime/automation-runtime.b2-run02.log`
+  - `runtime_archives/bl080/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.b2-run02.json`

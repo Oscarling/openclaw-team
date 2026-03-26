@@ -1,0 +1,10 @@
+{
+  "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153",
+  "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.json",
+  "executed_at": "2026-03-26T02:26:01.157757Z",
+  "status": "rejected",
+  "decision_reason": "critic_verdict=fail",
+  "critic_verdict": "fail",
+  "automation_transient_retries_used": 2,
+  "test_mode": "off"
+}
