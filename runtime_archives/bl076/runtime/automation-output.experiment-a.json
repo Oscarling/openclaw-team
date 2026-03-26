@@ -1,0 +1,14 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "success",
+  "summary": "['Updated artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py to serve the BL-20260324-014 Trello readonly smoke request with parameterized defaults, traceability metadata, and relative resolution of the reviewed pdf_to_excel_ocr.py delegate.', 'Wrapper now shells out with --report-json, enforces timeout plus conservative success gates (OCR sufficiency, dry-run handling, XLSX evidence checks), and prints a reviewable JSON summary with delegate excerpts for success/partial/failed outcomes.']",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-26T00:24:20.258398Z",
+  "duration_ms": 101163
+}

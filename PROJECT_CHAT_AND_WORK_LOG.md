@@ -4381,3 +4381,55 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl075/runtime/automation-runtime.attempt-1.log`
   - `runtime_archives/bl075/runtime/automation-output.json`
   - `runtime_archives/bl075/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.json`
+
+### 86. BL-076 Persistent HTTP 524 Mitigation via Alternate Stable Wire Path Validation
+
+User objective:
+
+- continue from BL-075 without drift
+- do a global alignment check first, then resolve persistent upstream `http_524`
+  blocker under governed replay
+
+Main work areas:
+
+- completed global alignment check before execution:
+  - `main` and `origin/main` aligned at `c63f784c2fb78ac923e1ad07716a544b310c4036`
+  - PR `#144` merged, issue `#143` closed
+  - backlog gates healthy
+- activated `BL-20260326-076` and mirrored to issue `#145`
+- ran endpoint probe matrix (aligned backup key) and archived evidence:
+  - `runtime_archives/bl076/tmp/bl076_probe_matrix.txt`
+  - probes returned `200` on:
+    - `https://fast.vpsairobot.com/v1/responses`
+    - `https://fast.vpsairobot.com/responses`
+    - `https://fast.vpsairobot.com/v1/chat/completions`
+- executed governed elevated replay experiment A on alternate stable path:
+  - profile `bl076_fast_chat`
+  - `wire_api=chat_completions`
+  - model `gpt-5-codex`
+- archived runtime/state evidence under `runtime_archives/bl076/`
+- produced mitigation report and advanced backlog:
+  - `BL-20260326-076` marked `done`
+  - queued next mainline `BL-20260326-077` (`planned` / `next`)
+
+Primary output:
+
+- [PERSISTENT_HTTP524_PATH_MITIGATION_REPORT.md](/Users/lingguozhong/openclaw-team/PERSISTENT_HTTP524_PATH_MITIGATION_REPORT.md)
+
+Key result:
+
+- governed replay succeeded end-to-end on alternate stable wire path:
+  - `processed=1`
+  - `critic_verdict=pass`
+- persistent `http_524` no longer blocks governed progression when using the
+  validated `chat_completions` profile path
+
+Verification snapshot on 2026-03-26:
+
+- replay result:
+  - `runtime_archives/bl076/tmp/bl076_execute_replay_experiment_a.json`
+- sidecar state:
+  - `runtime_archives/bl076/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.json`
+- worker evidence:
+  - `runtime_archives/bl076/runtime/automation-output.experiment-a.json`
+  - `runtime_archives/bl076/runtime/critic-output.experiment-a.json`

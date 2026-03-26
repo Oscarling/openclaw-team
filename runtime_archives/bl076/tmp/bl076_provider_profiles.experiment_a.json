@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "bl076_fast_chat": {
+      "api_base": "https://fast.vpsairobot.com/v1",
+      "model_name": "gpt-5-codex",
+      "wire_api": "chat_completions",
+      "api_key_env": "OPENAI_API_KEY_BL076",
+      "fallback_chat_urls": [
+        "https://fast.vpsairobot.com/v1/chat/completions"
+      ],
+      "fallback_api_bases": [
+        "https://fast.vpsairobot.com/v1"
+      ]
+    }
+  }
+}
