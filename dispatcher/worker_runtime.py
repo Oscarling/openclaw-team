@@ -631,7 +631,12 @@ def classify_llm_call_error(error):
         return "tls_eof", True
     if "timed out" in lowered:
         return "timeout", True
-    if "name or service not known" in lowered or "name resolution" in lowered or "temporary failure in name resolution" in lowered:
+    if (
+        "name or service not known" in lowered
+        or "name resolution" in lowered
+        or "temporary failure in name resolution" in lowered
+        or "nodename nor servname provided" in lowered
+    ):
         return "dns_resolution", True
     if "connection reset" in lowered:
         return "connection_reset", True

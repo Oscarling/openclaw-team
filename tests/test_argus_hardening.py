@@ -1413,6 +1413,12 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertEqual(error_class, "http_520")
         self.assertTrue(retryable)
 
+    def test_classify_llm_call_error_marks_macos_dns_error(self) -> None:
+        err = urllib.error.URLError("[Errno 8] nodename nor servname provided, or not known")
+        error_class, retryable = worker_runtime.classify_llm_call_error(err)
+        self.assertEqual(error_class, "dns_resolution")
+        self.assertTrue(retryable)
+
     def test_call_llm_raises_classified_tls_error_after_exhaustion(self) -> None:
         class AlwaysFailOpener:
             def open(self, req: Any, timeout: int | None = None) -> Any:  # noqa: ARG002

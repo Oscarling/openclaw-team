@@ -5541,3 +5541,33 @@ Verification snapshot on 2026-03-26:
 
 - timeout-budget matrix:
   - `runtime_archives/bl098/tmp/bl098_timeout_budget_probe.tsv`
+
+### 109. Wait-Period Hardening: macOS DNS Error Classification
+
+User objective:
+
+- continue progress while no new provider/base+key is available
+- avoid drift and improve next-round diagnostic signal quality
+
+Main work areas:
+
+- hardened LLM error classification in `dispatcher/worker_runtime.py`:
+  - added explicit match for macOS resolver failure text
+    (`nodename nor servname provided`)
+  - maps to canonical class `dns_resolution` (retryable)
+- added focused regression in `tests/test_argus_hardening.py`:
+  - `test_classify_llm_call_error_marks_macos_dns_error`
+
+Primary output:
+
+- no new blocker state change; this is readiness hardening while waiting
+  `BL-20260326-099` provider onboarding inputs.
+
+Key result:
+
+- future probe/replay failures caused by local DNS resolution on macOS are now
+  classified deterministically as `dns_resolution` instead of `unknown`.
+
+Verification snapshot on 2026-03-26:
+
+- `python3 -m unittest -v tests/test_argus_hardening.py` (passed)
