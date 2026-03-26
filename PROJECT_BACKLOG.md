@@ -1574,14 +1574,31 @@ Allowed enum values:
 ### BL-20260326-090
 - title: Validate failover stability against mixed transient classes and fallback degradation scenarios
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-089
 - start_when: BL-089 confirms short-window failover stability under uniform `http_524` primary-failure pattern
 - done_when: A governed mixed-scenario matrix (including `timeout/http_524/http_502` and at least one fallback degradation case) quantifies boundary behavior and defines clear rollback triggers for operational failover playbooks
 - source: `TIMEOUT_FAILOVER_STABILITY_WINDOW_REPORT.md` on 2026-03-26 shows strong stability for one transient class pattern, but mixed-class and degraded-fallback boundaries are not yet quantified
+- link: /Users/lingguozhong/openclaw-team/MIXED_TRANSIENT_FAILOVER_BOUNDARY_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/173
+- evidence: `MIXED_TRANSIENT_FAILOVER_BOUNDARY_REPORT.md` archives BL-090 matrix evidence in `runtime_archives/bl090/tmp/bl090_mixed_failover_boundary_matrix.tsv`; observed automation error classes cover `http_524/http_502/timeout`, success cases (`s01/s02/s03`) recover via fallback with `processed/pass`, and degraded fallback case (`s04`) fails closed (`rejected=1`) with terminal fallback `class=http_502`, establishing explicit rollback triggers
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-091
+- title: Run canary-style real endpoint failover observation window with strict rollback guardrails
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-090
+- start_when: BL-090 mixed synthetic boundary matrix confirms expected failover and fail-closed behavior across transient classes and degraded fallback scenarios
+- done_when: A short canary observation window against real endpoint topology validates failover markers and rollback conditions without changing baseline defaults, with full execute/runtime/state evidence and explicit abort criteria
+- source: `MIXED_TRANSIENT_FAILOVER_BOUNDARY_REPORT.md` on 2026-03-26 quantifies synthetic boundaries; next confidence step is canary-style real-topology observation under strict safety guardrails
 - link: -
 - issue: -
 - evidence: -

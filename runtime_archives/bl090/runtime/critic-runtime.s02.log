@@ -1,0 +1,20 @@
+task_id: CRITIC-20260325-290
+worker: critic
+attempt: 1
+container_name: argus-critic-critic-20260325-290
+worker_image: argus-worker:latest
+started_at: 2026-03-26T04:23:20.686614Z
+finished_at: 2026-03-26T04:23:22.039367Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-26T04:23:20.885222Z] [critic] [INFO] Worker started using endpoint http://host.docker.internal:18087/v1/chat/completions (wire_api=chat_completions, timeout=1s, attempts=2, timeout_recovery_retries=0, json_repair_attempts=1)
+[2026-03-26T04:23:20.890250Z] [critic] [WARN] LLM call failed attempt 1/2 (endpoint=http://host.docker.internal:18087/v1/chat/completions, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-26T04:23:20.890265Z] [critic] [INFO] Retrying LLM call in 1s (next_endpoint=http://host.docker.internal:18088/v1/chat/completions)
+[2026-03-26T04:23:21.898167Z] [critic] [INFO] Task completed CRITIC-20260325-290 with status success
+[2026-03-26T04:23:21.899163Z] [critic] [INFO] Worker exiting from /app/workspaces/critic/CRITIC-20260325-290
+
+=== stderr ===
+

@@ -1,0 +1,5 @@
+sequence	primary_mode	fallback_mode	status	processed	rejected	critic_verdict	automation_status	decision_reason	automation_first_error_class	automation_error_classes	critic_error_classes	primary_hits	fallback_hits	automation_failover_markers	critic_failover_markers	automation_wall_seconds	critic_wall_seconds
+s01	http_524	success	done	1	0	pass	success	critic_verdict=pass	http_524	http_524	http_524	2	2	1	1	1.360	1.332
+s02	http_502	success	done	1	0	pass	success	critic_verdict=pass	http_502	http_502	http_502	2	2	1	1	1.323	1.353
+s03	timeout	success	done	1	0	pass	success	critic_verdict=pass	timeout	timeout	timeout	2	2	1	1	2.337	2.332
+s04	http_524	http_502	done	0	1	needs_revision	failed	Automation task failed: {"task_id": "AUTO-20260325-874", "worker": "automation", "status": "failed", "summary": "Worker execution failed", "artifacts": [], "errors": ["LLM call exhausted (attempts=2/2, class=http_502, endpoint=http://host.docker.internal:18088/v1/chat/completions, retryable=True): HTTP Error 502: Bad Gateway"], "metadata": {}, "duration_ms": 1011, "timestamp": "2026-03-26T04:23:29.744626Z"}	http_524	http_524,http_502,http_502		2	2	3		1.327	

@@ -1,0 +1,20 @@
+task_id: CRITIC-20260325-290
+worker: critic
+attempt: 1
+container_name: argus-critic-critic-20260325-290
+worker_image: argus-worker:latest
+started_at: 2026-03-26T04:23:24.628898Z
+finished_at: 2026-03-26T04:23:26.960566Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-26T04:23:24.828095Z] [critic] [INFO] Worker started using endpoint http://host.docker.internal:18087/v1/chat/completions (wire_api=chat_completions, timeout=1s, attempts=2, timeout_recovery_retries=0, json_repair_attempts=1)
+[2026-03-26T04:23:25.837879Z] [critic] [WARN] LLM call failed attempt 1/2 (endpoint=http://host.docker.internal:18087/v1/chat/completions, class=timeout, retryable=True): timed out
+[2026-03-26T04:23:25.838046Z] [critic] [INFO] Retrying LLM call in 1s (next_endpoint=http://host.docker.internal:18088/v1/chat/completions)
+[2026-03-26T04:23:26.844843Z] [critic] [INFO] Task completed CRITIC-20260325-290 with status success
+[2026-03-26T04:23:26.845884Z] [critic] [INFO] Worker exiting from /app/workspaces/critic/CRITIC-20260325-290
+
+=== stderr ===
+
