@@ -1,0 +1,14 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated the Trello PDF→Excel inbox runner wrapper that delegates to artifacts/scripts/pdf_to_excel_ocr.py with evidence gating, timeout enforcement, and reviewable metadata handling.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-26T02:25:46.434055Z",
+  "duration_ms": 117912
+}

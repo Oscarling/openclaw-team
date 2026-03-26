@@ -373,3 +373,15 @@ Argus 当前已经从“只讨论架构”推进到：
 1. 导出 `OPENAI_API_KEY_FAST=<有效 key>`  
 2. 导出 `ARGUS_PROVIDER_PROFILE=fast_chat_governed_baseline`  
 3. 运行受管 execute（无需再生成临时 profiles 文件）  
+
+### BL-080 重试预算运行建议（已冻结）
+
+`execute_approved_previews.py` 的自动化瞬态重试预算由下列环境变量控制：
+
+- `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS`
+
+冻结建议（基于 `runtime_archives/bl080/` 的受控对比样本）：
+
+1. 默认保持 `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`。  
+2. 不把默认值提升为 `2`，除非有新证据证明可显著提升 `processed` 通过率。  
+3. `=2` 仅作为受控恢复窗口中的临时覆盖值使用，并在 run 结束后恢复默认。  

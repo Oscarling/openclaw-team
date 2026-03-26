@@ -1,0 +1,19 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-26T02:17:46.178175Z
+finished_at: 2026-03-26T02:19:46.780465Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-26T02:17:46.396849Z] [automation] [INFO] Worker started using endpoint https://fast.vpsairobot.com/v1/chat/completions (wire_api=chat_completions, timeout=120s, attempts=1, timeout_recovery_retries=0)
+[2026-03-26T02:19:46.632543Z] [automation] [WARN] LLM call failed attempt 1/1 (endpoint=https://fast.vpsairobot.com/v1/chat/completions, class=timeout, retryable=True): The read operation timed out
+[2026-03-26T02:19:46.632947Z] [automation] [ERROR] Task failed AUTO-20260325-874: LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/v1/chat/completions, retryable=True): The read operation timed out
+[2026-03-26T02:19:46.637876Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+

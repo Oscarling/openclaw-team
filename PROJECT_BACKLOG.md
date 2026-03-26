@@ -1404,14 +1404,31 @@ Allowed enum values:
 ### BL-20260326-080
 - title: Quantify retry-budget pass-rate and latency tradeoff for repo-baseline governed replay
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-079
 - start_when: BL-079 lands expanded transient class coverage (`http_524/http_502/timeout`) and confirms at least one post-tune governed pass
 - done_when: Controlled replay samples compare pass-rate and wall-time impact between retry budgets (`1` vs `2`) and freeze recommended default/profile guidance with archived evidence
 - source: `TRANSIENT_RETRY_POLICY_OBSERVATION_TUNING_REPORT.md` on 2026-03-26 shows tuned transient-class coverage and a post-tune pass, but residual provider variability still leaves budget-vs-latency tradeoff unquantified
+- link: /Users/lingguozhong/openclaw-team/RETRY_BUDGET_TRADEOFF_EVALUATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/153
+- evidence: `RETRY_BUDGET_TRADEOFF_EVALUATION_REPORT.md` records controlled replay comparison in `runtime_archives/bl080/tmp/bl080_budget_tradeoff_matrix.tsv` (`budget=1` vs `2`), showing no processed pass-rate gain (`0/2` vs `0/2`) and a +79.6% average wall-time increase at budget `2` (174.0s -> 312.5s); `RUNTIME_CONTRACT.md` now freezes default guidance to keep `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-081
+- title: Expand governed replay sample window for retry-budget policy confidence
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-080
+- start_when: BL-080 freezes default budget guidance (`=1`) after short controlled sample comparison
+- done_when: A larger, time-spread sample under fixed controls confirms whether temporary budget `2` windows ever produce meaningful processed pass-rate gains that justify latency cost, or closes the question and keeps default guidance unchanged
+- source: `RETRY_BUDGET_TRADEOFF_EVALUATION_REPORT.md` on 2026-03-26 shows clear latency penalty at budget `2` but sample size remains small
 - link: -
 - issue: -
 - evidence: -
