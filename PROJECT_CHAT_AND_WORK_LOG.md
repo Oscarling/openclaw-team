@@ -4901,3 +4901,48 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl085/runtime/automation-runtime.controlled.log`
   - `runtime_archives/bl085/runtime/automation-output.controlled.json`
   - `runtime_archives/bl085/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.controlled.json`
+
+### 96. BL-086 Timeout-Dominant Bottleneck Cross-Window Quantification And Priority Freeze
+
+User objective:
+
+- continue strict no-drift flow
+- keep progressing after BL-085 completion
+- quantify whether timeout is still the top blocker with consolidated evidence
+
+Main work areas:
+
+- activated `BL-20260326-086` and mirrored to issue `#165`
+- aggregated governed replay windows from BL-080/081/083/084/085 into BL-086 summary artifacts:
+  - `runtime_archives/bl086/tmp/bl086_timeout_bottleneck_summary.tsv`
+  - `runtime_archives/bl086/tmp/bl086_timeout_bottleneck_metrics.json`
+- measured cross-window bottleneck concentration:
+  - total rows: `14`
+  - failed rows: `11`
+  - timeout failed rows: `9`
+  - timeout share among failures: `81.82%`
+  - timeout share overall: `64.29%`
+  - terminal JSON-invalid rows: `0/14`
+- updated runtime contract with BL-086 priority guidance:
+  - keep baseline defaults (`ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`, `ARGUS_LLM_JSON_REPAIR_ATTEMPTS=1`)
+  - when timeout share remains dominant, prioritize timeout-path mitigation over JSON-path budget tuning
+- completed backlog and queued next blocker:
+  - `BL-20260326-086` marked `done`
+  - queued `BL-20260326-087` (`planned` / `next`) for governed timeout failover drill
+
+Primary output:
+
+- [TIMEOUT_BOTTLENECK_CONFIDENCE_WINDOW_REPORT.md](/Users/lingguozhong/openclaw-team/TIMEOUT_BOTTLENECK_CONFIDENCE_WINDOW_REPORT.md)
+
+Key result:
+
+- consolidated evidence confirms timeout remains the primary reliability blocker
+  after retry-budget and JSON-repair hardening; mitigation priority is now
+  explicitly frozen to timeout path first.
+
+Verification snapshot on 2026-03-26:
+
+- aggregated matrix:
+  - `runtime_archives/bl086/tmp/bl086_timeout_bottleneck_summary.tsv`
+- aggregated metrics:
+  - `runtime_archives/bl086/tmp/bl086_timeout_bottleneck_metrics.json`

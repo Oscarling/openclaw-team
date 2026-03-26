@@ -1,0 +1,15 @@
+source	run_id	processed	rejected	critic_verdict	auto_error_class	json_invalid_terminal	wall_seconds
+bl080	b1-run01	0	1	needs_revision	none	no	107
+bl080	b1-run02	0	1	needs_revision	timeout	no	241
+bl080	b2-run01	0	1	needs_revision	timeout	no	250
+bl080	b2-run02	0	1	fail	none	no	375
+bl081	s01	0	1	needs_revision	timeout	no	241
+bl081	s02	0	1	needs_revision	timeout	no	362
+bl081	s03	0	1	needs_revision	timeout	no	241
+bl081	s04	1	0	pass	none	no	116
+bl083	run01-b2	1	0	pass	none	no	131
+bl084	s01	0	1	needs_revision	timeout	no	241
+bl084	s02	0	1	needs_revision	timeout	no	306
+bl084	s03	0	1	needs_revision	timeout	no	242
+bl084	s04	0	1	needs_revision	timeout	no	241
+bl085	controlled-01	1	0	pass	none	no	

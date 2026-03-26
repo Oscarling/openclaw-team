@@ -1,0 +1,17 @@
+{
+  "sample_size": 14,
+  "processed": 3,
+  "rejected": 11,
+  "processed_rate": 0.2143,
+  "failed_rows": 11,
+  "timeout_failed_rows": 9,
+  "timeout_share_among_failures": 0.8182,
+  "timeout_share_overall": 0.6429,
+  "json_invalid_terminal_rows": 0,
+  "json_invalid_terminal_rate": 0.0,
+  "avg_wall_seconds": 238.0,
+  "failed_error_class_distribution": {
+    "none": 2,
+    "timeout": 9
+  }
+}
