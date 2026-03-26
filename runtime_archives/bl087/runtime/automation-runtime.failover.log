@@ -1,0 +1,20 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-26T04:02:25.455559Z
+finished_at: 2026-03-26T04:02:26.848157Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-26T04:02:25.703301Z] [automation] [INFO] Worker started using endpoint http://host.docker.internal:18081/v1/chat/completions (wire_api=chat_completions, timeout=120s, attempts=2, timeout_recovery_retries=0, json_repair_attempts=1)
+[2026-03-26T04:02:25.708824Z] [automation] [WARN] LLM call failed attempt 1/2 (endpoint=http://host.docker.internal:18081/v1/chat/completions, class=http_524, retryable=True): HTTP Error 524: 
+[2026-03-26T04:02:25.708836Z] [automation] [INFO] Retrying LLM call in 1s (next_endpoint=http://host.docker.internal:18082/v1/chat/completions)
+[2026-03-26T04:02:26.717950Z] [automation] [INFO] Task completed AUTO-20260325-874 with status success
+[2026-03-26T04:02:26.718839Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+

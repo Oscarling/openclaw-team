@@ -1,0 +1,2 @@
+run_id	status	processed	rejected	critic_verdict	automation_status	primary_hits	fallback_hits	automation_failover_markers	critic_failover_markers	automation_transient_retries_used
+failover-01	done	1	0	pass	success	2	2	2	2	0
