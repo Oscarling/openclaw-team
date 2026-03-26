@@ -5000,3 +5000,53 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl087/runtime/automation-runtime.failover.log`
   - `runtime_archives/bl087/runtime/critic-runtime.failover.log`
   - `runtime_archives/bl087/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.failover.json`
+
+### 98. BL-088 Production-Like Provider-Profile Timeout Failover Window Validation
+
+User objective:
+
+- continue strict no-drift flow
+- keep推进 timeout 主瓶颈主线，不跑偏到无关改造
+- validate failover behavior under provider-profile controls (production-like entry path)
+
+Main work areas:
+
+- activated `BL-20260326-088` and mirrored to issue `#169`
+- built a production-like profile-controlled failover window:
+  - used `ARGUS_PROVIDER_PROFILE` + `ARGUS_PROVIDER_PROFILES_FILE`
+  - profile snapshot pinned in `runtime_archives/bl088/tmp/provider_profiles.bl088.json`
+  - primary endpoint forced `http_524`, fallback endpoint returned contract-valid success payloads
+- executed governed replay and archived BL-088 evidence under `runtime_archives/bl088/`:
+  - execute JSON/stderr
+  - automation/critic runtime+output+task snapshots
+  - preview/result sidecar snapshots
+  - primary/fallback request traces
+  - profile-failover summary/metrics
+- validated separation of failure domains:
+  - endpoint/network path: runtime logs show `class=http_524` then retry to fallback endpoint (automation + critic)
+  - prompt/schema path: fallback path completes `processed=1`, `critic_verdict=pass`, no terminal JSON-invalid signal
+- updated runtime contract with BL-088 provider-profile window governance section
+- completed backlog and queued next blocker:
+  - `BL-20260326-088` marked `done`
+  - queued `BL-20260326-089` (`planned` / `next`)
+
+Primary output:
+
+- [TIMEOUT_FAILOVER_PRODUCTIONLIKE_WINDOW_REPORT.md](/Users/lingguozhong/openclaw-team/TIMEOUT_FAILOVER_PRODUCTIONLIKE_WINDOW_REPORT.md)
+
+Key result:
+
+- timeout failover is validated through provider-profile-controlled entry path,
+  proving primary timeout and fallback recovery can be observed and audited
+  without conflating endpoint/network failure with prompt/schema quality.
+
+Verification snapshot on 2026-03-26:
+
+- profile-failover summary:
+  - `runtime_archives/bl088/tmp/bl088_profile_failover_summary.tsv`
+- profile-failover metrics:
+  - `runtime_archives/bl088/tmp/bl088_profile_failover_metrics.json`
+- representative runtime/state artifacts:
+  - `runtime_archives/bl088/runtime/automation-runtime.profile-failover.log`
+  - `runtime_archives/bl088/runtime/critic-runtime.profile-failover.log`
+  - `runtime_archives/bl088/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.profile-failover.json`

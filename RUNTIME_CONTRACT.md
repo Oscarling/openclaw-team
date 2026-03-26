@@ -487,3 +487,24 @@ malformed-output 回放并归档证据，口径如下：
 4. 回滚规则：  
    - 演练结束即恢复默认 endpoint 解析路径；  
    - 不把 drill 端点固化为日常 baseline。  
+
+### BL-088 production-like provider-profile failover 窗口口径
+
+在 BL-087 受控演练通过后，生产近似验证必须通过 provider profile 入口执行，
+避免回到纯手工 endpoint 环境拼接：
+
+1. 强制使用：
+   - `ARGUS_PROVIDER_PROFILE`
+   - `ARGUS_PROVIDER_PROFILES_FILE`
+2. profile 中显式声明：
+   - primary `api_base`
+   - `fallback_chat_urls`
+   - `wire_api`
+   - `api_key_env`
+3. 证据要求在 BL-087 基础上新增：
+   - profile 文件快照
+   - runtime 日志中可见 profile 驱动的 primary->fallback 切换痕迹
+4. 结论口径：
+   - 若日志显示 `http_524` 后成功切换到 fallback 且 `processed/pass`，
+     则判定 timeout/network 路径恢复有效；
+   - 不将该窗口成功误写为“外部 provider SLA 已恢复”。

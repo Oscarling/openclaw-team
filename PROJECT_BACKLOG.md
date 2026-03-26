@@ -1540,14 +1540,31 @@ Allowed enum values:
 ### BL-20260326-088
 - title: Validate timeout failover behavior in production-like provider profile window
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-087
 - start_when: BL-087 controlled drill confirms fallback path mechanics work under governed synthetic timeout conditions
 - done_when: A short production-like governed window validates timeout failover behavior with real provider profile controls and archives evidence that separates endpoint/network failures from prompt/schema path outcomes
 - source: `TIMEOUT_FAILOVER_DRILL_RUNBOOK_REPORT.md` on 2026-03-26 validates failover mechanics in controlled mode, but production-like confidence still requires real profile window evidence
+- link: /Users/lingguozhong/openclaw-team/TIMEOUT_FAILOVER_PRODUCTIONLIKE_WINDOW_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/169
+- evidence: `TIMEOUT_FAILOVER_PRODUCTIONLIKE_WINDOW_REPORT.md` archives a provider-profile-governed failover window in `runtime_archives/bl088/`; profile snapshot `tmp/provider_profiles.bl088.json` drives primary and fallback routing, runtime logs show `http_524` primary failures followed by fallback retries for both automation and critic, request traces record `primary_hits=2` and `fallback_hits=2`, and execute outcome is `processed=1` with `critic_verdict=pass`
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-089
+- title: Quantify fallback success stability across short multi-run production-like timeout windows
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-088
+- start_when: BL-088 confirms one production-like provider-profile failover window can recover from primary timeout to fallback success
+- done_when: A short multi-run production-like matrix quantifies fallback recovery stability (success rate, verdict quality, wall-time spread) and defines when failover should be considered reliable enough for baseline operational playbooks
+- source: `TIMEOUT_FAILOVER_PRODUCTIONLIKE_WINDOW_REPORT.md` on 2026-03-26 validates single-run profile failover behavior but does not yet quantify short-window stability variance
 - link: -
 - issue: -
 - evidence: -
