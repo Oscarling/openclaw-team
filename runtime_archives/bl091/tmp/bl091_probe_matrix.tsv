@@ -1,0 +1,5 @@
+endpoint	http_code
+https://aixj.vip/v1/responses	502
+https://aixj.vip/responses	502
+https://fast.vpsairobot.com/v1/responses	401
+https://fast.vpsairobot.com/responses	401

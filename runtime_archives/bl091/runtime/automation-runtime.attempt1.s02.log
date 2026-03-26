@@ -1,0 +1,25 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-26T04:34:43.065937Z
+finished_at: 2026-03-26T04:34:50.473015Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-26T04:34:43.276336Z] [automation] [INFO] Worker started using endpoint https://aixj.vip/v1/responses (wire_api=responses, timeout=120s, attempts=3, timeout_recovery_retries=1, json_repair_attempts=1)
+[2026-03-26T04:34:44.998967Z] [automation] [WARN] LLM call failed attempt 1/3 (endpoint=https://aixj.vip/v1/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-26T04:34:44.999052Z] [automation] [INFO] Retrying LLM call in 1s (next_endpoint=https://fast.vpsairobot.com/v1/responses)
+[2026-03-26T04:34:46.352095Z] [automation] [WARN] LLM call failed attempt 2/3 (endpoint=https://fast.vpsairobot.com/v1/responses, class=http_401, retryable=True): HTTP Error 401: Unauthorized
+[2026-03-26T04:34:46.352154Z] [automation] [INFO] Authorization failure detected; retrying once on fallback endpoint.
+[2026-03-26T04:34:46.352166Z] [automation] [INFO] Quarantined endpoint for current call due to authorization failure: https://fast.vpsairobot.com/v1/responses
+[2026-03-26T04:34:46.352173Z] [automation] [INFO] Retrying LLM call in 2s (next_endpoint=https://aixj.vip/v1/responses)
+[2026-03-26T04:34:50.315248Z] [automation] [WARN] LLM call failed attempt 3/3 (endpoint=https://aixj.vip/v1/responses, class=http_502, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-26T04:34:50.315385Z] [automation] [ERROR] Task failed AUTO-20260325-874: LLM call exhausted (attempts=3/3, class=http_502, endpoint=https://aixj.vip/v1/responses, retryable=True): HTTP Error 502: Bad Gateway
+[2026-03-26T04:34:50.320689Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+

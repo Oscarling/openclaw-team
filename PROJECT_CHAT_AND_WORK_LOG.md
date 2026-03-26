@@ -5152,3 +5152,52 @@ Verification snapshot on 2026-03-26:
 - representative runtime artifacts:
   - `runtime_archives/bl090/runtime/automation-runtime.s03.log`
   - `runtime_archives/bl090/runtime/automation-runtime.s04.log`
+
+### 101. BL-091 Real-Endpoint Failover Canary Observation Window (Rollback Triggered)
+
+User objective:
+
+- continue strict no-drift flow
+- run a real-topology canary failover window under BL-090 guardrails
+- make explicit rollback/abort decision based on evidence rather than assumptions
+
+Main work areas:
+
+- activated `BL-20260326-091` and mirrored to issue `#175`
+- executed a 4-sample canary observation window (`s01..s04`) against real endpoints using profile controls:
+  - primary: `https://aixj.vip/v1/responses`
+  - fallback: `https://fast.vpsairobot.com/{v1/responses,responses}`
+- archived BL-091 evidence under `runtime_archives/bl091/`:
+  - preflight probe matrix
+  - per-run execute JSON/stderr
+  - automation runtime/task/output snapshots
+  - per-run preview/result sidecar state snapshots
+  - canary observation matrix + aggregated metrics
+- observed canary boundary outcomes:
+  - failover marker appeared in all runs (`next_endpoint=https://fast.vpsairobot.com/...`)
+  - fallback path returned `http_401` in this topology/window
+  - terminal results: `processed=0/4`, `rejected=4/4`, `pass_verdict_rate=0.0`
+- applied rollback guardrails and concluded mandatory rollback/escalation
+- updated backlog:
+  - `BL-20260326-091` marked `done` (governed rollback decision reached)
+  - queued remediation blocker `BL-20260326-092` (`planned` / `next`)
+
+Primary output:
+
+- [CANARY_REAL_ENDPOINT_FAILOVER_OBSERVATION_REPORT.md](/Users/lingguozhong/openclaw-team/CANARY_REAL_ENDPOINT_FAILOVER_OBSERVATION_REPORT.md)
+
+Key result:
+
+- real-topology canary produced detectable failover markers but failed rollback thresholds,
+  so rollout is explicitly blocked and remediation is now the governed next step.
+
+Verification snapshot on 2026-03-26:
+
+- probe matrix:
+  - `runtime_archives/bl091/tmp/bl091_probe_matrix.tsv`
+- canary matrix:
+  - `runtime_archives/bl091/tmp/bl091_canary_observation_matrix.tsv`
+- canary metrics:
+  - `runtime_archives/bl091/tmp/bl091_canary_observation_metrics.json`
+- representative runtime artifact:
+  - `runtime_archives/bl091/runtime/automation-runtime.s01.log`
