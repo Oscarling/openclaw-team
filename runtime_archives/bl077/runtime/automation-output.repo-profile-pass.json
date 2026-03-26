@@ -1,0 +1,14 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Created artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py, a Trello-governed readonly helper that reuses the reviewed pdf_to_excel_ocr delegate with the provided BL-20260324-014 parameters, enforces delegate timeout/report parsing, and emits a structured summary with evidence gates for XLSX output fidelity.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-26T00:53:30.689440Z",
+  "duration_ms": 220263
+}

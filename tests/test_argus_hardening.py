@@ -290,6 +290,51 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertEqual(env["ARGUS_LLM_WIRE_API"], "chat_completions")
         self.assertNotIn("ARGUS_PROVIDER_PROFILE", env)
 
+    def test_build_worker_env_uses_default_repo_profiles_file_when_not_overridden(self) -> None:
+        profiles_path = self.tmpdir / "contracts" / "provider_profiles.json"
+        profiles_path.parent.mkdir(parents=True, exist_ok=True)
+        profiles_path.write_text(
+            json.dumps(
+                {
+                    "profiles": {
+                        "fast_chat_governed_baseline": {
+                            "api_base": "https://fast.vpsairobot.com/v1",
+                            "model_name": "gpt-5-codex",
+                            "wire_api": "chat_completions",
+                            "api_key_env": "OPENAI_API_KEY_FAST",
+                            "fallback_chat_urls": [
+                                "https://fast.vpsairobot.com/v1/chat/completions"
+                            ],
+                            "fallback_api_bases": ["https://fast.vpsairobot.com/v1"],
+                        }
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        with mock.patch.dict(
+            os.environ,
+            {
+                "ARGUS_PROVIDER_PROFILE": "fast_chat_governed_baseline",
+                "OPENAI_API_KEY_FAST": "fast-key",
+            },
+            clear=False,
+        ):
+            os.environ.pop("ARGUS_PROVIDER_PROFILES_FILE", None)
+            env = build_worker_env("automation")
+
+        self.assertEqual(env["OPENAI_API_KEY"], "fast-key")
+        self.assertEqual(env["OPENAI_API_BASE"], "https://fast.vpsairobot.com/v1")
+        self.assertEqual(env["OPENAI_MODEL_NAME"], "gpt-5-codex")
+        self.assertEqual(env["ARGUS_LLM_WIRE_API"], "chat_completions")
+        self.assertEqual(
+            env["ARGUS_LLM_FALLBACK_CHAT_URLS"],
+            "https://fast.vpsairobot.com/v1/chat/completions",
+        )
+        self.assertEqual(env["ARGUS_LLM_FALLBACK_API_BASES"], "https://fast.vpsairobot.com/v1")
+        self.assertEqual(Path(env["ARGUS_PROVIDER_PROFILES_FILE"]).resolve(), profiles_path.resolve())
+
     def test_failed_status_is_taken_from_output_not_exit_code(self) -> None:
         task = build_task(
             task_id="ARCH-20260319-302",
