@@ -1,0 +1,18 @@
+{
+  "status": "done",
+  "processed": 0,
+  "rejected": 1,
+  "skipped": 0,
+  "test_mode": "off",
+  "allow_replay": true,
+  "results": [
+    {
+      "status": "rejected",
+      "decision_reason": "Automation task failed: {\"task_id\": \"AUTO-20260325-874\", \"worker\": \"automation\", \"status\": \"failed\", \"summary\": \"Worker execution failed\", \"artifacts\": [], \"errors\": [\"LLM call exhausted (attempts=4/4, class=http_524, endpoint=https://fast.vpsairobot.com/v1/chat/completions, retryable=True): HTTP Error 524: <none>\"], \"metadata\": {}, \"duration_ms\": 508543, \"timestamp\": \"2026-03-26T00:48:59.988382Z\"}",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.json",
+      "result_sidecar": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.json",
+      "critic_verdict": "needs_revision"
+    }
+  ]
+}

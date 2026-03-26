@@ -1353,14 +1353,31 @@ Allowed enum values:
 ### BL-20260326-077
 - title: Productize BL-076 validated chat path into repeatable governed provider-profile baseline
 - type: mainline
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-076
 - start_when: BL-076 confirms governed replay can pass via validated `chat_completions` path under aligned fast provider
 - done_when: A repository-managed provider profile baseline (without ad-hoc temporary profile files) is documented and validated so future governed executes can reuse the BL-076 stable path with minimal manual runtime setup
 - source: `PERSISTENT_HTTP524_PATH_MITIGATION_REPORT.md` on 2026-03-26 records a successful governed pass through temporary experiment profile `bl076_fast_chat`
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_PROFILE_BASELINE_PRODUCTIZATION_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/147
+- evidence: Repository-managed `contracts/provider_profiles.json` now includes `fast_chat_governed_baseline` (`wire_api=chat_completions`, `api_key_env=OPENAI_API_KEY_FAST`), `tests/test_argus_hardening.py` adds coverage that default profile file resolution works without `ARGUS_PROVIDER_PROFILES_FILE`, and governed replay evidence in `runtime_archives/bl077/` confirms this repo profile path can complete (`runtime_archives/bl077/tmp/bl077_execute_replay_repo_profile_attempt_b.json`, `critic_verdict=pass`) without temporary profile files
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-078
+- title: Stabilize repo-baseline governed replay reliability against intermittent upstream http_524
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-077
+- start_when: BL-077 productizes and validates the repository-managed chat baseline path, but replay evidence still shows intermittent `http_524` failures before eventual pass
+- done_when: Governed replay reliability under the repo baseline path is characterized and improved so at least one single-pass run can be expected without requiring immediate manual rerun after terminal `http_524`
+- source: `PROVIDER_PROFILE_BASELINE_PRODUCTIZATION_REPORT.md` on 2026-03-26 records one first-attempt terminal `http_524` followed by a second-attempt pass under the same repo baseline profile
 - link: -
 - issue: -
 - evidence: -

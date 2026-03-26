@@ -354,3 +354,22 @@ Argus 当前已经从“只讨论架构”推进到：
 1. 未设置 `ARGUS_PROVIDER_PROFILE` 时，保持旧版环境变量解析行为不变。  
 2. 设置了 profile 时，profile 中给出的值覆盖默认环境解析结果。  
 3. profile 引用的 `api_key_env` / `api_key_secret` 缺失时，fail-closed 并报错，避免静默回落到错误 provider。  
+
+### BL-077 基线配置（仓库托管）
+
+为减少临时 profile 文件漂移，仓库内提供了可复用基线文件：
+
+- `contracts/provider_profiles.json`
+
+其中 `fast_chat_governed_baseline` 对应 BL-076 验证通过路径：
+
+- `api_base=https://fast.vpsairobot.com/v1`
+- `wire_api=chat_completions`
+- `model_name=gpt-5-codex`
+- `api_key_env=OPENAI_API_KEY_FAST`
+
+最小运行设置：
+
+1. 导出 `OPENAI_API_KEY_FAST=<有效 key>`  
+2. 导出 `ARGUS_PROVIDER_PROFILE=fast_chat_governed_baseline`  
+3. 运行受管 execute（无需再生成临时 profiles 文件）  

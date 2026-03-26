@@ -4433,3 +4433,62 @@ Verification snapshot on 2026-03-26:
 - worker evidence:
   - `runtime_archives/bl076/runtime/automation-output.experiment-a.json`
   - `runtime_archives/bl076/runtime/critic-output.experiment-a.json`
+
+### 87. BL-077 Provider-Profile Baseline Productization (Repo-Managed, No Temp Profile File)
+
+User objective:
+
+- continue strict no-drift flow
+- productize BL-076 validated chat path into a repository-managed baseline so
+  governed execute no longer depends on ad-hoc temporary profile files
+
+Main work areas:
+
+- activated `BL-20260326-077` and mirrored to issue `#147`
+- added repository-managed baseline profile file:
+  - `contracts/provider_profiles.json`
+  - profile: `fast_chat_governed_baseline`
+    - `api_base=https://fast.vpsairobot.com/v1`
+    - `wire_api=chat_completions`
+    - `model_name=gpt-5-codex`
+    - `api_key_env=OPENAI_API_KEY_FAST`
+- aligned template and contract docs:
+  - `contracts/provider_profiles.example.json`
+  - `RUNTIME_CONTRACT.md` BL-077 baseline section
+- added focused regression:
+  - `test_build_worker_env_uses_default_repo_profiles_file_when_not_overridden`
+- ran governed validation using repo baseline only:
+  - `ARGUS_PROVIDER_PROFILE=fast_chat_governed_baseline`
+  - `ARGUS_PROVIDER_PROFILES_FILE` unset
+
+Validation outcomes:
+
+- Attempt A (`runtime_archives/bl077/tmp/bl077_execute_replay_repo_profile.json`):
+  - `processed=0`, `rejected=1`
+  - terminal `http_524` at `/v1/chat/completions`
+- Attempt B (`runtime_archives/bl077/tmp/bl077_execute_replay_repo_profile_attempt_b.json`):
+  - `processed=1`, `rejected=0`, `critic_verdict=pass`
+  - runtime startup confirms repo baseline path in
+    `runtime_archives/bl077/runtime/automation-runtime.repo-profile-pass.log`
+
+Primary output:
+
+- [PROVIDER_PROFILE_BASELINE_PRODUCTIZATION_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_PROFILE_BASELINE_PRODUCTIZATION_REPORT.md)
+
+Key result:
+
+- BL-077 objective is achieved:
+  - repo-managed baseline profile is in place and documented
+  - governed execute can pass without temporary profile files
+- residual risk is explicit:
+  - upstream `http_524` remains intermittent (attempt A fail, attempt B pass)
+  - queued next blocker `BL-20260326-078` for reliability stabilization
+
+Verification snapshot on 2026-03-26:
+
+- `python3 -m unittest -v tests/test_argus_hardening.py` passed (`23/23`)
+- replay evidence:
+  - `runtime_archives/bl077/tmp/bl077_execute_replay_repo_profile.json`
+  - `runtime_archives/bl077/tmp/bl077_execute_replay_repo_profile_attempt_b.json`
+  - `runtime_archives/bl077/runtime/automation-output.repo-profile-pass.json`
+  - `runtime_archives/bl077/runtime/critic-output.repo-profile-pass.json`
