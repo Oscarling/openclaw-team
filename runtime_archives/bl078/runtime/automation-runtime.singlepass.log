@@ -1,0 +1,18 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-26T01:24:01.061687Z
+finished_at: 2026-03-26T01:25:04.017302Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-26T01:24:01.377590Z] [automation] [INFO] Worker started using endpoint https://fast.vpsairobot.com/v1/chat/completions (wire_api=chat_completions, timeout=240s, attempts=1, timeout_recovery_retries=0)
+[2026-03-26T01:25:03.857252Z] [automation] [INFO] Task completed AUTO-20260325-874 with status success
+[2026-03-26T01:25:03.858606Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+
