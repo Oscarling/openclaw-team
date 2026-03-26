@@ -4540,3 +4540,56 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl078/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.singlepass.json`
   - `runtime_archives/bl078/runtime/automation-output.singlepass.json`
   - `runtime_archives/bl078/runtime/critic-output.singlepass.json`
+
+### 89. BL-079 Repo-Baseline Transient Retry Observation And Policy Tuning
+
+User objective:
+
+- continue strict no-drift flow
+- observe whether BL-078 default transient retry budget remains sufficient under repeated governed replays
+- tune policy when evidence shows insufficiency
+
+Main work areas:
+
+- activated `BL-20260326-079` and mirrored to issue `#151`
+- ran multi-run governed replay observation under repo baseline profile and archived
+  evidence in `runtime_archives/bl079/`
+- baseline matrix (`budget=1`) showed 3 consecutive rejected runs with dominant
+  class `timeout` and `automation_transient_retries_used=0`
+- tuned execute orchestration policy in
+  `skills/execute_approved_previews.py` by expanding transient automation classes
+  from `{http_524}` to `{http_524,http_502,timeout}`
+- added focused regressions in `tests/test_execute_approved_previews.py`:
+  - `test_process_approval_retries_once_for_timeout_then_succeeds`
+  - `test_process_approval_retries_once_for_http_502_then_succeeds`
+- reran governed replays post-tune and archived tuned/final matrices:
+  - tuned matrix captured timeout retry engagement (`retries_used=1`)
+  - final replay reached `processed=1`, `critic_verdict=pass`
+- produced BL-079 report and advanced backlog:
+  - `BL-20260326-079` marked `done`
+  - queued next blocker `BL-20260326-080` (`planned` / `next`)
+
+Primary output:
+
+- [TRANSIENT_RETRY_POLICY_OBSERVATION_TUNING_REPORT.md](/Users/lingguozhong/openclaw-team/TRANSIENT_RETRY_POLICY_OBSERVATION_TUNING_REPORT.md)
+
+Key result:
+
+- BL-079 closed with evidence-backed policy tuning:
+  - transient retry path now covers observed classes `timeout` and `http_502`
+    in addition to `http_524`
+  - focused tests passed (`9/9`)
+  - post-tune governed replay achieved `processed=1` / `critic_verdict=pass`
+
+Verification snapshot on 2026-03-26:
+
+- unit tests:
+  - `python3 -m unittest -v tests/test_execute_approved_previews.py` passed (`9/9`)
+- baseline/tuned/final replay summaries:
+  - `runtime_archives/bl079/tmp/bl079_replay_matrix_budget1.tsv`
+  - `runtime_archives/bl079/tmp/bl079_replay_matrix_budget1_tuned.tsv`
+  - `runtime_archives/bl079/tmp/bl079_replay_matrix_budget1_final.tsv`
+- representative runtime/state evidence:
+  - `runtime_archives/bl079/runtime/automation-runtime.run01.budget1.final.log`
+  - `runtime_archives/bl079/runtime/critic-output.run01.budget1.final.json`
+  - `runtime_archives/bl079/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.run01.budget1.final.json`

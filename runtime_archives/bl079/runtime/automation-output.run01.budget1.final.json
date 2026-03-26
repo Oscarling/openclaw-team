@@ -1,0 +1,14 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "success",
+  "summary": "['Updated the wrapper’s success evaluation so dry-run executions and zero-PDF discoveries now resolve to reviewable partial outcomes with explicit rerun guidance instead of being escalated to hard failures.', 'Retained the remaining evidence gates for workbook integrity while improving their failure messaging, and recompiled the script to confirm syntax correctness.']",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-26T02:02:44.750292Z",
+  "duration_ms": 115482
+}

@@ -1,0 +1,13 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "failed",
+  "summary": "Worker execution failed",
+  "artifacts": [],
+  "errors": [
+    "LLM call exhausted (attempts=1/1, class=http_502, endpoint=https://fast.vpsairobot.com/v1/chat/completions, retryable=True): HTTP Error 502: Bad Gateway"
+  ],
+  "metadata": {},
+  "duration_ms": 69282,
+  "timestamp": "2026-03-26T01:55:23.907531Z"
+}
