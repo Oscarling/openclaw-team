@@ -1,0 +1,13 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "failed",
+  "summary": "Worker execution failed",
+  "artifacts": [],
+  "errors": [
+    "LLM output not valid JSON"
+  ],
+  "metadata": {},
+  "duration_ms": 58283,
+  "timestamp": "2026-03-26T03:03:21.799034Z"
+}

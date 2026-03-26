@@ -4695,3 +4695,52 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl081/runtime/automation-runtime.s04-b2.log`
   - `runtime_archives/bl081/runtime/critic-output.s04-b2.json`
   - `runtime_archives/bl081/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.s04-b2.json`
+
+### 92. BL-082 Budget-2 Escalation Trigger Runbook Productization And Drill Validation
+
+User objective:
+
+- continue strict no-drift flow
+- productize temporary budget=2 escalation/rollback governance
+- validate runbook with archived controlled drill evidence
+
+Main work areas:
+
+- activated `BL-20260326-082` and mirrored to issue `#157`
+- updated `RUNTIME_CONTRACT.md` with BL-082 runbook contract:
+  - activation criteria (all required)
+  - fixed execution controls for temporary budget `2` windows
+  - rollback criteria (run-end and risk-driven)
+  - minimum audit evidence bundle
+- executed one governed BL-082 drill run with temporary override:
+  - `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=2`
+  - fixed profile controls (`fast_chat_governed_baseline`, max retries `1`)
+- archived drill evidence under `runtime_archives/bl082/`:
+  - execute JSON/stderr
+  - automation/critic runtime+output+task snapshots
+  - preview/result sidecar snapshots
+  - summary TSV
+- recorded BL-082 report and advanced backlog:
+  - `BL-20260326-082` marked `done`
+  - queued `BL-20260326-083` (`planned` / `next`)
+
+Primary output:
+
+- [BUDGET2_ESCALATION_RUNBOOK_PRODUCTIZATION_REPORT.md](/Users/lingguozhong/openclaw-team/BUDGET2_ESCALATION_RUNBOOK_PRODUCTIZATION_REPORT.md)
+
+Key result:
+
+- budget `2` temporary-override runbook is now explicit and repeatable in repo
+  contract; drill run executed under governance and archived, while baseline
+  default remains `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`.
+
+Verification snapshot on 2026-03-26:
+
+- runbook contract update:
+  - `RUNTIME_CONTRACT.md`
+- drill summary:
+  - `runtime_archives/bl082/tmp/bl082_drill_summary.tsv`
+- representative drill artifacts:
+  - `runtime_archives/bl082/tmp/bl082_execute_replay_drill-b2.json`
+  - `runtime_archives/bl082/runtime/automation-runtime.drill-b2.log`
+  - `runtime_archives/bl082/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.drill-b2.json`
