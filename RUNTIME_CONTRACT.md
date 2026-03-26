@@ -525,3 +525,21 @@ malformed-output 回放并归档证据，口径如下：
    - `complete_failover_signal_rate >= 0.75`
    - 同窗口内无 terminal JSON-invalid
 4. 若阈值未达标，回到 failover 路径治理而非提升默认预算参数。  
+
+### BL-090 混合瞬态与 fallback 降级边界口径
+
+在短窗口稳定性通过后，failover playbook 需要补充边界验证：
+
+1. 至少覆盖 primary 瞬态类别：
+   - `http_524`
+   - `http_502`
+   - `timeout`
+2. 必须包含至少一个 fallback 降级场景（例如 fallback 端返回 `http_502`）。
+3. 回滚触发条件（任一满足即触发）：
+   - 降级场景出现 terminal rejection
+   - 窗口内 `processed_rate < 0.75`
+   - 窗口内 `pass_verdict_rate < 0.75`
+4. 记录要求：
+   - scenario 定义表
+   - 每轮 execute/runtime/state/trace
+   - boundary matrix + metrics（含 observed error classes）

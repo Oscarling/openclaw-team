@@ -1,0 +1,25 @@
+{
+  "sample_size": 4,
+  "processed": 3,
+  "rejected": 1,
+  "processed_rate": 0.75,
+  "pass_verdict_rate": 0.75,
+  "observed_automation_error_classes": [
+    "http_502",
+    "http_524",
+    "timeout"
+  ],
+  "degraded_fallback_cases": 1,
+  "degraded_fallback_rejected_cases": 1,
+  "degraded_fallback_rejected_rate": 1.0,
+  "automation_wall_seconds": {
+    "avg": 1.587,
+    "min": 1.323,
+    "max": 2.337
+  },
+  "critic_wall_seconds": {
+    "avg": 1.672,
+    "min": 1.332,
+    "max": 2.332
+  }
+}

@@ -1,0 +1,5 @@
+sequence	primary_mode	fallback_mode	note
+s01	http_524	success	baseline_524_failover_success
+s02	http_502	success	mixed_http_502_failover_success
+s03	timeout	success	timeout_failover_success
+s04	http_524	http_502	fallback_degradation_boundary

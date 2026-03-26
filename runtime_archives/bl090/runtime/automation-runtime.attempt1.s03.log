@@ -1,0 +1,20 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-26T04:23:22.250566Z
+finished_at: 2026-03-26T04:23:24.587631Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-26T04:23:22.452108Z] [automation] [INFO] Worker started using endpoint http://host.docker.internal:18087/v1/chat/completions (wire_api=chat_completions, timeout=1s, attempts=2, timeout_recovery_retries=0, json_repair_attempts=1)
+[2026-03-26T04:23:23.458747Z] [automation] [WARN] LLM call failed attempt 1/2 (endpoint=http://host.docker.internal:18087/v1/chat/completions, class=timeout, retryable=True): timed out
+[2026-03-26T04:23:23.458961Z] [automation] [INFO] Retrying LLM call in 1s (next_endpoint=http://host.docker.internal:18088/v1/chat/completions)
+[2026-03-26T04:23:24.467205Z] [automation] [INFO] Task completed AUTO-20260325-874 with status success
+[2026-03-26T04:23:24.468475Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+

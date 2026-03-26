@@ -5102,3 +5102,53 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl089/runtime/automation-runtime.s01.log`
   - `runtime_archives/bl089/runtime/critic-runtime.s04.log`
   - `runtime_archives/bl089/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.s04.json`
+
+### 100. BL-090 Mixed-Transient + Fallback-Degradation Boundary Matrix
+
+User objective:
+
+- continue strict no-drift flow
+- validate failover boundaries beyond uniform single-class transient patterns
+- define explicit rollback triggers for operational playbooks
+
+Main work areas:
+
+- activated `BL-20260326-090` and mirrored to issue `#173`
+- executed a 4-scenario mixed boundary matrix under provider-profile controls:
+  - `s01`: primary `http_524`, fallback success
+  - `s02`: primary `http_502`, fallback success
+  - `s03`: primary `timeout`, fallback success
+  - `s04`: primary `http_524`, fallback `http_502` degradation
+- archived BL-090 evidence in `runtime_archives/bl090/`:
+  - scenario definition TSV
+  - per-run execute/runtime/state/request-trace snapshots
+  - boundary matrix + aggregated metrics
+- measured boundary outcomes:
+  - overall: `processed=3/4`, `rejected=1/4`, `pass_verdict_rate=0.75`
+  - observed error classes cover `http_524/http_502/timeout`
+  - degraded fallback case rejected (`1/1`) with terminal fallback `class=http_502`
+  - success scenarios recovered via fallback and ended `processed/pass`
+- updated runtime contract with BL-090 mixed-boundary and rollback-trigger guidance
+- completed backlog and queued next blocker:
+  - `BL-20260326-090` marked `done`
+  - queued `BL-20260326-091` (`planned` / `next`)
+
+Primary output:
+
+- [MIXED_TRANSIENT_FAILOVER_BOUNDARY_REPORT.md](/Users/lingguozhong/openclaw-team/MIXED_TRANSIENT_FAILOVER_BOUNDARY_REPORT.md)
+
+Key result:
+
+- mixed-class failover recovery and degraded-fallback fail-closed behavior are
+  both quantified with evidence, and rollback triggers are now explicit and
+  actionable.
+
+Verification snapshot on 2026-03-26:
+
+- boundary matrix:
+  - `runtime_archives/bl090/tmp/bl090_mixed_failover_boundary_matrix.tsv`
+- boundary metrics:
+  - `runtime_archives/bl090/tmp/bl090_mixed_failover_boundary_metrics.json`
+- representative runtime artifacts:
+  - `runtime_archives/bl090/runtime/automation-runtime.s03.log`
+  - `runtime_archives/bl090/runtime/automation-runtime.s04.log`

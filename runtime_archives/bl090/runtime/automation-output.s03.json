@@ -1,0 +1,18 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Automation success via mixed failover path (s03).",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-26T04:23:24.466794Z",
+  "duration_ms": 2015,
+  "metadata": {
+    "source": "bl090-fallback",
+    "scenario": "s03"
+  }
+}

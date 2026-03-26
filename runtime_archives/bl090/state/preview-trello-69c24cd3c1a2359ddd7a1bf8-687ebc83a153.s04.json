@@ -1,0 +1,364 @@
+{
+  "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153",
+  "created_at": "2026-03-25T11:45:58.530873Z",
+  "approved": true,
+  "source": {
+    "kind": "local_inbox",
+    "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+    "received_at": "2026-03-25T11:45:58.529105Z",
+    "inbox_file": "trello-69c24cd3c1a2359ddd7a1bf8-regen-20260325-bl067-001.json",
+    "regeneration_token": "regen-20260325-bl067-001"
+  },
+  "external_input": {
+    "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+    "description": "Purpose:\n\n  Controlled Trello live preview smoke for openclaw-team.\n\n‌\n\n  Expected behavior:\n\n- read-only Trello ingest\n\n- preview creation smoke only\n\n- no business execution claim\n\n- no Trello writeback expected in this step\n\n‌\n\n  Traceability:\n\n- backlog: BL-20260324-014\n\n- blocker context: BL-20260324-015\n\n- created_by: Oscarling\n\n- created_at: 2026-03-24 Asia/Shanghai\n\n‌\n\n  Note:\n\n  This card is only for governed smoke verification and should remain open until the smoke is finished.\n\nExecution contract: treat this as a best-effort, evidence-backed PDF extraction/conversion attempt. Do not claim OCR success without evidence. If full OCR/Excel conversion is not honestly achievable, return reviewable intermediate artifacts, explicit limitations, and next-step guidance. Keep behavior deterministic and limited to declared local artifacts.",
+    "labels": [
+      "best_effort",
+      "evidence_backed",
+      "readonly",
+      "reviewable",
+      "trello"
+    ],
+    "metadata": {
+      "source_system": "trello",
+      "card_id": "69c24cd3c1a2359ddd7a1bf8",
+      "card_short_id": 7,
+      "board_id": "69be462743bfa0038ca10f7a",
+      "list_id": "69be462743bfa0038ca10f8f",
+      "date_last_activity": "2026-03-24T08:35:56.234Z",
+      "readonly_mapped_at": "2026-03-25T11:45:32.575060Z",
+      "contract_profile": "best_effort_evidence_backed",
+      "ocr_claim_policy": "do_not_claim_success_without_evidence",
+      "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable",
+      "regeneration_token": "regen-20260325-bl067-001"
+    },
+    "request_type": "pdf_to_excel_ocr",
+    "input": {
+      "input_dir": "~/Desktop/pdf样本",
+      "output_xlsx": "artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx",
+      "ocr": "auto",
+      "dry_run": false
+    }
+  },
+  "task_summary": {
+    "automation": {
+      "task_id": "AUTO-20260325-874",
+      "worker": "automation",
+      "task_type": "generate_script",
+      "objective": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt). Generate exactly one runnable local helper script artifact for a best-effort PDF extraction/conversion attempt using the provided parameters. Prefer reusing the repository's existing inbox runner and reviewed PDF-to-Excel implementation when they already satisfy the request instead of re-implementing the pipeline from scratch.",
+      "expected_outputs": [
+        {
+          "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+          "type": "script"
+        }
+      ]
+    },
+    "critic": {
+      "task_id": "CRITIC-20260325-290",
+      "worker": "critic",
+      "task_type": "review_artifact",
+      "objective": "Review the generated inbox runner together with its reviewed delegate script from the local inbox pipeline and provide a structured verdict using one of: pass, fail, needs_revision. Always output a review markdown artifact and include verdict in metadata.",
+      "expected_outputs": [
+        {
+          "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+          "type": "review"
+        }
+      ]
+    }
+  },
+  "internal_tasks": {
+    "automation": {
+      "task_id": "AUTO-20260325-874",
+      "worker": "automation",
+      "task_type": "generate_script",
+      "objective": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt). Generate exactly one runnable local helper script artifact for a best-effort PDF extraction/conversion attempt using the provided parameters. Prefer reusing the repository's existing inbox runner and reviewed PDF-to-Excel implementation when they already satisfy the request instead of re-implementing the pipeline from scratch.",
+      "inputs": {
+        "params": {
+          "input_dir": "~/Desktop/pdf样本",
+          "output_xlsx": "artifacts/outputs/trello_readonly/pdf_to_excel_from_trello.xlsx",
+          "ocr": "auto",
+          "dry_run": false,
+          "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+          "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+          "description": "Purpose: | Controlled Trello live preview smoke for openclaw-team. | Expected behavior: | - read-only Trello ingest | - preview creation smoke only | - no business execution claim | - no Trello writeback expected in this step | Traceability: | - backlog: BL-20260324-014 | - blocker context: BL-20260324-015 | - created_by: Oscarling | - created_at: 2026-03-24 Asia/Shanghai | Note: | This card is only for governed smoke verification and should remain open until the smoke is finished.",
+          "labels": [
+            "best_effort",
+            "evidence_backed",
+            "readonly",
+            "reviewable",
+            "trello"
+          ],
+          "preferred_wrapper_script": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+          "preferred_base_script": "artifacts/scripts/pdf_to_excel_ocr.py",
+          "reference_docs": [
+            "artifacts/docs/pdf_to_excel_ocr_usage.md",
+            "artifacts/reviews/pdf_to_excel_ocr_review.md"
+          ],
+          "contract_hints": {
+            "output_format_fidelity": "If output_xlsx ends with .xlsx, produce a real XLSX workbook container or fail honestly before writing mismatched text/XML/CSV content to a .xlsx path.",
+            "path_portability": "Use the provided input_dir parameter as runtime input. Do not hardcode a user-home or absolute input path when params already declare the path.",
+            "traceability": "Preserve meaningful description context from the external input; do not collapse it to a heading fragment such as Purpose:.",
+            "reuse_preference": "Prefer reusing artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py as the wrapper baseline and artifacts/scripts/pdf_to_excel_ocr.py as the reviewed delegate when compatible, so workbook semantics and contract behavior stay aligned with repository evidence.",
+            "outcome_status_model": "Use the reviewable status model success/partial/failed. Dry-run requests or zero-PDF discovery should resolve to partial rather than claiming success without an output artifact.",
+            "delegate_resolution": "If preferred_base_script is relative, resolve it from the repository or script location instead of Path.cwd() so behavior stays portable across shells and CI.",
+            "reviewed_delegate_contract": "For readonly reviewable preview flows, delegate only to the reviewed repository script artifacts/scripts/pdf_to_excel_ocr.py or fail honestly instead of broadening behavior through an arbitrary helper.",
+            "delegate_success_evidence": "Do not treat zero exit code plus output-file existence as sufficient wrapper success evidence on their own. Prefer a structured delegate report that confirms a real success outcome before the wrapper claims success. Require delegate status=success, total_files>=1, dry_run=false, status_counter.failed=0, status_counter.partial=0, and explicit output attestation fields excel_written=true, output_exists=true, and output_size_bytes>0. Apply these gates only when wrapper status is success.",
+            "delegate_partial_evidence": "For best-effort readonly flows, if delegate status is partial and structured evidence is present, keep wrapper status partial instead of escalating to failed solely because success-only gates are unmet. Surface explicit limitations and next-step guidance in wrapper output.",
+            "delegate_timeout": "Bound delegate subprocess execution with an explicit timeout and report timeout as an honest failed/partial outcome instead of allowing smoke automation to hang indefinitely.",
+            "readonly_semantics": "Readonly semantics must be explicit: no external/Trello writeback is required, but local filesystem output writes may still occur when dry_run=false. Runtime summary fields must not overstate readonly scope.",
+            "ocr_sufficiency": "When OCR mode is auto/on and delegate reports ocr_runtime_status as blocked/partial, do not claim wrapper success even if an output file exists; keep partial status with explicit OCR sufficiency notes.",
+            "runtime_summary": "The generated script should emit a structured summary of what it produced so later review can inspect behavior without guessing.",
+            "delegate_report_schema": "Treat delegate JSON report fields status/total_files/status_counter/dry_run as the canonical evidence contract. Do not require undeclared processed_files/succeeded_files/failed_files counters.",
+            "delegate_report_handoff": "When a sidecar report file is available, treat it as canonical evidence. Use stdout JSON parsing only as fallback when sidecar evidence is missing.",
+            "delegate_report_flag_contract": "If wrapper passes a sidecar report path to the reviewed delegate, use the reviewed delegate CLI flag --report-json (or another explicitly supported alias). Do not invent undeclared flags such as --report-file.",
+            "dry_run_semantics": "For readonly governed flows, do not short-circuit dry-run before delegate execution. Delegate under dry-run and pass through --dry-run explicitly so wrapper/delegate semantics remain aligned.",
+            "pdf_discovery_consistency": "Keep wrapper preflight PDF discovery semantics aligned with the reviewed delegate (for example recursive vs non-recursive), so wrapper evidence and delegated execution count the same candidate set."
+          }
+        }
+      },
+      "expected_outputs": [
+        {
+          "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+          "type": "script"
+        }
+      ],
+      "constraints": [
+        "Follow the local inbox normalized request",
+        "Do not claim unsupported runtime dependencies",
+        "Keep output deterministic and executable",
+        "Produce only the expected script artifact",
+        "Prefer honest, reviewable intermediate behavior over unsupported OCR claims",
+        "If the requested output path ends with .xlsx, do not write non-XLSX text/XML/CSV content to that path.",
+        "Do not hardcode an input directory when the task params already provide input_dir.",
+        "Preserve meaningful traceability from the incoming description instead of collapsing it to a heading fragment.",
+        "Prefer wrapping or adapting artifacts/scripts/pdf_to_excel_ocr.py when that existing repo script already matches the requested behavior.",
+        "When artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py already exists, prefer updating that reviewed wrapper baseline instead of rewriting a new control flow from scratch.",
+        "If dry_run is true or no PDFs are discovered, report a reviewable partial outcome instead of claiming success without an XLSX artifact.",
+        "Resolve relative delegate script paths from the repository or script location, not from Path.cwd().",
+        "For readonly reviewable preview flows, only delegate to the reviewed repository script artifacts/scripts/pdf_to_excel_ocr.py unless failing honestly.",
+        "Do not claim wrapper success from exit code plus output existence alone when the reviewed delegate report does not provide strong enough success evidence.",
+        "When wrapper reports success, enforce delegate evidence gates: status=success, total_files>=1, dry_run=false, status_counter.failed=0, status_counter.partial=0, excel_written=true, output_exists=true, and output_size_bytes>0.",
+        "If delegate reports partial with structured evidence in readonly best-effort mode, keep wrapper status partial (not failed) and include explicit limitations with next-step guidance.",
+        "Use delegate report fields status/total_files/status_counter/dry_run as canonical evidence; do not require undeclared per-counter keys.",
+        "When a delegate sidecar report is present, treat sidecar JSON as canonical evidence and use stdout JSON only as fallback.",
+        "When wrapper passes a sidecar report path to the reviewed delegate, use --report-json exactly unless the reviewed delegate explicitly supports another alias.",
+        "For readonly governed flows, do not short-circuit dry-run before delegate execution; pass --dry-run through delegate and preserve partial status honestly.",
+        "Keep wrapper PDF discovery semantics aligned with reviewed delegate discovery semantics to avoid preflight/execution evidence drift.",
+        "Readonly semantics must be explicit as no external writeback; avoid claiming strict filesystem readonly when dry_run=false can write local outputs.",
+        "When OCR mode is auto/on and delegate reports ocr_runtime_status as blocked/partial, keep wrapper status partial and surface OCR sufficiency limitations.",
+        "Use an explicit timeout on delegate subprocess execution so the smoke wrapper cannot hang indefinitely."
+      ],
+      "priority": "medium",
+      "source": {
+        "kind": "local_inbox",
+        "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+        "inbox_file": "trello-69c24cd3c1a2359ddd7a1bf8-regen-20260325-bl067-001.json",
+        "received_at": "2026-03-25T11:45:58.529105Z",
+        "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+        "labels": [
+          "best_effort",
+          "evidence_backed",
+          "readonly",
+          "reviewable",
+          "trello"
+        ],
+        "provider": "trello",
+        "mode": "readonly",
+        "card_id": "69c24cd3c1a2359ddd7a1bf8",
+        "board_id": "69be462743bfa0038ca10f7a",
+        "list_id": "69be462743bfa0038ca10f8f",
+        "regeneration_token": "regen-20260325-bl067-001"
+      },
+      "acceptance_criteria": [
+        "Produce the expected script artifact at expected_outputs[0].path",
+        "Script behavior remains runnable, deterministic, and reviewable",
+        "If output_xlsx ends with .xlsx, the artifact must preserve true XLSX output semantics or fail honestly before writing a mismatched format.",
+        "Artifact behavior remains parameter-driven for input_dir and output_xlsx rather than hardcoding unrelated local defaults.",
+        "Dry-run or zero-input behavior is represented as a reviewable partial outcome instead of artifact-production success.",
+        "Relative preferred_base_script resolution remains portable and does not depend on Path.cwd().",
+        "Wrapper success requires stronger delegate evidence than zero exit code plus a non-empty output file alone.",
+        "Wrapper success attestation requires delegate fields excel_written=true, output_exists=true, output_size_bytes>0, and status_counter.partial/status_counter.failed equal to 0.",
+        "Contract-compliant delegate partial outcomes remain partial with explicit limitations and next-step guidance, rather than being escalated to failed by success-only gates.",
+        "Wrapper evidence logic remains compatible with delegate JSON fields status/total_files/status_counter/dry_run.",
+        "Delegate report handoff prefers sidecar JSON as canonical evidence and only falls back to stdout JSON when sidecar evidence is unavailable.",
+        "Wrapper/delegate sidecar report handoff remains CLI-compatible by using --report-json (or another explicitly supported delegate alias).",
+        "Dry-run semantics remain explicit and delegated for readonly governed flows: pass --dry-run through delegate and preserve partial outcome honestly.",
+        "Wrapper preflight PDF discovery semantics remain aligned with delegate discovery semantics to keep evidence counts consistent.",
+        "Readonly semantics are explicit as no external writeback, and runtime summary wording does not overclaim strict filesystem readonly when dry_run=false.",
+        "Wrapper success is conservative when OCR mode is auto/on and delegate reports ocr_runtime_status as blocked/partial.",
+        "Delegate execution is bounded by an explicit timeout and reports timeout honestly."
+      ],
+      "metadata": {
+        "integration_phase": "8B",
+        "pipeline": "inbox->adapter->manager->automation->critic",
+        "request_type": "pdf_to_excel_ocr",
+        "payload_hash": "687ebc83a15301413ccf4c39574ace2121af2e87e87563fbd3bb18ec8ef8d7ad",
+        "regeneration_token": "regen-20260325-bl067-001",
+        "labels": [
+          "best_effort",
+          "evidence_backed",
+          "readonly",
+          "reviewable",
+          "trello"
+        ],
+        "external_metadata": {
+          "source_system": "trello",
+          "card_id": "69c24cd3c1a2359ddd7a1bf8",
+          "card_short_id": 7,
+          "board_id": "69be462743bfa0038ca10f7a",
+          "list_id": "69be462743bfa0038ca10f8f",
+          "date_last_activity": "2026-03-24T08:35:56.234Z",
+          "readonly_mapped_at": "2026-03-25T11:45:32.575060Z",
+          "contract_profile": "best_effort_evidence_backed",
+          "ocr_claim_policy": "do_not_claim_success_without_evidence",
+          "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable",
+          "regeneration_token": "regen-20260325-bl067-001"
+        },
+        "automation_contract_profile": "narrow_script_artifact_with_repo_reuse_and_reviewable_runner_contract"
+      }
+    },
+    "critic": {
+      "task_id": "CRITIC-20260325-290",
+      "worker": "critic",
+      "task_type": "review_artifact",
+      "objective": "Review the generated inbox runner together with its reviewed delegate script from the local inbox pipeline and provide a structured verdict using one of: pass, fail, needs_revision. Always output a review markdown artifact and include verdict in metadata.",
+      "inputs": {
+        "artifacts": [
+          {
+            "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+            "type": "script"
+          },
+          {
+            "path": "artifacts/scripts/pdf_to_excel_ocr.py",
+            "type": "script"
+          }
+        ],
+        "params": {
+          "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+          "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+          "description": "Purpose:\n\n  Controlled Trello live preview smoke for openclaw-team.\n\n‌\n\n  Expected behavior:\n\n- read-only Trello ingest\n\n- preview creation smoke only\n\n- no business execution claim\n\n- no Trello writeback expected in this step\n\n‌\n\n  Traceability:\n\n- backlog: BL-20260324-014\n\n- blocker context: BL-20260324-015\n\n- created_by: Oscarling\n\n- created_at: 2026-03-24 Asia/Shanghai\n\n‌\n\n  Note:\n\n  This card is only for governed smoke verification and should remain open until the smoke is finished.\n\nExecution contract: treat this as a best-effort, evidence-backed PDF extraction/conversion attempt. Do not claim OCR success without evidence. If full OCR/Excel conversion is not honestly achievable, return reviewable intermediate artifacts, explicit limitations, and next-step guidance. Keep behavior deterministic and limited to declared local artifacts.",
+          "labels": [
+            "best_effort",
+            "evidence_backed",
+            "readonly",
+            "reviewable",
+            "trello"
+          ],
+          "review_scope": {
+            "primary_artifact": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+            "paired_artifacts": [
+              "artifacts/scripts/pdf_to_excel_ocr.py"
+            ],
+            "goal": "Audit the wrapper and the reviewed delegate together so the review evidence can speak to the end-to-end readonly smoke path."
+          }
+        }
+      },
+      "expected_outputs": [
+        {
+          "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+          "type": "review"
+        }
+      ],
+      "constraints": [
+        "Review must be grounded in produced automation artifact",
+        "When both wrapper and reviewed delegate snapshots are supplied, evaluate them as one end-to-end readonly pair instead of ignoring the delegate evidence.",
+        "Do not invent missing artifact content",
+        "Return a clear verdict: pass, fail, or needs_revision",
+        "Include metadata.verdict in output",
+        "Generate review artifact markdown for expected_outputs[0].path"
+      ],
+      "priority": "medium",
+      "source": {
+        "kind": "local_inbox",
+        "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+        "inbox_file": "trello-69c24cd3c1a2359ddd7a1bf8-regen-20260325-bl067-001.json",
+        "received_at": "2026-03-25T11:45:58.529105Z",
+        "title": "BL-20260324-014 live preview smoke sample 2026-03-24 (best-effort reviewable attempt)",
+        "labels": [
+          "best_effort",
+          "evidence_backed",
+          "readonly",
+          "reviewable",
+          "trello"
+        ],
+        "provider": "trello",
+        "mode": "readonly",
+        "card_id": "69c24cd3c1a2359ddd7a1bf8",
+        "board_id": "69be462743bfa0038ca10f7a",
+        "list_id": "69be462743bfa0038ca10f8f",
+        "regeneration_token": "regen-20260325-bl067-001"
+      },
+      "acceptance_criteria": [
+        "Produce a review artifact with explicit verdict (pass/fail/needs_revision)"
+      ],
+      "metadata": {
+        "integration_phase": "8B",
+        "pipeline": "inbox->adapter->manager->automation->critic",
+        "request_type": "pdf_to_excel_ocr",
+        "payload_hash": "687ebc83a15301413ccf4c39574ace2121af2e87e87563fbd3bb18ec8ef8d7ad",
+        "regeneration_token": "regen-20260325-bl067-001",
+        "labels": [
+          "best_effort",
+          "evidence_backed",
+          "readonly",
+          "reviewable",
+          "trello"
+        ],
+        "external_metadata": {
+          "source_system": "trello",
+          "card_id": "69c24cd3c1a2359ddd7a1bf8",
+          "card_short_id": 7,
+          "board_id": "69be462743bfa0038ca10f7a",
+          "list_id": "69be462743bfa0038ca10f8f",
+          "date_last_activity": "2026-03-24T08:35:56.234Z",
+          "readonly_mapped_at": "2026-03-25T11:45:32.575060Z",
+          "contract_profile": "best_effort_evidence_backed",
+          "ocr_claim_policy": "do_not_claim_success_without_evidence",
+          "fallback_policy": "return_reviewable_artifacts_limitations_and_next_steps_when_full_conversion_is_not_honestly_achievable",
+          "regeneration_token": "regen-20260325-bl067-001"
+        }
+      }
+    }
+  },
+  "expected_artifacts": [
+    "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+    "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py"
+  ],
+  "dedupe_keys": [
+    "origin_regeneration:trello:69c24cd3c1a2359ddd7a1bf8:regen-20260325-bl067-001",
+    "hash:687ebc83a15301413ccf4c39574ace2121af2e87e87563fbd3bb18ec8ef8d7ad"
+  ],
+  "risk_warnings": [],
+  "execution": {
+    "status": "rejected",
+    "executed": true,
+    "attempts": 54,
+    "executed_at": "2026-03-26T04:23:29.889624Z",
+    "decision_reason": "Automation task failed: {\"task_id\": \"AUTO-20260325-874\", \"worker\": \"automation\", \"status\": \"failed\", \"summary\": \"Worker execution failed\", \"artifacts\": [], \"errors\": [\"LLM call exhausted (attempts=2/2, class=http_502, endpoint=http://host.docker.internal:18088/v1/chat/completions, retryable=True): HTTP Error 502: Bad Gateway\"], \"metadata\": {}, \"duration_ms\": 1011, \"timestamp\": \"2026-03-26T04:23:29.744626Z\"}"
+  },
+  "approval": {
+    "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.json",
+    "approved_by": "Oscarling",
+    "approved_at": "2026-03-25T11:46:31Z",
+    "note": "BL-20260325-067 governed validation execute only; no Git finalization; no Trello Done."
+  },
+  "last_execution": {
+    "decision": "rejected",
+    "decision_reason": "Automation task failed: {\"task_id\": \"AUTO-20260325-874\", \"worker\": \"automation\", \"status\": \"failed\", \"summary\": \"Worker execution failed\", \"artifacts\": [], \"errors\": [\"LLM call exhausted (attempts=2/2, class=http_502, endpoint=http://host.docker.internal:18088/v1/chat/completions, retryable=True): HTTP Error 502: Bad Gateway\"], \"metadata\": {}, \"duration_ms\": 1011, \"timestamp\": \"2026-03-26T04:23:29.744626Z\"}",
+    "automation_result": {
+      "task_id": "AUTO-20260325-874",
+      "worker": "automation",
+      "status": "failed",
+      "summary": "Worker execution failed",
+      "artifacts": [],
+      "errors": [
+        "LLM call exhausted (attempts=2/2, class=http_502, endpoint=http://host.docker.internal:18088/v1/chat/completions, retryable=True): HTTP Error 502: Bad Gateway"
+      ],
+      "metadata": {},
+      "duration_ms": 1011,
+      "timestamp": "2026-03-26T04:23:29.744626Z"
+    },
+    "critic_result": null,
+    "critic_verdict": "needs_revision"
+  }
+}
