@@ -1,0 +1,27 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-26T00:06:09.995225Z
+finished_at: 2026-03-26T00:14:38.738954Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-26T00:06:10.268985Z] [automation] [INFO] Worker started using endpoint https://fast.vpsairobot.com/v1/responses (wire_api=responses, timeout=240s, attempts=2, timeout_recovery_retries=2)
+[2026-03-26T00:08:15.511863Z] [automation] [WARN] LLM call failed attempt 1/2 (endpoint=https://fast.vpsairobot.com/v1/responses, class=http_524, retryable=True): HTTP Error 524: <none>
+[2026-03-26T00:08:15.512110Z] [automation] [INFO] Retrying LLM call in 1s (next_endpoint=https://fast.vpsairobot.com/responses)
+[2026-03-26T00:10:22.075763Z] [automation] [INFO] Granted timeout recovery retry; extended max attempts to 3 (remaining=1)
+[2026-03-26T00:10:22.075965Z] [automation] [WARN] LLM call failed attempt 2/3 (endpoint=https://fast.vpsairobot.com/responses, class=http_524, retryable=True): HTTP Error 524: <none>
+[2026-03-26T00:10:22.075981Z] [automation] [INFO] Retrying LLM call in 2s (next_endpoint=https://fast.vpsairobot.com/v1/responses)
+[2026-03-26T00:12:29.329802Z] [automation] [INFO] Granted timeout recovery retry; extended max attempts to 4 (remaining=0)
+[2026-03-26T00:12:29.330059Z] [automation] [WARN] LLM call failed attempt 3/4 (endpoint=https://fast.vpsairobot.com/v1/responses, class=http_524, retryable=True): HTTP Error 524: <none>
+[2026-03-26T00:12:29.330085Z] [automation] [INFO] Retrying LLM call in 4s (next_endpoint=https://fast.vpsairobot.com/responses)
+[2026-03-26T00:14:38.597955Z] [automation] [WARN] LLM call failed attempt 4/4 (endpoint=https://fast.vpsairobot.com/responses, class=http_524, retryable=True): HTTP Error 524: <none>
+[2026-03-26T00:14:38.598329Z] [automation] [ERROR] Task failed AUTO-20260325-874: LLM call exhausted (attempts=4/4, class=http_524, endpoint=https://fast.vpsairobot.com/responses, retryable=True): HTTP Error 524: <none>
+[2026-03-26T00:14:38.605906Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+

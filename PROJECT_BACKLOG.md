@@ -1319,16 +1319,33 @@ Allowed enum values:
 ### BL-20260325-075
 - title: Harden fast-provider gateway-timeout resilience and timeout-recovery knob propagation for governed execute
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260325-074
 - start_when: BL-074 confirms aligned profile no longer fails on auth but still terminates at `http_524` under replay attempts, and runtime indicates timeout-recovery retries knob is not propagated from execute env
-- done_when: Delegate runtime receives explicit timeout-recovery override from execute env and governed replay under aligned profile no longer terminates at gateway-timeout exhaustion (`http_524`) before automation success
+- done_when: Delegate runtime receives explicit timeout-recovery override from execute env and governed replay validates gateway-timeout recovery extension behavior under aligned profile; if terminal `http_524` persists, archive evidence and queue the next blocker
 - source: `POST_FAST_PROVIDER_TIMEOUT_STABILITY_VALIDATION_REPORT.md` on 2026-03-25 records dual-model tuned runs both ending at `http_524` and notes timeout-recovery env propagation gap
+- link: /Users/lingguozhong/openclaw-team/FAST_PROVIDER_GATEWAY_TIMEOUT_RESILIENCE_HARDENING_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/143
+- evidence: `skills/delegate_task.py` now propagates `ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES` into worker env, `dispatcher/worker_runtime.py` now applies timeout-recovery extension to `http_524` class (in addition to native timeout), and `tests/test_argus_hardening.py` adds focused coverage for both propagation and `http_524` recovery retries; governed replay evidence in `runtime_archives/bl075/` shows startup `timeout_recovery_retries=2` and two recovery extensions (`2 -> 3 -> 4` attempts) before terminal upstream `http_524`, so the next blocker remains provider gateway-timeout persistence
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-25
+
+### BL-20260326-076
+- title: Mitigate persistent upstream http_524 after timeout-recovery hardening to restore governed automation success
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260325-075
+- start_when: BL-075 source hardening is merged and governed replay confirms timeout-recovery propagation/extension works (`attempts 2->4`) but still ends terminally on upstream `http_524`
+- done_when: One governed replay under aligned fast-provider profile reaches automation success (and ideally critic handoff) without terminal `http_524` exhaustion, or conclusively validates an alternate stable provider path under the same governed contract
+- source: `FAST_PROVIDER_GATEWAY_TIMEOUT_RESILIENCE_HARDENING_REPORT.md` on 2026-03-26 records propagation/resilience improvements but persistent terminal `http_524` at upstream endpoint
 - link: -
 - issue: -
 - evidence: -
-- last_reviewed_at: 2026-03-25
-- opened_at: 2026-03-25
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26

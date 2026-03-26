@@ -83,6 +83,7 @@ def read_int_env(name, default, *, minimum=1):
 DEFAULT_LLM_TIMEOUT_SECONDS = 120
 DEFAULT_LLM_MAX_RETRIES = 3
 DEFAULT_LLM_TIMEOUT_RECOVERY_RETRIES = 1
+TIMEOUT_RECOVERY_ERROR_CLASSES = {"timeout", "http_524"}
 MAX_ARTIFACT_SIZE = 2 * 1024 * 1024  # 2MB
 NO_PROXY_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 HTTP_USER_AGENT = "Mozilla/5.0"
@@ -606,7 +607,7 @@ def should_grant_timeout_recovery_retry(
     max_attempts,
     timeout_recovery_retries_remaining,
 ):
-    if error_class != "timeout" or not retryable:
+    if error_class not in TIMEOUT_RECOVERY_ERROR_CLASSES or not retryable:
         return False
     if timeout_recovery_retries_remaining <= 0:
         return False
