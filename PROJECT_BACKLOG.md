@@ -1710,7 +1710,7 @@ Allowed enum values:
 ### BL-20260326-098
 - title: Provision a new provider/base route for governed replay after BL-097 model-switch failure
 - type: blocker
-- status: planned
+- status: blocked
 - phase: next
 - priority: p1
 - owner: Oscarling
@@ -1718,8 +1718,8 @@ Allowed enum values:
 - start_when: BL-097 confirms alternative model switch (`gpt-5.4`) does not recover real prompt-shape stability on existing fast endpoints
 - done_when: A newly provisioned provider/base route (new key/base topology) passes controlled replay and then governed 4-sample canary thresholds without rollback trigger
 - source: `ALTERNATIVE_MODEL_GPT54_ROUTE_PROBE_REPORT.md` on 2026-03-26 records full failure of real prompt-shape probes on existing route
-- link: -
+- link: /Users/lingguozhong/openclaw-team/TIMEOUT_BUDGET_GATEWAY_CEILING_PROBE_REPORT.md
 - issue: -
-- evidence: -
+- evidence: `TIMEOUT_BUDGET_GATEWAY_CEILING_PROBE_REPORT.md` and `runtime_archives/bl098/tmp/bl098_timeout_budget_probe.tsv` show that increasing timeout budget on the current fast route (`120/180/240/300`) does not recover real automation prompt execution; `120s` ends in timeout and `180/240/300` all terminate at ~126s with `http_524`, indicating an upstream ceiling under current provider/base topology
 - last_reviewed_at: 2026-03-26
 - opened_at: 2026-03-26

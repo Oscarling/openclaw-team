@@ -5499,3 +5499,44 @@ Verification snapshot on 2026-03-26:
 
 - prompt-shape matrix:
   - `runtime_archives/bl097/tmp/bl097_prompt_limit_probe_gpt54.tsv`
+
+### 108. BL-098 Timeout-Budget Probe (Gateway Ceiling Confirmed)
+
+User objective:
+
+- continue local-first progression without drift
+- test whether timeout budget increase can recover the existing fast route
+- keep go/no-go decisions evidence-driven before requesting new provider/base
+
+Main work areas:
+
+- activated `BL-20260326-098` timeout-budget probe under local-first mode
+- created dedicated probe runner:
+  - `runtime_archives/bl098/tmp/bl098_timeout_budget_probe.py`
+- executed real automation prompt-shape probe on
+  `https://fast.vpsairobot.com/v1/responses` with fixed controls:
+  - `model=gpt-5-codex`
+  - `ARGUS_AUTOMATION_PROMPT_FIELD_MAX_CHARS=1200`
+  - `ARGUS_LLM_MAX_RETRIES=1`
+  - `ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES=0`
+  - timeout budgets: `120/180/240/300`
+- observed BL-098 outcomes:
+  - `120s` budget: terminal `timeout` (`121.702s`)
+  - `180/240/300s` budgets: all terminated near `~126s` with `http_524`
+  - no success sample, so no repeat run was started
+- updated backlog:
+  - `BL-20260326-098` moved to `blocked` with evidence
+
+Primary output:
+
+- [TIMEOUT_BUDGET_GATEWAY_CEILING_PROBE_REPORT.md](/Users/lingguozhong/openclaw-team/TIMEOUT_BUDGET_GATEWAY_CEILING_PROBE_REPORT.md)
+
+Key result:
+
+- increasing local timeout budget does not recover the current fast route; an
+  upstream gateway ceiling (~126s) remains the dominant blocker.
+
+Verification snapshot on 2026-03-26:
+
+- timeout-budget matrix:
+  - `runtime_archives/bl098/tmp/bl098_timeout_budget_probe.tsv`
