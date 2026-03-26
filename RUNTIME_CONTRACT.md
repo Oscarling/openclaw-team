@@ -508,3 +508,20 @@ malformed-output 回放并归档证据，口径如下：
    - 若日志显示 `http_524` 后成功切换到 fallback 且 `processed/pass`，
      则判定 timeout/network 路径恢复有效；
    - 不将该窗口成功误写为“外部 provider SLA 已恢复”。
+
+### BL-089 failover 稳定性短窗口口径
+
+在 provider-profile failover 的单次窗口通过后，使用短窗口多次回放验证稳定性：
+
+1. 推荐最小样本：`4` 次（同一控制组、不同序号）。  
+2. 每次必须记录：
+   - `processed/rejected/critic_verdict`
+   - primary/fallback 命中计数
+   - `http_524 -> next_endpoint=<fallback>` 日志信号
+   - automation/critic wall-time
+3. playbook 可用性阈值（短窗口）：
+   - `processed_rate >= 0.75`
+   - `pass_verdict_rate >= 0.75`
+   - `complete_failover_signal_rate >= 0.75`
+   - 同窗口内无 terminal JSON-invalid
+4. 若阈值未达标，回到 failover 路径治理而非提升默认预算参数。  

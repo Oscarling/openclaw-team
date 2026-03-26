@@ -1,0 +1,18 @@
+{
+  "task_id": "CRITIC-20260325-290",
+  "worker": "critic",
+  "status": "success",
+  "summary": "Critic pass via profile failover path.",
+  "artifacts": [
+    {
+      "path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md",
+      "type": "review"
+    }
+  ],
+  "timestamp": "2026-03-26T04:16:51.270007Z",
+  "duration_ms": 1010,
+  "metadata": {
+    "verdict": "pass",
+    "source": "bl089-fallback"
+  }
+}
