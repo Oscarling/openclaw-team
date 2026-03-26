@@ -1625,7 +1625,7 @@ Allowed enum values:
 ### BL-20260326-093
 - title: Stabilize real-endpoint canary rerun by eliminating workspace-mount drift and recovering failover success rate
 - type: blocker
-- status: planned
+- status: blocked
 - phase: now
 - priority: p1
 - owner: Oscarling
@@ -1633,8 +1633,25 @@ Allowed enum values:
 - start_when: BL-092 rerun confirms fallback credential/profile availability but still fails rollout thresholds due mixed `workspace_missing_repo` and primary `http_502` terminal failures
 - done_when: Root cause and mitigation for workspace-mount/runtime inconsistency are evidenced, and a governed 4-sample real-endpoint rerun reaches `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` without rollback trigger
 - source: `CANARY_FALLBACK_CREDENTIAL_ALIGNMENT_RERUN_REPORT.md` on 2026-03-26 shows fallback auth recovery but canary promotion remains blocked by residual runtime instability
-- link: -
+- link: /Users/lingguozhong/openclaw-team/CANARY_WORKSPACE_RETRY_STABILIZATION_REPORT.md
 - issue: https://github.com/Oscarling/openclaw-team/issues/178
+- evidence: `CANARY_WORKSPACE_RETRY_STABILIZATION_REPORT.md` and `runtime_archives/bl093/tmp/bl093_canary_window_metrics.json` capture BL-093 guarded rerun (`processed=0/4`, `pass_verdict_rate=0.0`) with complete failover markers but terminal endpoint-chain failure class `http_502`; workspace-presence retry hardening landed with unit coverage, yet rollback guardrails remain triggered
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-094
+- title: Recover real-endpoint canary success under persistent primary 502 and fallback timeout chain
+- type: blocker
+- status: planned
+- phase: now
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-093
+- start_when: BL-093 confirms workspace-retry hardening but rerun window still fails threshold entirely on endpoint-chain instability (`http_502` + fallback timeout)
+- done_when: A governed 4-sample real-endpoint window reaches `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` with rollback guardrails not triggered, and evidence clearly attributes residual failures by endpoint class
+- source: `CANARY_WORKSPACE_RETRY_STABILIZATION_REPORT.md` on 2026-03-26 shows workspace drift not reproduced but canary still fully blocked by endpoint-chain failures
+- link: -
+- issue: https://github.com/Oscarling/openclaw-team/issues/180
 - evidence: -
 - last_reviewed_at: 2026-03-26
 - opened_at: 2026-03-26

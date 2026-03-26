@@ -26,6 +26,14 @@ MAX_ALLOWED_SNAPSHOT_CHARS = 500000
 TRANSIENT_AUTOMATION_ERROR_CLASSES = {"http_524", "http_502", "timeout"}
 DEFAULT_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS = 1
 MAX_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS = 3
+DEFAULT_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS = 1
+MAX_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS = 2
+WORKSPACE_PRESENCE_FAILURE_SNIPPETS = (
+    "repository not present in execution environment",
+    "workspace directory was empty",
+    "lacks an accessible repository layout",
+    "did not provide repository access",
+)
 
 
 def _resolve_max_snapshot_chars() -> int:
@@ -51,6 +59,17 @@ def _resolve_automation_transient_retry_attempts() -> int:
     except Exception:
         return DEFAULT_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS
     return max(0, min(parsed, MAX_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS))
+
+
+def _resolve_automation_workspace_retry_attempts() -> int:
+    raw = os.environ.get("ARGUS_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS", "").strip()
+    if not raw:
+        return DEFAULT_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS
+    try:
+        parsed = int(raw)
+    except Exception:
+        return DEFAULT_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS
+    return max(0, min(parsed, MAX_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS))
 
 
 def utc_now() -> str:
@@ -341,6 +360,38 @@ def _can_retry_automation_after_transient_failure(
     return bool(error_class and error_class in TRANSIENT_AUTOMATION_ERROR_CLASSES)
 
 
+def _is_workspace_presence_failure(auto_result: dict[str, Any]) -> bool:
+    if str(auto_result.get("status", "")).strip().lower() in {"success", "partial"}:
+        return False
+    chunks: list[str] = []
+    summary = auto_result.get("summary")
+    if isinstance(summary, str):
+        chunks.append(summary)
+    errors = auto_result.get("errors")
+    if isinstance(errors, list):
+        chunks.extend(item for item in errors if isinstance(item, str))
+    if not chunks:
+        return False
+    blob = "\n".join(chunks).lower()
+    if any(snippet in blob for snippet in WORKSPACE_PRESENCE_FAILURE_SNIPPETS):
+        return True
+    repo_signal = "repository" in blob
+    workspace_signal = ("workspace" in blob) or ("/app/workspaces" in blob) or ("task.json" in blob)
+    missing_signal = ("did not provide" in blob) or ("missing" in blob) or ("empty" in blob) or ("no " in blob)
+    return bool(repo_signal and workspace_signal and missing_signal)
+
+
+def _can_retry_automation_after_workspace_presence_failure(
+    auto_result: dict[str, Any],
+    *,
+    retries_used: int,
+    retry_budget: int,
+) -> bool:
+    if retries_used >= retry_budget:
+        return False
+    return _is_workspace_presence_failure(auto_result)
+
+
 def load_approvals(preview_id: str | None) -> list[tuple[Path, dict[str, Any]]]:
     approvals = []
     if preview_id:
@@ -464,6 +515,7 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
     decision = "rejected"
     decision_reason = "execution_failed"
     auto_transient_retries_used = 0
+    auto_workspace_retries_used = 0
 
     try:
         dt_kwargs = {
@@ -474,6 +526,7 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
             dt_kwargs["test_mode"] = args.test_mode
 
         retry_budget = _resolve_automation_transient_retry_attempts()
+        workspace_retry_budget = _resolve_automation_workspace_retry_attempts()
         while True:
             auto_result = delegate_task("automation", auto_task, **dt_kwargs)
             if auto_result.get("status") in {"success", "partial"}:
@@ -485,13 +538,23 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
             ):
                 auto_transient_retries_used += 1
                 continue
+            if _can_retry_automation_after_workspace_presence_failure(
+                auto_result,
+                retries_used=auto_workspace_retries_used,
+                retry_budget=workspace_retry_budget,
+            ):
+                auto_workspace_retries_used += 1
+                continue
             raise RuntimeError(f"Automation task failed: {json.dumps(auto_result, ensure_ascii=False)}")
 
-        if auto_transient_retries_used > 0:
+        if auto_transient_retries_used > 0 or auto_workspace_retries_used > 0:
             metadata = auto_result.get("metadata")
             if not isinstance(metadata, dict):
                 metadata = {}
-            metadata["automation_transient_retries_used"] = auto_transient_retries_used
+            if auto_transient_retries_used > 0:
+                metadata["automation_transient_retries_used"] = auto_transient_retries_used
+            if auto_workspace_retries_used > 0:
+                metadata["automation_workspace_retries_used"] = auto_workspace_retries_used
             auto_result["metadata"] = metadata
 
         critic_task = build_critic_from_automation(critic_task, auto_result)
@@ -540,6 +603,7 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
         "decision_reason": decision_reason,
         "critic_verdict": verdict,
         "automation_transient_retries_used": auto_transient_retries_used,
+        "automation_workspace_retries_used": auto_workspace_retries_used,
         "test_mode": args.test_mode,
     }
     sidecar_path = APPROVALS_DIR / f"{preview_id}.result.json"
@@ -553,6 +617,7 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
         "result_sidecar": str(sidecar_path),
         "critic_verdict": verdict,
         "automation_transient_retries_used": auto_transient_retries_used,
+        "automation_workspace_retries_used": auto_workspace_retries_used,
     }
 
 
