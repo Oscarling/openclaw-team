@@ -1,0 +1,12 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "failed",
+  "summary": "['Unable to deliver the requested script artifact because no repository files were available in the workspace. The workspace directory was empty, preventing inspection or modification of the expected artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py wrapper.']",
+  "artifacts": [],
+  "timestamp": "2026-03-26T06:24:23.736629Z",
+  "duration_ms": 126967,
+  "errors": [
+    "Worker reported failed without structured errors"
+  ]
+}

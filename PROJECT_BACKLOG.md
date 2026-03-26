@@ -1608,16 +1608,33 @@ Allowed enum values:
 ### BL-20260326-092
 - title: Restore fallback credential/profile availability and rerun canary failover window to clear rollback trigger
 - type: blocker
-- status: planned
-- phase: next
+- status: blocked
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-091
 - start_when: BL-091 canary against real endpoint topology triggers rollback due fallback authorization unavailability and zero processed/pass rates
 - done_when: Fallback credential/profile alignment is verified by preflight probe (`200`) and a rerun canary observation window reaches at least `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` without violating rollback guardrails
 - source: `CANARY_REAL_ENDPOINT_FAILOVER_OBSERVATION_REPORT.md` on 2026-03-26 records fallback path `http_401` and mandatory rollback; next blocker is alignment/remediation plus governed rerun
+- link: /Users/lingguozhong/openclaw-team/CANARY_FALLBACK_CREDENTIAL_ALIGNMENT_RERUN_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/177
+- evidence: `CANARY_FALLBACK_CREDENTIAL_ALIGNMENT_RERUN_REPORT.md` plus `runtime_archives/bl092/tmp/bl092_probe_matrix.tsv` confirm fallback credential/profile preflight availability (`200`) while canary rerun matrix/metrics (`bl092_canary_rerun_matrix.tsv`, `bl092_canary_rerun_metrics.json`) record `processed=1/4`, `pass_verdict_rate=0.25`, mixed `workspace_missing_repo/http_502`, and rollback guardrail triggers
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-093
+- title: Stabilize real-endpoint canary rerun by eliminating workspace-mount drift and recovering failover success rate
+- type: blocker
+- status: planned
+- phase: now
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-092
+- start_when: BL-092 rerun confirms fallback credential/profile availability but still fails rollout thresholds due mixed `workspace_missing_repo` and primary `http_502` terminal failures
+- done_when: Root cause and mitigation for workspace-mount/runtime inconsistency are evidenced, and a governed 4-sample real-endpoint rerun reaches `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` without rollback trigger
+- source: `CANARY_FALLBACK_CREDENTIAL_ALIGNMENT_RERUN_REPORT.md` on 2026-03-26 shows fallback auth recovery but canary promotion remains blocked by residual runtime instability
 - link: -
-- issue: -
+- issue: https://github.com/Oscarling/openclaw-team/issues/178
 - evidence: -
 - last_reviewed_at: 2026-03-26
 - opened_at: 2026-03-26

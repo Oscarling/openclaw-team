@@ -198,6 +198,7 @@ class ArgusHardeningTests(unittest.TestCase):
                             "model_name": "gpt-5-codex",
                             "wire_api": "responses",
                             "api_key_env": "OPENAI_API_KEY_BACKUP",
+                            "fallback_api_key_env": "OPENAI_API_KEY_FALLBACK",
                             "fallback_response_urls": [
                                 "https://backup-provider.invalid/v1/responses",
                                 "https://backup-provider.invalid/responses",
@@ -216,6 +217,7 @@ class ArgusHardeningTests(unittest.TestCase):
                 "ARGUS_PROVIDER_PROFILE": "backup",
                 "OPENAI_API_KEY": "primary-key",
                 "OPENAI_API_KEY_BACKUP": "backup-key",
+                "OPENAI_API_KEY_FALLBACK": "fallback-key",
                 "OPENAI_API_BASE": "https://primary-provider.invalid/v1",
                 "OPENAI_MODEL_NAME": "primary-model",
                 "ARGUS_LLM_TIMEOUT_RECOVERY_RETRIES": "0",
@@ -228,6 +230,7 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertEqual(env["OPENAI_API_BASE"], "https://backup-provider.invalid/v1")
         self.assertEqual(env["OPENAI_MODEL_NAME"], "gpt-5-codex")
         self.assertEqual(env["ARGUS_LLM_WIRE_API"], "responses")
+        self.assertEqual(env["ARGUS_LLM_FALLBACK_API_KEY"], "fallback-key")
         self.assertEqual(
             env["ARGUS_LLM_FALLBACK_RESPONSE_URLS"],
             "https://backup-provider.invalid/v1/responses,https://backup-provider.invalid/responses",
@@ -270,6 +273,39 @@ class ArgusHardeningTests(unittest.TestCase):
                 build_worker_env("automation")
 
         self.assertIn("OPENAI_API_KEY_BACKUP_MISSING", str(ctx.exception))
+
+    def test_build_worker_env_profile_fallback_key_env_missing_raises(self) -> None:
+        profiles_path = self.tmpdir / "contracts" / "provider_profiles.json"
+        profiles_path.parent.mkdir(parents=True, exist_ok=True)
+        profiles_path.write_text(
+            json.dumps(
+                {
+                    "profiles": {
+                        "backup": {
+                            "api_base": "https://backup-provider.invalid/v1",
+                            "model_name": "gpt-5-codex",
+                            "wire_api": "responses",
+                            "api_key_env": "OPENAI_API_KEY_BACKUP",
+                            "fallback_api_key_env": "OPENAI_API_KEY_FALLBACK_MISSING",
+                        }
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        with mock.patch.dict(
+            os.environ,
+            {
+                "ARGUS_PROVIDER_PROFILE": "backup",
+                "OPENAI_API_KEY_BACKUP": "backup-key",
+            },
+            clear=False,
+        ):
+            with self.assertRaises(RuntimeError) as ctx:
+                build_worker_env("automation")
+
+        self.assertIn("OPENAI_API_KEY_FALLBACK_MISSING", str(ctx.exception))
 
     def test_build_worker_env_without_profile_keeps_legacy_env_resolution(self) -> None:
         with mock.patch.dict(
@@ -996,6 +1032,72 @@ class ArgusHardeningTests(unittest.TestCase):
             ],
         )
         self.assertEqual([timeout for _url, timeout in calls], [120, 120, 120])
+        self.assertEqual(json.loads(content)["status"], "success")
+
+    def test_call_llm_uses_fallback_api_key_for_fallback_endpoint(self) -> None:
+        calls: list[tuple[str, str | None]] = []
+
+        class FakeResponse:
+            def __enter__(self) -> "FakeResponse":
+                return self
+
+            def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+                return False
+
+            def read(self) -> bytes:
+                payload = {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps({"status": "success", "summary": "ok"})
+                            }
+                        }
+                    ]
+                }
+                return json.dumps(payload).encode("utf-8")
+
+        class KeyAwareOpener:
+            def open(self, req: Any, timeout: int | None = None) -> FakeResponse:  # noqa: ARG002
+                auth = req.headers.get("Authorization")
+                calls.append((req.full_url, auth))
+                if "primary.invalid" in req.full_url:
+                    raise urllib.error.HTTPError(req.full_url, 403, "Forbidden", None, None)
+                if auth != "Bearer fallback-key":
+                    raise urllib.error.HTTPError(req.full_url, 401, "Unauthorized", None, None)
+                return FakeResponse()
+
+        with mock.patch.object(worker_runtime, "NO_PROXY_OPENER", KeyAwareOpener()):
+            with mock.patch.object(worker_runtime.time, "sleep", return_value=None):
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "ARGUS_LLM_MAX_RETRIES": "3",
+                        "ARGUS_LLM_FALLBACK_CHAT_URLS": "https://fallback.invalid/v1/chat/completions",
+                    },
+                    clear=False,
+                ):
+                    content = worker_runtime.call_llm(
+                        "system",
+                        "user",
+                        "automation",
+                        {
+                            "api_key": "primary-key",
+                            "fallback_api_key": "fallback-key",
+                            "api_base": "https://primary.invalid/v1",
+                            "chat_url": "https://primary.invalid/v1/chat/completions",
+                            "model_name": "demo-model",
+                        },
+                    )
+
+        self.assertEqual(
+            [url for url, _auth in calls],
+            [
+                "https://primary.invalid/v1/chat/completions",
+                "https://fallback.invalid/v1/chat/completions",
+            ],
+        )
+        self.assertEqual(calls[0][1], "Bearer primary-key")
+        self.assertEqual(calls[1][1], "Bearer fallback-key")
         self.assertEqual(json.loads(content)["status"], "success")
 
     def test_call_llm_retries_http_520_then_recovers_after_fallback_http_401(self) -> None:

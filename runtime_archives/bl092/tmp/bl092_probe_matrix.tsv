@@ -1,0 +1,4 @@
+endpoint	key_role	http_code
+https://aixj.vip/v1/responses	primary	502
+https://fast.vpsairobot.com/v1/responses	fallback	200
+https://fast.vpsairobot.com/responses	fallback	200

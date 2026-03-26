@@ -1,0 +1,14 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Reused existing artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py wrapper; it already satisfies the Trello readonly smoke requirements.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-26T05:52:56.753881Z",
+  "duration_ms": 243813
+}
