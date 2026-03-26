@@ -1,0 +1,2 @@
+run	budget	status	processed	rejected	critic_verdict	retries_used	decision_reason
+run01	1	done	1	0	pass	0	critic_verdict=pass

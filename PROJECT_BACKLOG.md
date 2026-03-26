@@ -1387,14 +1387,31 @@ Allowed enum values:
 ### BL-20260326-079
 - title: Observe and tune repo-baseline transient retry policy under repeated governed replays
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-078
 - start_when: BL-078 merges and enables bounded in-process transient automation retry for `http_524`
 - done_when: Multi-run governed evidence confirms whether current retry budget (default 1) is sufficient; if not, policy/knobs are tuned with archived evidence and focused tests
 - source: `SINGLE_PASS_RELIABILITY_HARDENING_REPORT.md` on 2026-03-26 records single-pass success under new policy but still depends on upstream variability characteristics over time
+- link: /Users/lingguozhong/openclaw-team/TRANSIENT_RETRY_POLICY_OBSERVATION_TUNING_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/151
+- evidence: `TRANSIENT_RETRY_POLICY_OBSERVATION_TUNING_REPORT.md` records multi-run governed observation in `runtime_archives/bl079/` (`bl079_replay_matrix_budget1*.tsv`), policy tuning in `skills/execute_approved_previews.py` expanding transient classes to `http_524/http_502/timeout`, focused regressions added in `tests/test_execute_approved_previews.py`, and a post-tune governed replay pass (`processed=1`, `critic_verdict=pass`) in `runtime_archives/bl079/tmp/bl079_replay_matrix_budget1_final.tsv`
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-080
+- title: Quantify retry-budget pass-rate and latency tradeoff for repo-baseline governed replay
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-079
+- start_when: BL-079 lands expanded transient class coverage (`http_524/http_502/timeout`) and confirms at least one post-tune governed pass
+- done_when: Controlled replay samples compare pass-rate and wall-time impact between retry budgets (`1` vs `2`) and freeze recommended default/profile guidance with archived evidence
+- source: `TRANSIENT_RETRY_POLICY_OBSERVATION_TUNING_REPORT.md` on 2026-03-26 shows tuned transient-class coverage and a post-tune pass, but residual provider variability still leaves budget-vs-latency tradeoff unquantified
 - link: -
 - issue: -
 - evidence: -
