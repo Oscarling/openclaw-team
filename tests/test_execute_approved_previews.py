@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 
 from skills import execute_approved_previews as executor
@@ -210,6 +212,188 @@ class CriticVerdictExtractionTests(unittest.TestCase):
             runner_snapshot = updated["inputs"]["params"]["artifact_snapshots"][0]
             self.assertTrue(runner_snapshot["truncated"])
             self.assertEqual(runner_snapshot["content"], "abcdefgh")
+
+
+class ExecuteApprovedPreviewsTransientRetryTests(unittest.TestCase):
+    def _valid_automation_task(self) -> dict:
+        return {
+            "task_id": "AUTO-20260326-901",
+            "worker": "automation",
+            "task_type": "generate_script",
+            "objective": "Generate a deterministic automation artifact for retry validation.",
+            "inputs": {"params": {"script_name": "demo.py"}},
+            "expected_outputs": [{"path": "artifacts/scripts/demo.py", "type": "script"}],
+            "constraints": ["must be deterministic"],
+        }
+
+    def _valid_critic_task(self) -> dict:
+        return {
+            "task_id": "CRITIC-20260326-901",
+            "worker": "critic",
+            "task_type": "review_artifact",
+            "objective": "Review generated automation artifact and return deterministic verdict.",
+            "inputs": {"artifacts": [{"path": "artifacts/scripts/demo.py", "type": "script"}]},
+            "expected_outputs": [{"path": "artifacts/reviews/demo_review.md", "type": "review"}],
+            "constraints": ["must include verdict"],
+        }
+
+    def test_process_approval_retries_once_for_http_524_then_succeeds(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="execute-approved-previews-") as tmp:
+            repo_root = Path(tmp)
+            preview_dir = repo_root / "preview"
+            approvals_dir = repo_root / "approvals"
+            artifacts_dir = repo_root / "artifacts"
+            preview_dir.mkdir(parents=True, exist_ok=True)
+            approvals_dir.mkdir(parents=True, exist_ok=True)
+            (artifacts_dir / "scripts").mkdir(parents=True, exist_ok=True)
+            (artifacts_dir / "reviews").mkdir(parents=True, exist_ok=True)
+            (artifacts_dir / "scripts" / "demo.py").write_text("print('ok')\n", encoding="utf-8")
+            (artifacts_dir / "reviews" / "demo_review.md").write_text(
+                "# Review\n\n- Verdict: pass\n", encoding="utf-8"
+            )
+
+            preview_id = "preview-test-001"
+            preview_payload = {
+                "preview_id": preview_id,
+                "internal_tasks": {
+                    "automation": self._valid_automation_task(),
+                    "critic": self._valid_critic_task(),
+                },
+                "execution": {"status": "pending"},
+            }
+            approval_payload = {
+                "preview_id": preview_id,
+                "approved": True,
+                "approved_by": "tester",
+                "approved_at": "2026-03-26T00:00:00Z",
+            }
+            preview_path = preview_dir / f"{preview_id}.json"
+            approval_path = approvals_dir / f"{preview_id}.json"
+            preview_path.write_text(json.dumps(preview_payload), encoding="utf-8")
+            approval_path.write_text(json.dumps(approval_payload), encoding="utf-8")
+
+            calls: list[str] = []
+
+            def fake_delegate(worker: str, task: dict, **kwargs: object) -> dict:  # noqa: ARG001
+                calls.append(worker)
+                if worker == "automation" and calls.count("automation") == 1:
+                    return {
+                        "task_id": task["task_id"],
+                        "worker": "automation",
+                        "status": "failed",
+                        "summary": "Worker execution failed",
+                        "artifacts": [],
+                        "errors": [
+                            "LLM call exhausted (attempts=4/4, class=http_524, endpoint=https://fast.vpsairobot.com/v1/chat/completions, retryable=True): HTTP Error 524: <none>"
+                        ],
+                        "metadata": {},
+                    }
+                if worker == "automation":
+                    return {
+                        "task_id": task["task_id"],
+                        "worker": "automation",
+                        "status": "success",
+                        "summary": "automation success",
+                        "artifacts": [{"path": "artifacts/scripts/demo.py", "type": "script"}],
+                        "metadata": {},
+                    }
+                return {
+                    "task_id": task["task_id"],
+                    "worker": "critic",
+                    "status": "success",
+                    "summary": "critic success",
+                    "artifacts": [{"path": "artifacts/reviews/demo_review.md", "type": "review"}],
+                    "metadata": {"verdict": "pass"},
+                }
+
+            original_repo_root = executor.REPO_ROOT
+            original_preview_dir = executor.PREVIEW_DIR
+            original_approvals_dir = executor.APPROVALS_DIR
+            try:
+                executor.REPO_ROOT = repo_root
+                executor.PREVIEW_DIR = preview_dir
+                executor.APPROVALS_DIR = approvals_dir
+                with mock.patch.object(executor, "delegate_task", side_effect=fake_delegate):
+                    result = executor.process_approval(
+                        approval_path,
+                        approval_payload,
+                        SimpleNamespace(test_mode="off", allow_replay=True),
+                    )
+            finally:
+                executor.REPO_ROOT = original_repo_root
+                executor.PREVIEW_DIR = original_preview_dir
+                executor.APPROVALS_DIR = original_approvals_dir
+
+            self.assertEqual(result["status"], "processed")
+            self.assertEqual(result["critic_verdict"], "pass")
+            self.assertEqual(result["automation_transient_retries_used"], 1)
+            self.assertEqual(calls, ["automation", "automation", "critic"])
+
+    def test_process_approval_does_not_retry_non_transient_failure(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="execute-approved-previews-") as tmp:
+            repo_root = Path(tmp)
+            preview_dir = repo_root / "preview"
+            approvals_dir = repo_root / "approvals"
+            preview_dir.mkdir(parents=True, exist_ok=True)
+            approvals_dir.mkdir(parents=True, exist_ok=True)
+
+            preview_id = "preview-test-002"
+            preview_payload = {
+                "preview_id": preview_id,
+                "internal_tasks": {
+                    "automation": self._valid_automation_task(),
+                    "critic": self._valid_critic_task(),
+                },
+                "execution": {"status": "pending"},
+            }
+            approval_payload = {
+                "preview_id": preview_id,
+                "approved": True,
+                "approved_by": "tester",
+                "approved_at": "2026-03-26T00:00:00Z",
+            }
+            preview_path = preview_dir / f"{preview_id}.json"
+            approval_path = approvals_dir / f"{preview_id}.json"
+            preview_path.write_text(json.dumps(preview_payload), encoding="utf-8")
+            approval_path.write_text(json.dumps(approval_payload), encoding="utf-8")
+
+            calls: list[str] = []
+
+            def fake_delegate(worker: str, task: dict, **kwargs: object) -> dict:  # noqa: ARG001
+                calls.append(worker)
+                return {
+                    "task_id": task["task_id"],
+                    "worker": worker,
+                    "status": "failed",
+                    "summary": "Worker execution failed",
+                    "artifacts": [],
+                    "errors": [
+                        "LLM call exhausted (attempts=1/1, class=http_403, endpoint=https://fast.vpsairobot.com/v1/chat/completions, retryable=False): HTTP Error 403: Forbidden"
+                    ],
+                    "metadata": {},
+                }
+
+            original_repo_root = executor.REPO_ROOT
+            original_preview_dir = executor.PREVIEW_DIR
+            original_approvals_dir = executor.APPROVALS_DIR
+            try:
+                executor.REPO_ROOT = repo_root
+                executor.PREVIEW_DIR = preview_dir
+                executor.APPROVALS_DIR = approvals_dir
+                with mock.patch.object(executor, "delegate_task", side_effect=fake_delegate):
+                    result = executor.process_approval(
+                        approval_path,
+                        approval_payload,
+                        SimpleNamespace(test_mode="off", allow_replay=True),
+                    )
+            finally:
+                executor.REPO_ROOT = original_repo_root
+                executor.PREVIEW_DIR = original_preview_dir
+                executor.APPROVALS_DIR = original_approvals_dir
+
+            self.assertEqual(result["status"], "rejected")
+            self.assertEqual(result["automation_transient_retries_used"], 0)
+            self.assertEqual(calls, ["automation"])
 
 
 if __name__ == "__main__":

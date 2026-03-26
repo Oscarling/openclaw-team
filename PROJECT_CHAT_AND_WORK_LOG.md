@@ -4492,3 +4492,51 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl077/tmp/bl077_execute_replay_repo_profile_attempt_b.json`
   - `runtime_archives/bl077/runtime/automation-output.repo-profile-pass.json`
   - `runtime_archives/bl077/runtime/critic-output.repo-profile-pass.json`
+
+### 88. BL-078 Single-Pass Reliability Hardening (In-Process Transient Retry)
+
+User objective:
+
+- continue strict no-drift flow
+- reduce immediate manual rerun dependence under repo-baseline replay when
+  upstream `http_524` appears intermittently
+
+Main work areas:
+
+- activated `BL-20260326-078` and mirrored to issue `#149`
+- hardened execute orchestration in `skills/execute_approved_previews.py`:
+  - added bounded in-process automation transient retry policy
+  - default transient class: `http_524`
+  - retry budget env:
+    `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS` (default `1`, bounded `0..3`)
+  - sidecar/result now include `automation_transient_retries_used`
+- added focused tests in `tests/test_execute_approved_previews.py`:
+  - retries once for `http_524` then succeeds
+  - does not retry non-transient failures
+- executed governed replay under repo baseline profile with single command
+  invocation and archived evidence in `runtime_archives/bl078/`
+- produced BL-078 hardening report and advanced backlog:
+  - `BL-20260326-078` marked `done`
+  - queued next blocker `BL-20260326-079` (`planned` / `next`)
+
+Primary output:
+
+- [SINGLE_PASS_RELIABILITY_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/SINGLE_PASS_RELIABILITY_HARDENING_REPORT.md)
+
+Key result:
+
+- execute path now supports bounded in-process recovery for transient automation
+  `http_524` without requiring a second manual execute command
+- governed replay single invocation completed:
+  - `processed=1`
+  - `critic_verdict=pass`
+
+Verification snapshot on 2026-03-26:
+
+- `python3 -m unittest -v tests/test_execute_approved_previews.py` passed
+  (`7/7`)
+- replay evidence:
+  - `runtime_archives/bl078/tmp/bl078_execute_replay_singlepass.json`
+  - `runtime_archives/bl078/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.singlepass.json`
+  - `runtime_archives/bl078/runtime/automation-output.singlepass.json`
+  - `runtime_archives/bl078/runtime/critic-output.singlepass.json`

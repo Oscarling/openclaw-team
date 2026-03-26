@@ -1370,14 +1370,31 @@ Allowed enum values:
 ### BL-20260326-078
 - title: Stabilize repo-baseline governed replay reliability against intermittent upstream http_524
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-077
 - start_when: BL-077 productizes and validates the repository-managed chat baseline path, but replay evidence still shows intermittent `http_524` failures before eventual pass
 - done_when: Governed replay reliability under the repo baseline path is characterized and improved so at least one single-pass run can be expected without requiring immediate manual rerun after terminal `http_524`
 - source: `PROVIDER_PROFILE_BASELINE_PRODUCTIZATION_REPORT.md` on 2026-03-26 records one first-attempt terminal `http_524` followed by a second-attempt pass under the same repo baseline profile
+- link: /Users/lingguozhong/openclaw-team/SINGLE_PASS_RELIABILITY_HARDENING_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/149
+- evidence: `skills/execute_approved_previews.py` now adds one bounded in-process automation transient retry for class `http_524` (`ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS`, default 1), `tests/test_execute_approved_previews.py` adds focused coverage for retry-vs-no-retry behavior, and governed replay evidence in `runtime_archives/bl078/` confirms a single execute invocation under repo baseline profile completed `processed=1` / `critic_verdict=pass` without manual second command
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-079
+- title: Observe and tune repo-baseline transient retry policy under repeated governed replays
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-078
+- start_when: BL-078 merges and enables bounded in-process transient automation retry for `http_524`
+- done_when: Multi-run governed evidence confirms whether current retry budget (default 1) is sufficient; if not, policy/knobs are tuned with archived evidence and focused tests
+- source: `SINGLE_PASS_RELIABILITY_HARDENING_REPORT.md` on 2026-03-26 records single-pass success under new policy but still depends on upstream variability characteristics over time
 - link: -
 - issue: -
 - evidence: -

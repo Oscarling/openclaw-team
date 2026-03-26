@@ -23,6 +23,9 @@ VERDICT_VALUES = {"pass", "fail", "needs_revision"}
 DEFAULT_MAX_SNAPSHOT_CHARS = 120000
 MIN_MAX_SNAPSHOT_CHARS = 4096
 MAX_ALLOWED_SNAPSHOT_CHARS = 500000
+TRANSIENT_AUTOMATION_ERROR_CLASSES = {"http_524"}
+DEFAULT_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS = 1
+MAX_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS = 3
 
 
 def _resolve_max_snapshot_chars() -> int:
@@ -37,6 +40,17 @@ def _resolve_max_snapshot_chars() -> int:
 
 
 MAX_SNAPSHOT_CHARS = _resolve_max_snapshot_chars()
+
+
+def _resolve_automation_transient_retry_attempts() -> int:
+    raw = os.environ.get("ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS", "").strip()
+    if not raw:
+        return DEFAULT_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS
+    try:
+        parsed = int(raw)
+    except Exception:
+        return DEFAULT_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS
+    return max(0, min(parsed, MAX_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS))
 
 
 def utc_now() -> str:
@@ -300,6 +314,33 @@ def decision_for_results(auto_result: dict[str, Any], critic_result: dict[str, A
     return "rejected", f"critic_verdict={verdict}"
 
 
+def _extract_llm_error_class(auto_result: dict[str, Any]) -> str | None:
+    errors = auto_result.get("errors")
+    if not isinstance(errors, list):
+        return None
+    for item in errors:
+        if not isinstance(item, str):
+            continue
+        match = re.search(r"class=([a-z0-9_]+)", item)
+        if match:
+            return match.group(1).strip().lower()
+    return None
+
+
+def _can_retry_automation_after_transient_failure(
+    auto_result: dict[str, Any],
+    *,
+    retries_used: int,
+    retry_budget: int,
+) -> bool:
+    if retries_used >= retry_budget:
+        return False
+    if str(auto_result.get("status", "")).strip().lower() in {"success", "partial"}:
+        return False
+    error_class = _extract_llm_error_class(auto_result)
+    return bool(error_class and error_class in TRANSIENT_AUTOMATION_ERROR_CLASSES)
+
+
 def load_approvals(preview_id: str | None) -> list[tuple[Path, dict[str, Any]]]:
     approvals = []
     if preview_id:
@@ -422,6 +463,7 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
     verdict = "needs_revision"
     decision = "rejected"
     decision_reason = "execution_failed"
+    auto_transient_retries_used = 0
 
     try:
         dt_kwargs = {
@@ -431,9 +473,26 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
         if args.test_mode != "off":
             dt_kwargs["test_mode"] = args.test_mode
 
-        auto_result = delegate_task("automation", auto_task, **dt_kwargs)
-        if auto_result.get("status") not in {"success", "partial"}:
+        retry_budget = _resolve_automation_transient_retry_attempts()
+        while True:
+            auto_result = delegate_task("automation", auto_task, **dt_kwargs)
+            if auto_result.get("status") in {"success", "partial"}:
+                break
+            if _can_retry_automation_after_transient_failure(
+                auto_result,
+                retries_used=auto_transient_retries_used,
+                retry_budget=retry_budget,
+            ):
+                auto_transient_retries_used += 1
+                continue
             raise RuntimeError(f"Automation task failed: {json.dumps(auto_result, ensure_ascii=False)}")
+
+        if auto_transient_retries_used > 0:
+            metadata = auto_result.get("metadata")
+            if not isinstance(metadata, dict):
+                metadata = {}
+            metadata["automation_transient_retries_used"] = auto_transient_retries_used
+            auto_result["metadata"] = metadata
 
         critic_task = build_critic_from_automation(critic_task, auto_result)
         critic_post_errors = validate_task(critic_task)
@@ -480,6 +539,7 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
         "status": decision,
         "decision_reason": decision_reason,
         "critic_verdict": verdict,
+        "automation_transient_retries_used": auto_transient_retries_used,
         "test_mode": args.test_mode,
     }
     sidecar_path = APPROVALS_DIR / f"{preview_id}.result.json"
@@ -492,6 +552,7 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
         "approval_file": str(approval_path),
         "result_sidecar": str(sidecar_path),
         "critic_verdict": verdict,
+        "automation_transient_retries_used": auto_transient_retries_used,
     }
 
 

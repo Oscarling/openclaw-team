@@ -1,0 +1,14 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Created artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py to wrap the reviewed pdf_to_excel_ocr delegate with timeout enforcement, report-based evidence gates, readonly traceability, and structured status/limitation reporting per the Trello smoke contract.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-26T01:25:03.856874Z",
+  "duration_ms": 62479
+}
