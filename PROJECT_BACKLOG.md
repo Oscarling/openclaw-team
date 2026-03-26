@@ -1502,3 +1502,37 @@ Allowed enum values:
 - evidence: `JSON_REPAIR_ENGAGED_PATH_CONTROLLED_REPLAY_REPORT.md` records BL-085 controlled replay evidence in `runtime_archives/bl085/`; request trace `tmp/bl085_mock_requests.log` confirms deterministic sequence (`automation_initial_invalid -> automation_repair -> critic_pass`), automation output metadata records `json_output_repair_attempts_used=1`, and execute result reports `processed=1` with `critic_verdict=pass` while output schema contract remains stable
 - last_reviewed_at: 2026-03-26
 - opened_at: 2026-03-26
+
+### BL-20260326-086
+- title: Quantify timeout-dominant failure bottleneck across governed windows and codify mitigation priority
+- type: blocker
+- status: done
+- phase: now
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-085
+- start_when: BL-080/081/084 governed evidence repeatedly reports timeout-dominant failure classes, and BL-085 confirms JSON-repair engaged path itself is healthy under controlled replay
+- done_when: A cross-window evidence report quantifies timeout share versus non-timeout classes using archived governed runs and records contract guidance that timeout mitigation remains higher priority than JSON-path tuning while timeout stays dominant
+- source: `RETRY_BUDGET_CONFIDENCE_WINDOW_REPORT.md`, `JSON_REPAIR_ENGAGEMENT_CONFIDENCE_WINDOW_REPORT.md`, and `JSON_REPAIR_ENGAGED_PATH_CONTROLLED_REPLAY_REPORT.md` on 2026-03-26 indicate persistent timeout concentration after retry-budget and JSON-repair hardening
+- link: /Users/lingguozhong/openclaw-team/TIMEOUT_BOTTLENECK_CONFIDENCE_WINDOW_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/165
+- evidence: `TIMEOUT_BOTTLENECK_CONFIDENCE_WINDOW_REPORT.md` aggregates BL-080/081/083/084/085 windows into `runtime_archives/bl086/tmp/bl086_timeout_bottleneck_summary.tsv` and `bl086_timeout_bottleneck_metrics.json`; measured timeout concentration is `9/11` failed rows (`81.82%`) with terminal JSON-invalid `0/14`, so contract guidance now prioritizes timeout-path mitigation while keeping baseline budgets unchanged
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-087
+- title: Run governed timeout failover drill with fallback endpoint profile and rollback criteria
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-086
+- start_when: BL-086 confirms timeout remains dominant and runtime contract prioritizes timeout-path mitigation
+- done_when: A governed failover drill validates timeout recovery behavior using fallback endpoint configuration, with activation/rollback criteria and archived execute/runtime/state evidence
+- source: `TIMEOUT_BOTTLENECK_CONFIDENCE_WINDOW_REPORT.md` on 2026-03-26 shows timeout share among failures `81.82%`, indicating next mitigation should test timeout failover path under governance
+- link: -
+- issue: -
+- evidence: -
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26

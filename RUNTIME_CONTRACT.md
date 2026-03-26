@@ -452,3 +452,19 @@ malformed-output 回放并归档证据，口径如下：
 4. 该受控回放仅用于验证已触发路径，不改变默认参数：
    - `ARGUS_LLM_JSON_REPAIR_ATTEMPTS=1`
    - `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`
+
+### BL-086 timeout 主瓶颈优先级口径（跨窗口）
+
+当跨窗口证据中 `timeout` 仍是主要失败类别时，运行优先级应固定如下：
+
+1. 默认参数保持不变：  
+   - `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`  
+   - `ARGUS_LLM_JSON_REPAIR_ATTEMPTS=1`
+2. 在进入 JSON 路径参数调优前，先完成 timeout 路径治理：
+   - provider 可用性与时延波动排查
+   - fallback 端点/路由策略验证
+   - timeout 恢复与回放证据归档
+3. 若跨窗口统计满足：
+   - `timeout_share_among_failures >= 0.6`
+   - 且 `json_invalid_terminal_rate` 接近 `0`
+   则默认判定 timeout 为当前首要阻塞项，不将主失败归因于 JSON 修复预算。
