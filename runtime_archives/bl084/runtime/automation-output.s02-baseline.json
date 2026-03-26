@@ -1,0 +1,14 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Prepared the governed Trello smoke wrapper artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py so best-effort PDF→Excel runs delegate to artifacts/scripts/pdf_to_excel_ocr.py with report-json evidence, timeout protection, readonly traceability, deterministic CLI params, and conservative success/partial gates (including OCR partial handling) aligned with the provided request context.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-26T03:28:26.475380Z",
+  "duration_ms": 63490
+}
