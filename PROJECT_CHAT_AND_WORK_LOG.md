@@ -4642,3 +4642,56 @@ Verification snapshot on 2026-03-26:
   - `runtime_archives/bl080/runtime/automation-runtime.b1-run02.log`
   - `runtime_archives/bl080/runtime/automation-runtime.b2-run02.log`
   - `runtime_archives/bl080/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.b2-run02.json`
+
+### 91. BL-081 Retry Budget Confidence Window Expansion And Guidance Re-Validation
+
+User objective:
+
+- continue strict no-drift flow
+- expand governed replay sample window for retry-budget confidence
+- decide whether default retry-budget guidance should change
+
+Main work areas:
+
+- completed `BL-20260326-081` evidence collection under fixed controls with
+  time-spread alternating sequence:
+  - `s01-b1`, `s02-b2`, `s03-b1`, `s04-b2`
+- archived BL-081 artifacts under `runtime_archives/bl081/`:
+  - matrix TSV
+  - per-run execute JSON/stderr
+  - automation/critic runtime+output+task snapshots
+  - preview/result sidecar snapshots
+- produced BL-081 report:
+  - `RETRY_BUDGET_CONFIDENCE_WINDOW_REPORT.md`
+- computed combined confidence window using BL-080 + BL-081 matrices:
+  - `budget=1` (`n=4`): processed `0/4`, avg wall `207.5s`, avg retries `0.75`
+  - `budget=2` (`n=4`): processed `1/4`, avg wall `275.8s`, avg retries `1.50`
+  - latency delta at `budget=2`: `+68.3s` (`+32.9%`)
+- froze guidance decision unchanged:
+  - keep default `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`
+  - keep `budget=2` as explicit temporary override only
+- advanced backlog:
+  - `BL-20260326-081` marked `done`
+  - queued `BL-20260326-082` (`planned` / `next`)
+
+Primary output:
+
+- [RETRY_BUDGET_CONFIDENCE_WINDOW_REPORT.md](/Users/lingguozhong/openclaw-team/RETRY_BUDGET_CONFIDENCE_WINDOW_REPORT.md)
+
+Key result:
+
+- confidence-window evidence does not justify changing baseline default retry
+  budget to `2`; limited pass-rate gain is outweighed by sustained wall-time and
+  retry-cost overhead in the combined sample.
+
+Verification snapshot on 2026-03-26:
+
+- BL-081 matrix summary:
+  - `runtime_archives/bl081/tmp/bl081_time_spread_matrix.tsv`
+- combined confidence-window sources:
+  - `runtime_archives/bl080/tmp/bl080_budget_tradeoff_matrix.tsv`
+  - `runtime_archives/bl081/tmp/bl081_time_spread_matrix.tsv`
+- representative BL-081 runtime/state evidence:
+  - `runtime_archives/bl081/runtime/automation-runtime.s04-b2.log`
+  - `runtime_archives/bl081/runtime/critic-output.s04-b2.json`
+  - `runtime_archives/bl081/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-687ebc83a153.result.s04-b2.json`

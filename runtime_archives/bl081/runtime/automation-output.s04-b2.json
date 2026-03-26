@@ -1,0 +1,14 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Updated the pdf_to_excel OCR inbox runner to carry through the incoming request description directly into the emitted runtime summary for clearer traceability while preserving all existing wrapper behavior.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-26T02:51:09.871603Z",
+  "duration_ms": 62962
+}

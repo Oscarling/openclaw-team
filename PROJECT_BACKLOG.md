@@ -1421,14 +1421,31 @@ Allowed enum values:
 ### BL-20260326-081
 - title: Expand governed replay sample window for retry-budget policy confidence
 - type: blocker
-- status: planned
-- phase: next
+- status: done
+- phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-080
 - start_when: BL-080 freezes default budget guidance (`=1`) after short controlled sample comparison
 - done_when: A larger, time-spread sample under fixed controls confirms whether temporary budget `2` windows ever produce meaningful processed pass-rate gains that justify latency cost, or closes the question and keeps default guidance unchanged
 - source: `RETRY_BUDGET_TRADEOFF_EVALUATION_REPORT.md` on 2026-03-26 shows clear latency penalty at budget `2` but sample size remains small
+- link: /Users/lingguozhong/openclaw-team/RETRY_BUDGET_CONFIDENCE_WINDOW_REPORT.md
+- issue: https://github.com/Oscarling/openclaw-team/issues/155
+- evidence: `RETRY_BUDGET_CONFIDENCE_WINDOW_REPORT.md` records time-spread controlled matrix evidence in `runtime_archives/bl081/tmp/bl081_time_spread_matrix.tsv` (`s01-b1/s02-b2/s03-b1/s04-b2`) and combined confidence-window aggregation with `runtime_archives/bl080/tmp/bl080_budget_tradeoff_matrix.tsv`; combined results show `budget=2` limited pass-rate gain (`1/4`) but higher cost (`+32.9%` avg wall, `1.50` vs `0.75` avg retries), so default guidance remains `ARGUS_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS=1`
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-082
+- title: Productize controlled budget-2 escalation trigger and replay runbook after confidence-window freeze
+- type: blocker
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-081
+- start_when: BL-081 confirms default retry budget stays at `1` while budget `2` remains a temporary override path with mixed outcomes
+- done_when: A documented, governed escalation trigger for temporary `budget=2` use (activation and rollback criteria) is added and validated by at least one archived drill run, so operators can use the override path consistently without drifting baseline defaults
+- source: `RETRY_BUDGET_CONFIDENCE_WINDOW_REPORT.md` on 2026-03-26 shows occasional budget `2` benefit but persistent latency/retry overhead, requiring a stricter operational override playbook
 - link: -
 - issue: -
 - evidence: -
