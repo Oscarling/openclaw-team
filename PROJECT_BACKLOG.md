@@ -1727,7 +1727,7 @@ Allowed enum values:
 ### BL-20260326-099
 - title: Onboard a new provider/base topology and clear route handshake gate before replay
 - type: blocker
-- status: planned
+- status: blocked
 - phase: next
 - priority: p1
 - owner: Oscarling
@@ -1735,6 +1735,23 @@ Allowed enum values:
 - start_when: BL-098 confirms timeout budget tuning (`120/180/240/300`) cannot bypass the current fast-route gateway ceiling (`http_524` near ~126s)
 - done_when: A newly supplied provider/base route (new key/base topology) passes lightweight ping and real prompt-shape probe, then is promoted into controlled replay validation
 - source: `TIMEOUT_BUDGET_GATEWAY_CEILING_PROBE_REPORT.md` on 2026-03-26 confirms current topology remains blocked after timeout-budget expansion
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md
+- issue: -
+- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md` and `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv` show Desktop `备用key3` handshake probes return `401 INVALID_API_KEY` on both `aixj.vip` and `fast.vpsairobot.com` responses endpoints, so no authenticated route is currently available for controlled replay
+- last_reviewed_at: 2026-03-26
+- opened_at: 2026-03-26
+
+### BL-20260326-100
+- title: Productize local probe script and no-key wait-mode hardening while BL-099 is blocked
+- type: debt
+- status: planned
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-099
+- start_when: BL-099 is blocked due unavailable authenticated provider/base+key route
+- done_when: A repo-tracked probe script/runbook replaces ad-hoc `/tmp` probing and produces reproducible handshake evidence without exposing secrets
+- source: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md` on 2026-03-26 records current input-side block
 - link: -
 - issue: -
 - evidence: -

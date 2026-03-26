@@ -5571,3 +5571,36 @@ Key result:
 Verification snapshot on 2026-03-26:
 
 - `python3 -m unittest -v tests/test_argus_hardening.py` (passed)
+
+### 110. BL-099 Block Record (No Usable New Provider/Base+Key Yet)
+
+User objective:
+
+- continue local-first progress without drift
+- record unfinished project state before proceeding with no-key local hardening
+
+Main work areas:
+
+- validated Desktop `备用key3` via authenticated handshake probes and archived
+  objective matrix evidence
+- confirmed all tested responses endpoints returned `401 INVALID_API_KEY`
+- formalized blocker record in dedicated report and backlog state update
+- queued local-only follow-up task for wait-period scriptization/hardening
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md)
+
+Key result:
+
+- `BL-20260326-099` is now explicitly recorded as `blocked` by missing usable
+  provider/base+key inputs; project continuity is preserved for interrupted
+  sessions.
+
+Verification snapshot on 2026-03-26:
+
+- key3 probe matrix:
+  - `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`
+- backlog updates:
+  - `BL-20260326-099` -> `blocked`
+  - `BL-20260326-100` queued as local wait-period hardening (`planned`)
