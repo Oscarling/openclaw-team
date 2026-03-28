@@ -744,6 +744,20 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
     }
 
 
+def _collect_auto_replay_reason_counts(results: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for item in results:
+        if not isinstance(item, dict):
+            continue
+        if not bool(item.get("auto_replay_retryable_rejection_used", False)):
+            continue
+        reason = str(item.get("auto_replay_retryable_rejection_reason", "")).strip()
+        if not reason:
+            continue
+        counts[reason] = counts.get(reason, 0) + 1
+    return counts
+
+
 def main() -> int:
     args = parse_args()
     ensure_dirs()
@@ -756,12 +770,18 @@ def main() -> int:
     results = []
     for approval_path, approval in approvals:
         results.append(process_approval(approval_path, approval, args))
+    auto_replay_retryable_rejection_used = len(
+        [r for r in results if isinstance(r, dict) and bool(r.get("auto_replay_retryable_rejection_used", False))]
+    )
+    auto_replay_retryable_rejection_reason_counts = _collect_auto_replay_reason_counts(results)
 
     payload = {
         "status": "done",
         "processed": len([r for r in results if r["status"] == "processed"]),
         "rejected": len([r for r in results if r["status"] == "rejected"]),
         "skipped": len([r for r in results if r["status"] == "skipped"]),
+        "auto_replay_retryable_rejection_used": auto_replay_retryable_rejection_used,
+        "auto_replay_retryable_rejection_reason_counts": auto_replay_retryable_rejection_reason_counts,
         "test_mode": args.test_mode,
         "allow_replay": args.allow_replay,
         "results": results,

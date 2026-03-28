@@ -7317,3 +7317,43 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/backlog_lint.py` (passed)
 - `python3 scripts/backlog_sync.py` (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 156. BL-20260328-143 Auto-Replay Top-Level Summary Visibility (Done)
+
+User objective:
+
+- continue minimal-change hardening and improve run-level observability so
+  operators can see auto-replay usage without scanning each preview result
+
+Main work areas:
+
+- top-level summary hardening:
+  - `skills/execute_approved_previews.py`
+  - adds helper:
+    - `_collect_auto_replay_reason_counts(results)`
+  - extends `main()` output with:
+    - `auto_replay_retryable_rejection_used`
+    - `auto_replay_retryable_rejection_reason_counts`
+- test enhancement:
+  - `tests/test_execute_approved_previews.py`
+  - adds `test_main_emits_auto_replay_summary_counts` to verify:
+    - top-level replay used count
+    - top-level replay reason distribution
+    - existing processed/rejected/skipped counters remain intact
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_AUTO_REPLAY_SUMMARY_VISIBILITY_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_AUTO_REPLAY_SUMMARY_VISIBILITY_REPORT.md)
+
+Key result:
+
+- each execution run now emits replay observability summary directly in the
+  top-level payload, improving triage speed with no replay policy expansion.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_execute_approved_previews.py` (passed)
+- `python3 -m unittest -v tests/test_argus_hardening.py` (passed)
+- `python3 scripts/backlog_lint.py` (passed)
+- `python3 scripts/backlog_sync.py` (passed)
+- `bash scripts/premerge_check.sh` (passed)

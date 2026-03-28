@@ -1112,5 +1112,50 @@ class ExecuteApprovedPreviewsTransientRetryTests(unittest.TestCase):
             self.assertEqual(result["auto_replay_retryable_rejection_reason"], "")
 
 
+class ExecuteApprovedPreviewsMainSummaryTests(unittest.TestCase):
+    def test_main_emits_auto_replay_summary_counts(self) -> None:
+        args = SimpleNamespace(preview_id=None, test_mode="off", allow_replay=False)
+        approvals = [
+            (Path("/tmp/a1.json"), {"preview_id": "preview-1"}),
+            (Path("/tmp/a2.json"), {"preview_id": "preview-2"}),
+        ]
+        process_results = [
+            {
+                "status": "processed",
+                "preview_id": "preview-1",
+                "auto_replay_retryable_rejection_used": True,
+                "auto_replay_retryable_rejection_reason": "transient_error_class=http_520",
+            },
+            {
+                "status": "skipped",
+                "preview_id": "preview-2",
+                "auto_replay_retryable_rejection_used": False,
+                "auto_replay_retryable_rejection_reason": "",
+            },
+        ]
+
+        with (
+            mock.patch.object(executor, "parse_args", return_value=args),
+            mock.patch.object(executor, "ensure_dirs"),
+            mock.patch.object(executor, "load_approvals", return_value=approvals),
+            mock.patch.object(executor, "process_approval", side_effect=process_results),
+            mock.patch("builtins.print") as print_mock,
+        ):
+            exit_code = executor.main()
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(print_mock.call_count, 1)
+        output_payload = json.loads(print_mock.call_args.args[0])
+        self.assertEqual(output_payload["status"], "done")
+        self.assertEqual(output_payload["processed"], 1)
+        self.assertEqual(output_payload["rejected"], 0)
+        self.assertEqual(output_payload["skipped"], 1)
+        self.assertEqual(output_payload["auto_replay_retryable_rejection_used"], 1)
+        self.assertEqual(
+            output_payload["auto_replay_retryable_rejection_reason_counts"],
+            {"transient_error_class=http_520": 1},
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

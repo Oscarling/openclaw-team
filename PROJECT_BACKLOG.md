@@ -2471,3 +2471,20 @@ Allowed enum values:
 - evidence: `skills/execute_approved_previews.py` and `tests/test_execute_approved_previews.py` now persist/verify auto-replay used+reason fields for retryable rejection recovery flows
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-143
+- title: Add top-level auto-replay observability summary in approval execution payload
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-142
+- start_when: Per-preview sidecar/result now contains auto-replay observability fields, but top-level `main` output lacks aggregated replay visibility for quick run-level triage
+- done_when: `execute_approved_previews.main` emits total `auto_replay_retryable_rejection_used` and `auto_replay_retryable_rejection_reason_counts`, tests cover the new top-level summary contract, and governance report records the change
+- source: minimal-change resilience hardening to improve run-level operability under intermittent provider/base instability
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_AUTO_REPLAY_SUMMARY_VISIBILITY_REPORT.md
+- issue: -
+- evidence: `skills/execute_approved_previews.py` and `tests/test_execute_approved_previews.py` confirm top-level summary payload now reports replay-use total and reason distribution
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
