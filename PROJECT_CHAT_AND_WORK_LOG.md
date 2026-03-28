@@ -5812,3 +5812,29 @@ Verification snapshot on 2026-03-28:
 
 - `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`
 - `python3 -m unittest -v tests/test_provider_onboarding_gate.py` (passed)
+
+### 118. BL-20260328-105 Local Onboarding Runbook (Done)
+
+User objective:
+
+- continue local-first progress and avoid drift while provider inputs are blocked
+
+Main work areas:
+
+- added operator runbook:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+- documented three command layers:
+  - probe only
+  - assess only
+  - one-shot gate (recommended)
+- documented fail-fast flags, output file conventions, and ready/blocked
+  decision rules
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md)
+
+Key result:
+
+- onboarding operational flow is now explicitly documented and reproducible,
+  reducing command-memory drift during blocked periods and future recovery.

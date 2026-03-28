@@ -1825,3 +1825,20 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_gate.py`, `tests/test_provider_onboarding_gate.py`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, and `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json` confirm history persistence with blocked status metadata and noise-free test behavior
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-105
+- title: Publish local provider onboarding runbook for probe/assess/gate operations
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-104
+- start_when: Probe/assessment/gate scripts are available but command usage is still memory-dependent
+- done_when: A repo-tracked runbook documents command paths, fail-fast options, outputs, and decision rules for local-first onboarding
+- source: local hardening continuation after gate tooling productization
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md
+- issue: -
+- evidence: `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` documents handshake probe, assessment, and one-shot gate commands with fail-fast semantics and output conventions
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
