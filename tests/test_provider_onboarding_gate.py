@@ -104,6 +104,7 @@ class ProviderOnboardingGateTests(unittest.TestCase):
                         "block_reason": "auth_or_access_policy_block",
                         "success_row_count": 0,
                         "http_code_counts": {"401": 1, "403": 1},
+                        "note_class_counts": {"invalid_api_key": 1, "edge_policy_1010": 1},
                     },
                     ensure_ascii=False,
                 ),
@@ -135,6 +136,7 @@ class ProviderOnboardingGateTests(unittest.TestCase):
             self.assertEqual(row["status"], "blocked")
             self.assertEqual(row["block_reason"], "auth_or_access_policy_block")
             self.assertEqual(row["success_row_count"], 0)
+            self.assertEqual(row["note_class_counts"], {"invalid_api_key": 1, "edge_policy_1010": 1})
             self.assertIn("provider_onboarding_history_summary.py", calls[2][1])
             self.assertIn("--repo-only", calls[2])
 

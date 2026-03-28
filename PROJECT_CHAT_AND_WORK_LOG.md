@@ -6051,3 +6051,51 @@ Verification snapshot on 2026-03-28:
   (passed)
 - `python3 scripts/provider_onboarding_history_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
   (passed)
+
+### 125. BL-20260328-112 Note-Level Signal Continuity in History (Done)
+
+User objective:
+
+- continue local hardening without drift and keep onboarding blocker evidence
+  diagnostically rich
+
+Main work areas:
+
+- gate history enrichment:
+  - `scripts/provider_onboarding_gate.py` now persists
+    `note_class_counts` from assessment summary
+- summary aggregation enhancement:
+  - `scripts/provider_onboarding_history_summary.py` now emits aggregated
+    `note_class_counts` and latest snapshot note counts
+- validation hardening:
+  - `scripts/provider_onboarding_history_validate.py` validates
+    `note_class_counts` object shape and values
+- consistency hardening:
+  - `scripts/provider_onboarding_history_consistency_check.py` now compares
+    top-level `note_class_counts` between expected and actual summary
+- test updates:
+  - `tests/test_provider_onboarding_gate.py`
+  - `tests/test_provider_onboarding_history_summary.py`
+  - `tests/test_provider_onboarding_history_validate.py`
+  - `tests/test_provider_onboarding_history_consistency_check.py`
+- refreshed summary artifact:
+  - `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_NOTE_SIGNAL_HISTORY_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_NOTE_SIGNAL_HISTORY_HARDENING_REPORT.md)
+
+Key result:
+
+- onboarding history/summaries now preserve note-level signal continuity
+  (auth/policy/TLS classes), improving trend diagnosis while BL-099 stays
+  externally blocked.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_gate.py tests/test_provider_onboarding_history_summary.py tests/test_provider_onboarding_history_validate.py tests/test_provider_onboarding_history_consistency_check.py`
+  (passed)
+- `python3 scripts/provider_onboarding_history_validate.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths`
+  (passed)
+- `python3 scripts/provider_onboarding_history_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
+  (passed)

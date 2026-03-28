@@ -26,6 +26,7 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
                 "status": "blocked",
                 "block_reason": "auth_or_access_policy_block",
                 "exit_code": 2,
+                "note_class_counts": {"invalid_api_key": 2},
             },
             {
                 "timestamp": "2026-03-28T11:00:00",
@@ -33,14 +34,18 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
                 "status": "ready",
                 "block_reason": "none",
                 "exit_code": 0,
+                "note_class_counts": {"tls_eof": 1},
             },
         ]
         summary = provider_onboarding_history_summary.build_summary(entries, Path("history.jsonl"))
         self.assertEqual(summary["entry_count"], 2)
         self.assertEqual(summary["status_counts"]["blocked"], 1)
         self.assertEqual(summary["status_counts"]["ready"], 1)
+        self.assertEqual(summary["note_class_counts"]["invalid_api_key"], 2)
+        self.assertEqual(summary["note_class_counts"]["tls_eof"], 1)
         self.assertEqual(summary["latest"]["status"], "ready")
         self.assertEqual(summary["latest"]["exit_code"], 0)
+        self.assertEqual(summary["latest"]["note_class_counts"], {"tls_eof": 1})
 
     def test_main_writes_summary_json(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-history-") as tmp_raw:
@@ -56,6 +61,7 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
                                 "status": "blocked",
                                 "block_reason": "auth_or_access_policy_block",
                                 "exit_code": 2,
+                                "note_class_counts": {"invalid_api_key": 4},
                             },
                             ensure_ascii=False,
                         ),
@@ -66,6 +72,7 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
                                 "status": "blocked",
                                 "block_reason": "mixed_with_tls_transport_failures",
                                 "exit_code": 2,
+                                "note_class_counts": {"edge_policy_1010": 3, "tls_eof": 1},
                             },
                             ensure_ascii=False,
                         ),
@@ -89,7 +96,10 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
             self.assertTrue(output.exists())
             parsed = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(parsed["entry_count"], 2)
+            self.assertEqual(parsed["note_class_counts"]["invalid_api_key"], 4)
+            self.assertEqual(parsed["note_class_counts"]["edge_policy_1010"], 3)
             self.assertEqual(parsed["latest"]["block_reason"], "mixed_with_tls_transport_failures")
+            self.assertEqual(parsed["latest"]["note_class_counts"]["tls_eof"], 1)
 
     def test_filter_repo_entries_drops_non_repo_when_enabled(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-history-") as tmp_raw:

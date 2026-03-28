@@ -60,6 +60,8 @@ Outputs:
 - assessment JSON: `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_<stamp>.json`
 - history JSONL: `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`
 - history summary JSON: `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`
+  - includes aggregated `note_class_counts` (e.g. `invalid_api_key`,
+    `edge_policy_1010`, `tls_eof`) for signal-level trend tracking
 
 Optional control for tests/special runs:
 

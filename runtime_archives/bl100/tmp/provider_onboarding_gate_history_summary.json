@@ -11,6 +11,7 @@
   "exit_code_counts": {
     "2": 2
   },
+  "note_class_counts": {},
   "dropped_non_repo_entries": 0,
   "latest": {
     "timestamp": "2026-03-28T12:26:50",
@@ -18,6 +19,7 @@
     "status": "blocked",
     "block_reason": "mixed_with_tls_transport_failures",
     "exit_code": 2,
+    "note_class_counts": null,
     "probe_tsv": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv",
     "assessment_json": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json"
   }

@@ -81,6 +81,14 @@ def build_summary(entries: List[Dict[str, Any]], history_path: Path, dropped_non
     status_counter = Counter(str(e.get("status", "unknown")) for e in entries)
     reason_counter = Counter(str(e.get("block_reason", "unknown")) for e in entries)
     exit_counter = Counter(str(e.get("exit_code", "unknown")) for e in entries)
+    note_counter: Counter[str] = Counter()
+    for entry in entries:
+        note_counts = entry.get("note_class_counts")
+        if not isinstance(note_counts, dict):
+            continue
+        for key, count in note_counts.items():
+            if isinstance(key, str) and isinstance(count, int) and count >= 0:
+                note_counter[key] += count
     latest = entries[-1] if entries else {}
 
     return {
@@ -89,6 +97,7 @@ def build_summary(entries: List[Dict[str, Any]], history_path: Path, dropped_non
         "status_counts": dict(sorted(status_counter.items())),
         "block_reason_counts": dict(sorted(reason_counter.items())),
         "exit_code_counts": dict(sorted(exit_counter.items())),
+        "note_class_counts": dict(sorted(note_counter.items())),
         "dropped_non_repo_entries": dropped_non_repo_entries,
         "latest": {
             "timestamp": latest.get("timestamp"),
@@ -96,6 +105,7 @@ def build_summary(entries: List[Dict[str, Any]], history_path: Path, dropped_non
             "status": latest.get("status"),
             "block_reason": latest.get("block_reason"),
             "exit_code": latest.get("exit_code"),
+            "note_class_counts": latest.get("note_class_counts"),
             "probe_tsv": latest.get("probe_tsv"),
             "assessment_json": latest.get("assessment_json"),
         },

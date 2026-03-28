@@ -101,6 +101,17 @@ def validate_entry(entry: Dict[str, Any], line_no: int, repo_root: Path, require
                 if not isinstance(count, int) or count < 0:
                     errors.append(f"line {line_no}: http_code_counts value must be non-negative integer")
 
+    note_class_counts = entry.get("note_class_counts")
+    if note_class_counts is not None:
+        if not isinstance(note_class_counts, dict):
+            errors.append(f"line {line_no}: note_class_counts must be null or object")
+        else:
+            for note_key, count in note_class_counts.items():
+                if not isinstance(note_key, str) or not note_key.strip():
+                    errors.append(f"line {line_no}: note_class_counts key must be non-empty string")
+                if not isinstance(count, int) or count < 0:
+                    errors.append(f"line {line_no}: note_class_counts value must be non-negative integer")
+
     return errors
 
 

@@ -90,6 +90,27 @@ class ProviderOnboardingHistoryValidateTests(unittest.TestCase):
             self.assertTrue(any("line 2: stamp must be YYYYMMDD string" in err for err in errors))
             self.assertTrue(any("line 2: exit_code must be non-negative integer" in err for err in errors))
 
+    def test_validate_entry_rejects_invalid_note_class_counts_shape(self) -> None:
+        row = {
+            "timestamp": "2026-03-28T12:26:50",
+            "stamp": "20260328",
+            "phase": "assess",
+            "status": "blocked",
+            "block_reason": "mixed_with_tls_transport_failures",
+            "exit_code": 2,
+            "probe_tsv": "/tmp/probe.tsv",
+            "assessment_json": "/tmp/assessment.json",
+            "note_class_counts": {"": 1, "tls_eof": -1},
+        }
+        errors = provider_onboarding_history_validate.validate_entry(
+            row,
+            line_no=5,
+            repo_root=Path("/Users/demo/repo"),
+            require_repo_paths=False,
+        )
+        self.assertTrue(any("note_class_counts key must be non-empty string" in err for err in errors))
+        self.assertTrue(any("note_class_counts value must be non-negative integer" in err for err in errors))
+
     def test_main_passes_for_repo_scoped_history(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-history-validate-") as tmp_raw:
             tmp = Path(tmp_raw)

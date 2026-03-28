@@ -70,6 +70,7 @@ def compare_summary(expected: Dict[str, Any], actual: Dict[str, Any]) -> List[st
         "status_counts",
         "block_reason_counts",
         "exit_code_counts",
+        "note_class_counts",
         "dropped_non_repo_entries",
         "latest",
     ]

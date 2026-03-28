@@ -202,6 +202,7 @@ def main() -> int:
                 "block_reason": summary.get("block_reason", "unknown"),
                 "success_row_count": summary.get("success_row_count"),
                 "http_code_counts": summary.get("http_code_counts"),
+                "note_class_counts": summary.get("note_class_counts"),
             },
         )
         if not args.no_history_summary:
