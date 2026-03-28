@@ -170,7 +170,9 @@ To enforce summary/report snapshot-guard metric consistency:
 ```bash
 python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py \
   --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
-  --guard-report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json
+  --guard-report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json \
+  --repo-root /Users/lingguozhong/openclaw-team \
+  --require-repo-paths
 ```
 
 To validate snapshot-guard report schema/path integrity:

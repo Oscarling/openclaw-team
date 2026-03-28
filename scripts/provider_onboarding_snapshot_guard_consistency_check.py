@@ -4,10 +4,14 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+VALIDATE_SCRIPT = REPO_ROOT / "scripts" / "provider_onboarding_snapshot_guard_report_validate.py"
 
 
 def parse_args() -> argparse.Namespace:
@@ -22,6 +26,16 @@ def parse_args() -> argparse.Namespace:
         default="runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json",
         help="Snapshot guard report json path",
     )
+    parser.add_argument(
+        "--repo-root",
+        default=str(REPO_ROOT),
+        help="Repo root for --require-repo-paths checks",
+    )
+    parser.add_argument(
+        "--require-repo-paths",
+        action="store_true",
+        help="Require report row-level paths to be absolute and under --repo-root",
+    )
     return parser.parse_args()
 
 
@@ -32,6 +46,15 @@ def load_json_object(path: Path) -> Dict[str, Any]:
     if not isinstance(data, dict):
         raise ValueError(f"JSON must be object: {path}")
     return data
+
+
+def _load_validate_module():
+    spec = importlib.util.spec_from_file_location("provider_onboarding_snapshot_guard_report_validate", VALIDATE_SCRIPT)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Unable to load snapshot guard report validate module from {VALIDATE_SCRIPT}")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 
 def _build_expected_mismatch_reason_counts(report_reason_counts: Dict[str, Any]) -> Dict[str, int]:
@@ -73,10 +96,21 @@ def main() -> int:
     args = parse_args()
     summary_path = Path(args.summary_json)
     report_path = Path(args.guard_report_json)
+    repo_root = Path(args.repo_root)
 
     try:
         summary = load_json_object(summary_path)
         report = load_json_object(report_path)
+        validate_mod = _load_validate_module()
+        validation_errors = validate_mod.validate_report(
+            report,
+            repo_root=repo_root,
+            require_repo_paths=args.require_repo_paths,
+        )
+        if validation_errors:
+            for err in validation_errors:
+                print(f"report validation error: {err}", file=sys.stderr)
+            return 2
     except Exception as exc:
         print(str(exc), file=sys.stderr)
         return 2

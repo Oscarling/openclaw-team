@@ -309,7 +309,9 @@ fi
 
 if python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py \
   --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
-  --guard-report-json /tmp/provider_onboarding_snapshot_guard_report_premerge.json; then
+  --guard-report-json /tmp/provider_onboarding_snapshot_guard_report_premerge.json \
+  --repo-root "$repo_root" \
+  --require-repo-paths; then
   pass "provider onboarding snapshot guard summary/report consistency check passed."
 else
   fail "provider onboarding snapshot guard summary/report consistency check failed."

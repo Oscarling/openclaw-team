@@ -6933,3 +6933,71 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/provider_onboarding_snapshot_guard_report_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --repo-only --require-repo-paths`
   (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 146. BL-20260328-133 Snapshot Guard Summary Consistency Schema Hardening (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and make summary/report consistency
+  checks fail-closed on malformed guard-report payloads
+
+Main work areas:
+
+- checker hardening:
+  - `scripts/provider_onboarding_snapshot_guard_consistency_check.py`
+  - now loads and runs report validator before metric comparison
+  - adds strict flags:
+    - `--repo-root`
+    - `--require-repo-paths`
+- test hardening:
+  - `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`
+  - report payload upgraded to validator-compliant structure
+  - adds schema-invalid report fail path
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_CONSISTENCY_SCHEMA_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_CONSISTENCY_SCHEMA_HARDENING_REPORT.md)
+
+Key result:
+
+- summary/report consistency checks now reject malformed report artifacts before
+  evaluating metric parity.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_consistency_check.py`
+  (passed)
+- `python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --guard-report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths`
+  (passed)
+
+### 147. BL-20260328-134 Snapshot Guard Strict Consistency Gate Standardization (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and make strict path enforcement the
+  default operational path for summary/report consistency checks
+
+Main work areas:
+
+- premerge update:
+  - `scripts/premerge_check.sh`
+  - generated summary/report consistency check now passes:
+    - `--repo-root "$repo_root"`
+    - `--require-repo-paths`
+- runbook update:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` now documents strict invocation
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_STRICT_CONSISTENCY_GATE_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_STRICT_CONSISTENCY_GATE_REPORT.md)
+
+Key result:
+
+- automated and manual snapshot-guard summary/report consistency checks now use
+  the same strict repo-path policy.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 scripts/backlog_lint.py` (passed)
+- `python3 scripts/backlog_sync.py` (passed)
+- `bash scripts/premerge_check.sh` (passed)

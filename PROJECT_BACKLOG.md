@@ -2301,3 +2301,37 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm persisted report is now validated against history and summary in one gate path
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-133
+- title: Harden summary/report snapshot-guard consistency checker with report schema/path validation
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-132
+- start_when: Summary/report consistency check compares metrics only, but does not fail early when guard report payload itself is malformed
+- done_when: Consistency checker validates guard report through report-validator before metric comparison, supports repo-root/path enforcement flags, and tests cover schema-invalid fail path
+- source: local hardening continuation to keep summary/report consistency checks fail-closed while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_CONSISTENCY_SCHEMA_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`, `scripts/provider_onboarding_snapshot_guard_report_validate.py`, and `scripts/premerge_check.sh` confirm summary/report consistency now includes schema/path-first validation
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-134
+- title: Enforce strict repo-path summary/report consistency checks in premerge and runbook
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-133
+- start_when: Consistency checker supports strict repo-path mode, but premerge and runbook commands can still invoke permissive defaults
+- done_when: Premerge calls summary/report consistency check with explicit repo-root/path enforcement and runbook command reflects the strict invocation
+- source: local hardening continuation to standardize strict snapshot-guard governance operation while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_STRICT_CONSISTENCY_GATE_REPORT.md
+- issue: -
+- evidence: `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `scripts/provider_onboarding_snapshot_guard_consistency_check.py` confirm strict repo-path summary/report consistency enforcement in both merge gates and operator workflow
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
