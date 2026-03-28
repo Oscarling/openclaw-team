@@ -213,3 +213,20 @@ python3 scripts/provider_onboarding_snapshot_guard_summary_validate.py \
   --repo-root /Users/lingguozhong/openclaw-team \
   --require-repo-paths
 ```
+
+## 7) Non-Technical Delivery Status Board
+
+To generate a concise project-level status board (completion %, critical blocked
+chain BL-092~BL-099, onboarding latest state, and recommended next step):
+
+```bash
+python3 scripts/project_delivery_status.py \
+  --backlog PROJECT_BACKLOG.md \
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
+  --repo-root /Users/lingguozhong/openclaw-team \
+  --output-json runtime_archives/bl100/tmp/project_delivery_status.json \
+  --output-md runtime_archives/bl100/tmp/project_delivery_status.md
+```
+
+Use this output for operator-facing progress updates when BL-099 remains
+blocked and external provider/base readiness is still pending.

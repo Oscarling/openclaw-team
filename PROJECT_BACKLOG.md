@@ -2488,3 +2488,20 @@ Allowed enum values:
 - evidence: `skills/execute_approved_previews.py` and `tests/test_execute_approved_previews.py` confirm top-level summary payload now reports replay-use total and reason distribution
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-144
+- title: Add non-technical project delivery status board for blocked-provider completion tracking
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-143
+- start_when: Local hardening backlog has grown while BL-092~BL-099 remains blocked, and operators need a one-command summary that clearly states completion %, critical blockers, and immediate next actions
+- done_when: A repo script reads backlog + onboarding summary and emits deterministic JSON/Markdown delivery status (completion %, critical provider chain state, latest onboarding signal, next-step guidance), dedicated unit tests exist, premerge runs the tests, and runbook documents usage
+- source: minimal-change project completion hardening to keep operator status communication clear while external provider/base route remains unstable
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_STATUS_BOARD_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` provide deterministic one-command delivery status output and merge-gated coverage
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

@@ -7357,3 +7357,49 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/backlog_lint.py` (passed)
 - `python3 scripts/backlog_sync.py` (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 157. BL-20260328-144 Non-Technical Project Delivery Status Board (Done)
+
+User objective:
+
+- continue execution without scope drift and make project completion/progress
+  status understandable in one command while provider/base chain remains blocked
+
+Main work areas:
+
+- delivery-status script:
+  - `scripts/project_delivery_status.py`
+  - parses full `PROJECT_BACKLOG.md` and computes completion metrics
+  - summarizes critical external blocker chain:
+    - `BL-20260326-092` ~ `BL-20260326-099`
+  - reads latest onboarding summary when available
+  - emits deterministic JSON payload and optional Markdown report
+- test coverage:
+  - `tests/test_project_delivery_status.py`
+  - covers:
+    - blocked-external-provider outcome
+    - ready-for-replay outcome
+    - missing-summary unknown outcome
+- merge gate and runbook:
+  - `scripts/premerge_check.sh` now runs new test module
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` adds command usage section for
+    non-technical delivery status board generation
+
+Primary output:
+
+- [PROJECT_DELIVERY_STATUS_BOARD_REPORT.md](/Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_STATUS_BOARD_REPORT.md)
+
+Key result:
+
+- project progress and blockers can now be communicated with one deterministic
+  command, reducing manual interpretation overhead during blocked-provider phase.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_project_delivery_status.py` (passed)
+- `python3 scripts/project_delivery_status.py --repo-root /Users/lingguozhong/openclaw-team --output-json /tmp/project_delivery_status.json --output-md /tmp/project_delivery_status.md` (passed)
+- `python3 -m unittest -v tests/test_execute_approved_previews.py` (passed)
+- `python3 -m unittest -v tests/test_argus_hardening.py` (passed)
+- `python3 scripts/backlog_lint.py` (passed)
+- `python3 scripts/backlog_sync.py` (passed)
+- `bash scripts/premerge_check.sh` (passed)

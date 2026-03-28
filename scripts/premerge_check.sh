@@ -249,6 +249,12 @@ else
   fail "tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py failed."
 fi
 
+if python3 -m unittest -v tests/test_project_delivery_status.py; then
+  pass "tests/test_project_delivery_status.py passed."
+else
+  fail "tests/test_project_delivery_status.py failed."
+fi
+
 if python3 scripts/provider_onboarding_history_backfill.py \
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --dry-run; then
