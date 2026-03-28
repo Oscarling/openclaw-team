@@ -454,40 +454,44 @@ def _execution_attempts(preview_payload: dict[str, Any]) -> int:
     return 0
 
 
-def _is_retryable_rejected_preview(preview_payload: dict[str, Any]) -> bool:
+def _retryable_rejected_reason(preview_payload: dict[str, Any]) -> str | None:
     last_execution = preview_payload.get("last_execution")
     if not isinstance(last_execution, dict):
-        return False
+        return None
     if str(last_execution.get("decision", "")).strip().lower() != "rejected":
-        return False
+        return None
 
     auto_result = last_execution.get("automation_result")
     if isinstance(auto_result, dict):
-        if _can_retry_automation_after_transient_failure(
-            auto_result,
-            retries_used=0,
-            retry_budget=1,
-        ):
-            return True
+        error_class = _extract_llm_error_class(auto_result)
+        if error_class and error_class in TRANSIENT_AUTOMATION_ERROR_CLASSES:
+            return f"transient_error_class={error_class}"
         if _is_workspace_presence_failure(auto_result):
-            return True
+            return "workspace_presence_failure"
 
     reason = str(last_execution.get("decision_reason", "")).strip()
     if reason:
         error_class = _extract_llm_error_class({"errors": [reason]})
         if error_class and error_class in TRANSIENT_AUTOMATION_ERROR_CLASSES:
-            return True
-    return False
+            return f"decision_reason_error_class={error_class}"
+    return None
 
 
-def _can_auto_replay_rejected_preview(preview_payload: dict[str, Any]) -> bool:
+def _is_retryable_rejected_preview(preview_payload: dict[str, Any]) -> bool:
+    return bool(_retryable_rejected_reason(preview_payload))
+
+
+def _can_auto_replay_rejected_preview(preview_payload: dict[str, Any]) -> tuple[bool, str]:
     budget = _resolve_auto_replay_retryable_rejection_attempts()
     if budget <= 0:
-        return False
+        return False, "auto_replay_budget_disabled"
     attempts = _execution_attempts(preview_payload)
     if attempts <= 0 or attempts > budget:
-        return False
-    return _is_retryable_rejected_preview(preview_payload)
+        return False, f"auto_replay_budget_exhausted_attempts={attempts}/budget={budget}"
+    reason = _retryable_rejected_reason(preview_payload)
+    if not reason:
+        return False, "non_retryable_rejected_preview"
+    return True, reason
 
 
 def load_approvals(preview_id: str | None) -> list[tuple[Path, dict[str, Any]]]:
@@ -576,21 +580,30 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
     preview_payload = load_json(preview_path)
     execution = preview_payload.get("execution", {})
     execution_status = str(execution.get("status", "")).strip().lower() if isinstance(execution, dict) else ""
+    auto_replay_retryable_rejection_used = False
+    auto_replay_retryable_rejection_reason = ""
     if execution_status == "processed" and not args.allow_replay:
         return {
             "status": "skipped",
             "decision_reason": "already_executed_use_allow_replay",
             "preview_id": preview_id,
             "approval_file": str(approval_path),
+            "auto_replay_retryable_rejection_used": auto_replay_retryable_rejection_used,
+            "auto_replay_retryable_rejection_reason": auto_replay_retryable_rejection_reason,
         }
     if execution_status == "rejected" and not args.allow_replay:
-        if not _can_auto_replay_rejected_preview(preview_payload):
+        can_auto_replay, replay_reason = _can_auto_replay_rejected_preview(preview_payload)
+        if not can_auto_replay:
             return {
                 "status": "skipped",
                 "decision_reason": "already_executed_use_allow_replay",
                 "preview_id": preview_id,
                 "approval_file": str(approval_path),
+                "auto_replay_retryable_rejection_used": auto_replay_retryable_rejection_used,
+                "auto_replay_retryable_rejection_reason": auto_replay_retryable_rejection_reason,
             }
+        auto_replay_retryable_rejection_used = True
+        auto_replay_retryable_rejection_reason = replay_reason
 
     tasks = preview_payload.get("internal_tasks")
     if not isinstance(tasks, dict):
@@ -710,6 +723,8 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
         "critic_verdict": verdict,
         "automation_transient_retries_used": auto_transient_retries_used,
         "automation_workspace_retries_used": auto_workspace_retries_used,
+        "auto_replay_retryable_rejection_used": auto_replay_retryable_rejection_used,
+        "auto_replay_retryable_rejection_reason": auto_replay_retryable_rejection_reason,
         "test_mode": args.test_mode,
     }
     sidecar_path = APPROVALS_DIR / f"{preview_id}.result.json"
@@ -724,6 +739,8 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
         "critic_verdict": verdict,
         "automation_transient_retries_used": auto_transient_retries_used,
         "automation_workspace_retries_used": auto_workspace_retries_used,
+        "auto_replay_retryable_rejection_used": auto_replay_retryable_rejection_used,
+        "auto_replay_retryable_rejection_reason": auto_replay_retryable_rejection_reason,
     }
 
 

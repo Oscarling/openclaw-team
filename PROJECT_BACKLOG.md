@@ -2454,3 +2454,20 @@ Allowed enum values:
 - evidence: `skills/execute_approved_previews.py` and `tests/test_execute_approved_previews.py` confirm bounded retryable-rejection auto-replay behavior without broadening non-retryable replay scope
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-142
+- title: Add auto-replay observability fields for retryable rejected preview recovery
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-141
+- start_when: Retryable rejected preview auto-replay exists, but execution results/sidecar do not explicitly expose whether auto-replay was used and why it was triggered
+- done_when: `execute_approved_previews` emits `auto_replay_retryable_rejection_used` and `auto_replay_retryable_rejection_reason` in result/sidecar, tests assert reasoned replay and budget-exhausted skip behavior, and governance report documents the observability contract
+- source: minimal-change resilience hardening to improve operability and auditability under unstable provider/base routes
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_AUTO_REPLAY_OBSERVABILITY_REPORT.md
+- issue: -
+- evidence: `skills/execute_approved_previews.py` and `tests/test_execute_approved_previews.py` now persist/verify auto-replay used+reason fields for retryable rejection recovery flows
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

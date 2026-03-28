@@ -1043,6 +1043,12 @@ class ExecuteApprovedPreviewsTransientRetryTests(unittest.TestCase):
 
             self.assertEqual(result["status"], "processed")
             self.assertEqual(result["critic_verdict"], "pass")
+            self.assertTrue(result["auto_replay_retryable_rejection_used"])
+            self.assertIn("http_520", result["auto_replay_retryable_rejection_reason"])
+            sidecar_path = Path(result["result_sidecar"])
+            sidecar_payload = json.loads(sidecar_path.read_text(encoding="utf-8"))
+            self.assertTrue(sidecar_payload["auto_replay_retryable_rejection_used"])
+            self.assertIn("http_520", sidecar_payload["auto_replay_retryable_rejection_reason"])
             self.assertEqual(calls, ["automation", "critic"])
 
     def test_process_approval_skips_retryable_rejected_preview_after_auto_replay_budget_exhausted(self) -> None:
@@ -1102,6 +1108,8 @@ class ExecuteApprovedPreviewsTransientRetryTests(unittest.TestCase):
 
             self.assertEqual(result["status"], "skipped")
             self.assertEqual(result["decision_reason"], "already_executed_use_allow_replay")
+            self.assertFalse(result["auto_replay_retryable_rejection_used"])
+            self.assertEqual(result["auto_replay_retryable_rejection_reason"], "")
 
 
 if __name__ == "__main__":

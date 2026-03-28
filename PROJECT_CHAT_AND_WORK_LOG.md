@@ -7271,3 +7271,49 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/backlog_lint.py` (passed)
 - `python3 scripts/backlog_sync.py` (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 155. BL-20260328-142 Auto-Replay Observability Fields For Retryable Rejections (Done)
+
+User objective:
+
+- continue minimal-change hardening without scope drift and make retryable
+  rejected preview auto-replay behavior observable in execution outputs
+
+Main work areas:
+
+- replay observability hardening:
+  - `skills/execute_approved_previews.py`
+  - adds retryable-rejection reason extractor:
+    - `_retryable_rejected_reason(...)`
+  - updates auto-replay gate helper to return `(allowed, reason)` instead of
+    boolean only
+  - records two new fields in result sidecar and function return:
+    - `auto_replay_retryable_rejection_used`
+    - `auto_replay_retryable_rejection_reason`
+- test enhancement:
+  - `tests/test_execute_approved_previews.py`
+  - extends auto-replay success test to assert:
+    - `used=True`
+    - reason includes transient class (`http_520`)
+    - sidecar mirrors same fields
+  - extends budget-exhausted skip test to assert:
+    - `used=False`
+    - reason is empty
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_AUTO_REPLAY_OBSERVABILITY_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_AUTO_REPLAY_OBSERVABILITY_REPORT.md)
+
+Key result:
+
+- retryable rejection recovery now has explicit observability in both in-memory
+  execution result and persisted sidecar, improving audit/debug speed while
+  preserving fail-closed replay controls.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_execute_approved_previews.py` (passed)
+- `python3 -m unittest -v tests/test_argus_hardening.py` (passed)
+- `python3 scripts/backlog_lint.py` (passed)
+- `python3 scripts/backlog_sync.py` (passed)
+- `bash scripts/premerge_check.sh` (passed)
