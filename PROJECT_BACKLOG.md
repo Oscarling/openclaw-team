@@ -1737,7 +1737,7 @@ Allowed enum values:
 - source: `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md` on 2026-03-28 confirms retest matrix remains blocked and classifies dominant cause as auth/access policy block
 - link: /Users/lingguozhong/openclaw-team/PROVIDER_ROUTE_RETEST_20260327_REPORT.md
 - issue: -
-- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md`, `PROVIDER_ROUTE_RETEST_20260327_REPORT.md`, `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md`, `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`, `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv`, and `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json` show all currently known Desktop key candidates still fail handshake (`aixj=401 INVALID_API_KEY`, `fast=403/1010`) with no `2xx` route available for controlled replay
+- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md`, `PROVIDER_ROUTE_RETEST_20260327_REPORT.md`, `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md`, `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`, `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, and `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json` show all currently known Desktop key candidates still fail handshake (`aixj=401 INVALID_API_KEY`, `fast=403/1010` with occasional transport/TLS `000`) and no `2xx` route is available for controlled replay
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-26
 
@@ -1789,5 +1789,22 @@ Allowed enum values:
 - link: /Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md
 - issue: -
 - evidence: `scripts/provider_handshake_assess.py`, `tests/test_provider_handshake_assess.py`, `scripts/premerge_check.sh`, and `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json` provide automated `ready/blocked` assessment with explicit `block_reason` and fail-fast exit semantics
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-103
+- title: Add one-shot provider onboarding gate wrapper for local fail-fast execution
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-102
+- start_when: Probe and assessment scripts are available but still run as separate manual commands
+- done_when: A single wrapper command executes `probe -> assess`, preserves `--require-ready` exit semantics, and is covered by tests integrated into premerge checks
+- source: `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md` on 2026-03-28 motivates reducing manual command orchestration while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_gate.py`, `tests/test_provider_onboarding_gate.py`, `scripts/premerge_check.sh`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, and `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json` provide one-shot gating with expected blocked fail-fast behavior (exit code `2`)
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28

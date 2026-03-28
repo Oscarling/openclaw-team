@@ -177,6 +177,12 @@ else
   fail "tests/test_provider_handshake_assess.py failed."
 fi
 
+if python3 -m unittest -v tests/test_provider_onboarding_gate.py; then
+  pass "tests/test_provider_onboarding_gate.py passed."
+else
+  fail "tests/test_provider_onboarding_gate.py failed."
+fi
+
 echo
 echo "Warnings: $warnings"
 echo "Failures: $failures"

@@ -5747,3 +5747,38 @@ Verification snapshot on 2026-03-28:
 
 - `python3 -m unittest -v tests/test_provider_handshake_assess.py` (passed)
 - `python3 scripts/provider_handshake_assess.py --probe-tsv runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv --output-json runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json --require-ready` (exit code `2`, expected)
+
+### 116. BL-20260328-103 One-Shot Onboarding Gate Wrapper (Done)
+
+User objective:
+
+- continue local non-key hardening and keep the blocked issue recorded
+- reduce manual two-step command flow to one deterministic gate command
+
+Main work areas:
+
+- added wrapper script:
+  - `scripts/provider_onboarding_gate.py`
+- wrapper now runs `provider_handshake_probe.py` then
+  `provider_handshake_assess.py` in one invocation
+- preserves fail-fast semantics via `--require-ready`
+- added unit tests:
+  - `tests/test_provider_onboarding_gate.py`
+- wired tests into merge gate:
+  - `scripts/premerge_check.sh`
+- ran one live gate invocation and archived outputs
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md)
+
+Key result:
+
+- one-shot onboarding gate is available; current live result remains blocked
+  (exit code `2`) under existing key/base conditions.
+
+Verification snapshot on 2026-03-28:
+
+- `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`
+- `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`
+- `python3 -m unittest -v tests/test_provider_onboarding_gate.py` (passed)
