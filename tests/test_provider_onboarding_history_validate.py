@@ -39,6 +39,26 @@ class ProviderOnboardingHistoryValidateTests(unittest.TestCase):
         )
         self.assertEqual(errors, [])
 
+    def test_validate_entry_rejects_missing_snapshot_when_required(self) -> None:
+        row = {
+            "timestamp": "2026-03-28T12:26:50",
+            "stamp": "20260328",
+            "phase": "assess",
+            "status": "blocked",
+            "block_reason": "mixed_with_tls_transport_failures",
+            "exit_code": 2,
+            "probe_tsv": "/tmp/probe.tsv",
+            "assessment_json": "/tmp/assessment.json",
+        }
+        errors = provider_onboarding_history_validate.validate_entry(
+            row,
+            line_no=2,
+            repo_root=Path("/Users/demo/repo"),
+            require_repo_paths=False,
+            require_snapshot_for_assess=True,
+        )
+        self.assertTrue(any("assessment_snapshot_json required for assess phase" in err for err in errors))
+
     def test_validate_entry_rejects_non_repo_paths_when_required(self) -> None:
         row = {
             "timestamp": "2026-03-28T12:26:50",
@@ -78,6 +98,29 @@ class ProviderOnboardingHistoryValidateTests(unittest.TestCase):
             require_repo_paths=True,
         )
         self.assertTrue(any("assessment_snapshot_json must be absolute repo path" in err for err in errors))
+
+    def test_validate_entry_rejects_missing_files_when_required(self) -> None:
+        row = {
+            "timestamp": "2026-03-28T12:26:50",
+            "stamp": "20260328",
+            "phase": "assess",
+            "status": "blocked",
+            "block_reason": "mixed_with_tls_transport_failures",
+            "exit_code": 2,
+            "probe_tsv": "/tmp/missing_probe.tsv",
+            "assessment_json": "/tmp/missing_assessment.json",
+            "assessment_snapshot_json": "/tmp/missing_snapshot.json",
+        }
+        errors = provider_onboarding_history_validate.validate_entry(
+            row,
+            line_no=5,
+            repo_root=Path("/Users/demo/repo"),
+            require_repo_paths=False,
+            require_existing_files=True,
+        )
+        self.assertTrue(any("probe_tsv path not found" in err for err in errors))
+        self.assertTrue(any("assessment_json path not found" in err for err in errors))
+        self.assertTrue(any("assessment_snapshot_json path not found" in err for err in errors))
 
     def test_validate_history_reports_invalid_json_and_schema_errors(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-history-validate-") as tmp_raw:
@@ -134,6 +177,12 @@ class ProviderOnboardingHistoryValidateTests(unittest.TestCase):
     def test_main_passes_for_repo_scoped_history(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-history-validate-") as tmp_raw:
             tmp = Path(tmp_raw)
+            probe = tmp / "probe.tsv"
+            probe.write_text("row\n", encoding="utf-8")
+            assessment = tmp / "assessment.json"
+            assessment.write_text("{}", encoding="utf-8")
+            snapshot = tmp / "snapshot.json"
+            snapshot.write_text("{}", encoding="utf-8")
             history = tmp / "history.jsonl"
             history.write_text(
                 json.dumps(
@@ -144,8 +193,9 @@ class ProviderOnboardingHistoryValidateTests(unittest.TestCase):
                         "status": "blocked",
                         "block_reason": "auth_or_access_policy_block",
                         "exit_code": 2,
-                        "probe_tsv": str(tmp / "probe.tsv"),
-                        "assessment_json": str(tmp / "assessment.json"),
+                        "probe_tsv": str(probe),
+                        "assessment_json": str(assessment),
+                        "assessment_snapshot_json": str(snapshot),
                     },
                     ensure_ascii=False,
                 )
@@ -159,6 +209,8 @@ class ProviderOnboardingHistoryValidateTests(unittest.TestCase):
                 "--repo-root",
                 str(tmp),
                 "--require-repo-paths",
+                "--require-snapshot-for-assess",
+                "--require-existing-files",
             ]
             with mock.patch.object(sys, "argv", argv):
                 code = provider_onboarding_history_validate.main()

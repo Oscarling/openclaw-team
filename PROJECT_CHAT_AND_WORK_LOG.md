@@ -6275,3 +6275,51 @@ Verification snapshot on 2026-03-28:
 - `python3 -m unittest -v tests/test_provider_onboarding_gate.py tests/test_provider_onboarding_history_backfill.py tests/test_provider_onboarding_history_backfill_gaps.py tests/test_provider_onboarding_history_validate.py`
   (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 130. BL-20260328-117 Legacy Snapshot Backfill + Strict Snapshot/File Validation (Done)
+
+User objective:
+
+- continue local-first hardening without跑偏, and close the gap where legacy
+  `assess` history rows still lack immutable snapshot pointers
+
+Main work areas:
+
+- added dedicated snapshot backfill tool:
+  - `scripts/provider_onboarding_history_snapshot_backfill.py`
+  - supports `--dry-run`, backup write, and `--require-complete`
+- strengthened validator:
+  - `scripts/provider_onboarding_history_validate.py`
+  - new strict options:
+    - `--require-snapshot-for-assess`
+    - `--require-existing-files`
+- premerge integration:
+  - `scripts/premerge_check.sh` now runs:
+    - `tests/test_provider_onboarding_history_snapshot_backfill.py`
+    - snapshot backfill dry-run check
+    - stricter history validation flags above
+- runbook update:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+- refreshed runtime artifact:
+  - `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`
+  - `runtime_archives/bl100/tmp/provider_onboarding_history_backfill_gaps.json`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_HISTORY_SNAPSHOT_BACKFILL_ENFORCEMENT_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_SNAPSHOT_BACKFILL_ENFORCEMENT_REPORT.md)
+
+Key result:
+
+- legacy assess rows are now backfilled with immutable snapshot pointers, and
+  merge-time validation now fail-closes when assess rows miss snapshot pointers
+  or any referenced files are missing.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_history_snapshot_backfill.py tests/test_provider_onboarding_history_validate.py`
+  (passed)
+- `python3 scripts/provider_onboarding_history_snapshot_backfill.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --backup-jsonl /tmp/provider_onboarding_gate_history.snapshot.backup.jsonl`
+  (passed)
+- `python3 scripts/provider_onboarding_history_validate.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths --require-snapshot-for-assess --require-existing-files`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)

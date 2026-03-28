@@ -33,6 +33,16 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Require probe_tsv/assessment_json paths to be absolute and under --repo-root",
     )
+    parser.add_argument(
+        "--require-snapshot-for-assess",
+        action="store_true",
+        help="Require assess-phase rows to include assessment_snapshot_json",
+    )
+    parser.add_argument(
+        "--require-existing-files",
+        action="store_true",
+        help="Require referenced probe/assessment/snapshot files to exist on disk",
+    )
     return parser.parse_args()
 
 
@@ -49,7 +59,20 @@ def _is_repo_path(value: Any, repo_root: Path) -> bool:
     return True
 
 
-def validate_entry(entry: Dict[str, Any], line_no: int, repo_root: Path, require_repo_paths: bool) -> List[str]:
+def _path_exists(value: Any) -> bool:
+    if not isinstance(value, str) or not value.strip():
+        return False
+    return Path(value).exists()
+
+
+def validate_entry(
+    entry: Dict[str, Any],
+    line_no: int,
+    repo_root: Path,
+    require_repo_paths: bool,
+    require_snapshot_for_assess: bool = False,
+    require_existing_files: bool = False,
+) -> List[str]:
     errors: List[str] = []
 
     timestamp = entry.get("timestamp")
@@ -85,8 +108,20 @@ def validate_entry(entry: Dict[str, Any], line_no: int, repo_root: Path, require
         for key in ("probe_tsv", "assessment_json"):
             if not _is_repo_path(entry.get(key), repo_root):
                 errors.append(f"line {line_no}: {key} must be absolute repo path under {repo_root}")
-        if entry.get("assessment_snapshot_json") is not None and not _is_repo_path(entry.get("assessment_snapshot_json"), repo_root):
+    if require_existing_files:
+        for key in ("probe_tsv", "assessment_json"):
+            if not _path_exists(entry.get(key)):
+                errors.append(f"line {line_no}: {key} path not found")
+
+    snapshot_path = entry.get("assessment_snapshot_json")
+    if require_snapshot_for_assess and phase == "assess":
+        if not isinstance(snapshot_path, str) or not snapshot_path.strip():
+            errors.append(f"line {line_no}: assessment_snapshot_json required for assess phase")
+    if snapshot_path is not None and snapshot_path != "":
+        if require_repo_paths and not _is_repo_path(snapshot_path, repo_root):
             errors.append(f"line {line_no}: assessment_snapshot_json must be absolute repo path under {repo_root}")
+        if require_existing_files and not _path_exists(snapshot_path):
+            errors.append(f"line {line_no}: assessment_snapshot_json path not found")
 
     success_row_count = entry.get("success_row_count")
     if success_row_count is not None and (not isinstance(success_row_count, int) or success_row_count < 0):
@@ -117,7 +152,13 @@ def validate_entry(entry: Dict[str, Any], line_no: int, repo_root: Path, require
     return errors
 
 
-def validate_history(history_path: Path, repo_root: Path, require_repo_paths: bool) -> List[str]:
+def validate_history(
+    history_path: Path,
+    repo_root: Path,
+    require_repo_paths: bool,
+    require_snapshot_for_assess: bool = False,
+    require_existing_files: bool = False,
+) -> List[str]:
     errors: List[str] = []
     if not history_path.exists():
         return [f"history file not found: {history_path}"]
@@ -134,7 +175,16 @@ def validate_history(history_path: Path, repo_root: Path, require_repo_paths: bo
         if not isinstance(parsed, dict):
             errors.append(f"line {idx}: entry must be object")
             continue
-        errors.extend(validate_entry(parsed, idx, repo_root, require_repo_paths=require_repo_paths))
+        errors.extend(
+            validate_entry(
+                parsed,
+                idx,
+                repo_root,
+                require_repo_paths=require_repo_paths,
+                require_snapshot_for_assess=require_snapshot_for_assess,
+                require_existing_files=require_existing_files,
+            )
+        )
     return errors
 
 
@@ -142,7 +192,13 @@ def main() -> int:
     args = parse_args()
     history_path = Path(args.history_jsonl)
     repo_root = Path(args.repo_root)
-    errors = validate_history(history_path, repo_root, require_repo_paths=args.require_repo_paths)
+    errors = validate_history(
+        history_path,
+        repo_root,
+        require_repo_paths=args.require_repo_paths,
+        require_snapshot_for_assess=args.require_snapshot_for_assess,
+        require_existing_files=args.require_existing_files,
+    )
     if errors:
         for item in errors:
             print(item, file=sys.stderr)

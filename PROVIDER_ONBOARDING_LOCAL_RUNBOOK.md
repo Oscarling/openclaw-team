@@ -95,7 +95,9 @@ Before finalizing local evidence commits, validate onboarding history structure:
 python3 scripts/provider_onboarding_history_validate.py \
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --repo-root /Users/lingguozhong/openclaw-team \
-  --require-repo-paths
+  --require-repo-paths \
+  --require-snapshot-for-assess \
+  --require-existing-files
 ```
 
 Also verify summary snapshot consistency against history:
@@ -115,6 +117,15 @@ backfill (guarded by status/block/http-count match):
 python3 scripts/provider_onboarding_history_backfill.py \
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --backup-jsonl /tmp/provider_onboarding_gate_history.backup.jsonl
+```
+
+If legacy `assess` rows are missing immutable snapshot pointers, run snapshot
+backfill first:
+
+```bash
+python3 scripts/provider_onboarding_history_snapshot_backfill.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --backup-jsonl /tmp/provider_onboarding_gate_history.snapshot.backup.jsonl
 ```
 
 To inspect remaining missing rows and their reasons:

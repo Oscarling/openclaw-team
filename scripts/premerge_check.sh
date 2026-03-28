@@ -207,6 +207,12 @@ else
   fail "tests/test_provider_onboarding_history_backfill.py failed."
 fi
 
+if python3 -m unittest -v tests/test_provider_onboarding_history_snapshot_backfill.py; then
+  pass "tests/test_provider_onboarding_history_snapshot_backfill.py passed."
+else
+  fail "tests/test_provider_onboarding_history_snapshot_backfill.py failed."
+fi
+
 if python3 -m unittest -v tests/test_provider_onboarding_history_backfill_gaps.py; then
   pass "tests/test_provider_onboarding_history_backfill_gaps.py passed."
 else
@@ -221,6 +227,14 @@ else
   fail "provider onboarding history backfill dry-run check failed."
 fi
 
+if python3 scripts/provider_onboarding_history_snapshot_backfill.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --dry-run; then
+  pass "provider onboarding history snapshot backfill dry-run check passed."
+else
+  fail "provider onboarding history snapshot backfill dry-run check failed."
+fi
+
 if python3 scripts/provider_onboarding_history_backfill_gaps.py \
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --output-json /tmp/provider_onboarding_history_backfill_gaps_premerge.json; then
@@ -232,7 +246,9 @@ fi
 if python3 scripts/provider_onboarding_history_validate.py \
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --repo-root "$repo_root" \
-  --require-repo-paths; then
+  --require-repo-paths \
+  --require-snapshot-for-assess \
+  --require-existing-files; then
   pass "provider onboarding gate history jsonl passes schema/path validation."
 else
   fail "provider onboarding gate history jsonl validation failed."

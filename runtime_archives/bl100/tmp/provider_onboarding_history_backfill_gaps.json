@@ -17,7 +17,7 @@
       "detail": {
         "entry_block_reason": "auth_or_access_policy_block",
         "assessment_block_reason": "mixed_with_tls_transport_failures",
-        "source_field": "assessment_json"
+        "source_field": "assessment_snapshot_json"
       }
     }
   ]

@@ -2029,3 +2029,20 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_gate.py`, `scripts/provider_onboarding_history_validate.py`, `scripts/provider_onboarding_history_backfill.py`, `scripts/provider_onboarding_history_backfill_gaps.py`, `tests/test_provider_onboarding_gate.py`, `tests/test_provider_onboarding_history_validate.py`, `tests/test_provider_onboarding_history_backfill.py`, and `tests/test_provider_onboarding_history_backfill_gaps.py` confirm immutable snapshot support and snapshot-first consumer behavior
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-117
+- title: Backfill legacy assessment snapshots and enforce assess-row snapshot/file integrity
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-116
+- start_when: New runs now emit immutable snapshot pointers, but legacy assess rows still miss `assessment_snapshot_json` and validator does not yet enforce snapshot/file presence
+- done_when: A dedicated snapshot-backfill tool upgrades legacy assess rows, validator enforces `assessment_snapshot_json` + file existence for assess rows, and premerge runs the stricter checks
+- source: local hardening continuation to keep onboarding history evidence immutable and fail-closed while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_SNAPSHOT_BACKFILL_ENFORCEMENT_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_snapshot_backfill.py`, `scripts/provider_onboarding_history_validate.py`, `scripts/premerge_check.sh`, `tests/test_provider_onboarding_history_snapshot_backfill.py`, `tests/test_provider_onboarding_history_validate.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl` confirm legacy snapshot backfill and strict assess-row snapshot/file validation
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
