@@ -6468,3 +6468,46 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/provider_onboarding_history_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
   (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 134. BL-20260328-121 Snapshot Guard Row-Level Detail Reporting (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and make snapshot drift triage
+  deterministic at row level
+
+Main work areas:
+
+- added detail-report script:
+  - `scripts/provider_onboarding_snapshot_guard_report.py`
+  - outputs aggregate counters + row-level `non_match_rows`
+  - supports `--repo-only` with repo-root scoped filtering
+- added tests:
+  - `tests/test_provider_onboarding_snapshot_guard_report.py`
+- integrated into premerge:
+  - `scripts/premerge_check.sh` now runs:
+    - unit test
+    - no-write report generation check to
+      `/tmp/provider_onboarding_snapshot_guard_report_premerge.json`
+- runbook update:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+- generated runtime artifact:
+  - `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_DETAIL_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_DETAIL_REPORT.md)
+
+Key result:
+
+- drift triage no longer depends on manual history inspection; row-level
+  mismatch details are now produced deterministically with reason + field
+  context.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report.py tests/test_provider_onboarding_history_summary.py`
+  (passed)
+- `python3 scripts/provider_onboarding_snapshot_guard_report.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --output-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)

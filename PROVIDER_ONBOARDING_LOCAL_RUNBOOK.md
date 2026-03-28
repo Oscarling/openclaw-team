@@ -151,3 +151,16 @@ python3 scripts/provider_onboarding_history_backfill_gaps.py \
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --output-json runtime_archives/bl100/tmp/provider_onboarding_history_backfill_gaps.json
 ```
+
+To inspect snapshot-guard mismatches with row-level reasons:
+
+```bash
+python3 scripts/provider_onboarding_snapshot_guard_report.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --output-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json \
+  --repo-root /Users/lingguozhong/openclaw-team \
+  --repo-only
+```
+
+`reason_counts` and `non_match_rows` expose exact drift causes beyond summary
+aggregates (for example `guard_mismatch_block_reason` on legacy rows).

@@ -219,6 +219,12 @@ else
   fail "tests/test_provider_onboarding_history_backfill_gaps.py failed."
 fi
 
+if python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report.py; then
+  pass "tests/test_provider_onboarding_snapshot_guard_report.py passed."
+else
+  fail "tests/test_provider_onboarding_snapshot_guard_report.py failed."
+fi
+
 if python3 scripts/provider_onboarding_history_backfill.py \
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --dry-run; then
@@ -241,6 +247,16 @@ if python3 scripts/provider_onboarding_history_backfill_gaps.py \
   pass "provider onboarding history backfill gaps report check passed."
 else
   fail "provider onboarding history backfill gaps report check failed."
+fi
+
+if python3 scripts/provider_onboarding_snapshot_guard_report.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --output-json /tmp/provider_onboarding_snapshot_guard_report_premerge.json \
+  --repo-root "$repo_root" \
+  --repo-only; then
+  pass "provider onboarding snapshot guard report check passed."
+else
+  fail "provider onboarding snapshot guard report check failed."
 fi
 
 if python3 scripts/provider_onboarding_history_validate.py \

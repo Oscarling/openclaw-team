@@ -2097,3 +2097,20 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_history_summary.py`, `scripts/provider_onboarding_history_consistency_check.py`, `tests/test_provider_onboarding_history_summary.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm reason-level snapshot-guard mismatch metrics under consistency-gated summary output
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-121
+- title: Add row-level snapshot guard drift detail reporting and premerge coverage
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-120
+- start_when: Summary reason counts exist, but operators still need row-level drift details for deterministic triage
+- done_when: A dedicated snapshot guard report emits reason counts plus row-level non-match details, tests cover classification, premerge runs the report check, and runbook documents command usage
+- source: local hardening continuation to keep snapshot drift diagnosis actionable while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_DETAIL_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report.py`, `tests/test_provider_onboarding_snapshot_guard_report.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm deterministic row-level snapshot-guard reporting under premerge checks
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
