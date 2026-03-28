@@ -1842,3 +1842,20 @@ Allowed enum values:
 - evidence: `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` documents handshake probe, assessment, and one-shot gate commands with fail-fast semantics and output conventions
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-106
+- title: Refine handshake assessment with note-level signal classification
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-105
+- start_when: Assessment script provides code-level readiness but lacks structured note-level signal breakdown
+- done_when: Assessment script emits note-class counts and distinguishes mixed transport causes (TLS/DNS) with dedicated tests and refreshed assessment output
+- source: local hardening continuation to improve blocked-cause precision under BL-099
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_NOTE_CLASSIFICATION_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_handshake_assess.py`, `tests/test_provider_handshake_assess.py`, and `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json` provide note-level signal classification (`note_class_counts`) and refined block reason selection
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

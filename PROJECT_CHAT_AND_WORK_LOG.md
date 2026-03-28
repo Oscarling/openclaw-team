@@ -5838,3 +5838,32 @@ Key result:
 
 - onboarding operational flow is now explicitly documented and reproducible,
   reducing command-memory drift during blocked periods and future recovery.
+
+### 119. BL-20260328-106 Note-Level Assessment Classification (Done)
+
+User objective:
+
+- continue local hardening and improve blocked-cause diagnostics without new key
+
+Main work areas:
+
+- enhanced `scripts/provider_handshake_assess.py` with note-level signal
+  classification
+- added `note_class_counts` to assessment output
+- refined mixed transport block reason mapping to distinguish TLS/DNS blends
+- expanded tests in `tests/test_provider_handshake_assess.py`
+- regenerated latest gate assessment artifact
+
+Primary output:
+
+- [PROVIDER_HANDSHAKE_NOTE_CLASSIFICATION_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_NOTE_CLASSIFICATION_HARDENING_REPORT.md)
+
+Key result:
+
+- assessment now records code-level and note-level diagnostics together,
+  improving precision of blocked-provider attribution.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_handshake_assess.py` (passed)
+- `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`

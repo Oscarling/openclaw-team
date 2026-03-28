@@ -1,5 +1,5 @@
 {
-  "probe_tsv": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv",
+  "probe_tsv": "runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv",
   "status": "blocked",
   "block_reason": "auth_or_access_policy_block",
   "row_count": 8,
@@ -7,6 +7,10 @@
   "http_code_counts": {
     "401": 4,
     "403": 4
+  },
+  "note_class_counts": {
+    "edge_policy_1010": 4,
+    "invalid_api_key": 4
   },
   "endpoint_counts": {
     "https://aixj.vip/responses": 2,

@@ -74,7 +74,22 @@ def count_success(code_counter: Counter[str]) -> int:
     return total
 
 
-def decide_block_reason(code_counter: Counter[str], success_count: int) -> str:
+def classify_note_signal(note: str) -> str:
+    lowered = (note or "").lower()
+    if "invalid_api_key" in lowered:
+        return "invalid_api_key"
+    if "error code: 1010" in lowered:
+        return "edge_policy_1010"
+    if "eof occurred in violation of protocol" in lowered or "unexpected_eof_while_reading" in lowered:
+        return "tls_eof"
+    if "nodename nor servname provided" in lowered or "name or service not known" in lowered:
+        return "dns_resolution"
+    if "timed out" in lowered:
+        return "timeout"
+    return "other"
+
+
+def decide_block_reason(code_counter: Counter[str], note_class_counter: Counter[str], success_count: int) -> str:
     if success_count > 0:
         return "none"
     if not code_counter:
@@ -89,6 +104,10 @@ def decide_block_reason(code_counter: Counter[str], success_count: int) -> str:
     if "401" in codes and "403" in codes and codes <= {"401", "403"}:
         return "auth_or_access_policy_block"
     if "000" in codes:
+        if note_class_counter.get("tls_eof", 0) > 0:
+            return "mixed_with_tls_transport_failures"
+        if note_class_counter.get("dns_resolution", 0) > 0:
+            return "mixed_with_dns_failures"
         return "mixed_with_transport_failures"
     return "no_success_route"
 
@@ -96,9 +115,10 @@ def decide_block_reason(code_counter: Counter[str], success_count: int) -> str:
 def build_summary(rows: List[Dict[str, str]], probe_tsv: Path) -> Dict[str, Any]:
     code_counter = Counter((row.get("http_code", "") or "").strip() for row in rows)
     endpoint_counter = Counter((row.get("endpoint", "") or "").strip() for row in rows)
+    note_class_counter = Counter(classify_note_signal((row.get("note", "") or "").strip()) for row in rows)
     success_count = count_success(code_counter)
     status = "ready" if success_count > 0 else "blocked"
-    block_reason = decide_block_reason(code_counter, success_count)
+    block_reason = decide_block_reason(code_counter, note_class_counter, success_count)
 
     return {
         "probe_tsv": str(probe_tsv),
@@ -107,6 +127,7 @@ def build_summary(rows: List[Dict[str, str]], probe_tsv: Path) -> Dict[str, Any]
         "row_count": len(rows),
         "success_row_count": success_count,
         "http_code_counts": dict(sorted(code_counter.items())),
+        "note_class_counts": dict(sorted(note_class_counter.items())),
         "endpoint_counts": dict(sorted(endpoint_counter.items())),
         "key_tails": extract_key_tails(rows),
     }

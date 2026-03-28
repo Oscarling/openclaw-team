@@ -45,6 +45,8 @@ class ProviderHandshakeAssessTests(unittest.TestCase):
         self.assertEqual(summary["block_reason"], "auth_or_access_policy_block")
         self.assertEqual(summary["success_row_count"], 0)
         self.assertEqual(summary["key_tails"], ["abc123"])
+        self.assertEqual(summary["note_class_counts"]["invalid_api_key"], 1)
+        self.assertEqual(summary["note_class_counts"]["edge_policy_1010"], 1)
 
     def test_build_summary_ready_with_2xx(self) -> None:
         rows = [
@@ -60,6 +62,28 @@ class ProviderHandshakeAssessTests(unittest.TestCase):
         self.assertEqual(summary["status"], "ready")
         self.assertEqual(summary["block_reason"], "none")
         self.assertEqual(summary["success_row_count"], 1)
+
+    def test_build_summary_mixed_with_tls_transport_failures(self) -> None:
+        rows = [
+            {
+                "endpoint": "https://aixj.vip/v1/responses",
+                "model": "gpt-5-codex",
+                "probe": "ping",
+                "http_code": "401",
+                "note": 'key=***abc123; {"code":"INVALID_API_KEY"}',
+            },
+            {
+                "endpoint": "https://fast.vpsairobot.com/responses",
+                "model": "gpt-5-codex",
+                "probe": "ping",
+                "http_code": "000",
+                "note": "key=***abc123; <urlopen error EOF occurred in violation of protocol (_ssl.c:1129)>",
+            },
+        ]
+        summary = provider_handshake_assess.build_summary(rows, Path("dummy.tsv"))
+        self.assertEqual(summary["status"], "blocked")
+        self.assertEqual(summary["block_reason"], "mixed_with_tls_transport_failures")
+        self.assertEqual(summary["note_class_counts"]["tls_eof"], 1)
 
     def test_main_require_ready_returns_nonzero_for_blocked(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-handshake-assess-") as tmp_raw:
