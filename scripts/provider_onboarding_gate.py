@@ -14,6 +14,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROBE_SCRIPT = REPO_ROOT / "scripts" / "provider_handshake_probe.py"
 ASSESS_SCRIPT = REPO_ROOT / "scripts" / "provider_handshake_assess.py"
+SUMMARY_SCRIPT = REPO_ROOT / "scripts" / "provider_onboarding_history_summary.py"
 
 
 def parse_args() -> argparse.Namespace:
@@ -53,6 +54,16 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Disable appending history records",
     )
+    parser.add_argument(
+        "--history-summary-json",
+        default="runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json",
+        help="Output JSON path for refreshed history summary",
+    )
+    parser.add_argument(
+        "--no-history-summary",
+        action="store_true",
+        help="Skip refreshing history summary after gate run",
+    )
     return parser.parse_args()
 
 
@@ -75,6 +86,18 @@ def append_history_entry(path: Path, entry: dict[str, Any]) -> None:
         handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
+def refresh_history_summary(history_path: Path, output_json: Path) -> subprocess.CompletedProcess[str]:
+    cmd = [
+        sys.executable,
+        str(SUMMARY_SCRIPT),
+        "--history-jsonl",
+        str(history_path),
+        "--output-json",
+        str(output_json),
+    ]
+    return run_command(cmd)
+
+
 def main() -> int:
     args = parse_args()
     out_dir = Path(args.output_dir)
@@ -84,6 +107,9 @@ def main() -> int:
     history_path = Path(args.history_jsonl)
     if not history_path.is_absolute():
         history_path = REPO_ROOT / history_path
+    history_summary_path = Path(args.history_summary_json)
+    if not history_summary_path.is_absolute():
+        history_summary_path = REPO_ROOT / history_summary_path
 
     probe_tsv = out_dir / f"provider_handshake_probe_gate_{args.stamp}.tsv"
     assess_json = out_dir / f"provider_handshake_assessment_gate_{args.stamp}.json"
@@ -116,6 +142,12 @@ def main() -> int:
                     "block_reason": "probe_command_failed",
                 },
             )
+            if not args.no_history_summary:
+                summary_proc = refresh_history_summary(history_path, history_summary_path)
+                if summary_proc.stdout:
+                    print(summary_proc.stdout.strip())
+                if summary_proc.stderr:
+                    print(summary_proc.stderr.strip(), file=sys.stderr)
         return probe_proc.returncode
 
     assess_cmd = [
@@ -151,6 +183,12 @@ def main() -> int:
                 "http_code_counts": summary.get("http_code_counts"),
             },
         )
+        if not args.no_history_summary:
+            summary_proc = refresh_history_summary(history_path, history_summary_path)
+            if summary_proc.stdout:
+                print(summary_proc.stdout.strip())
+            if summary_proc.stderr:
+                print(summary_proc.stderr.strip(), file=sys.stderr)
 
     return assess_proc.returncode
 

@@ -5895,3 +5895,39 @@ Key result:
 
 - gate history trend is now machine-readable and can be refreshed after each
   onboarding attempt.
+
+### 121. BL-20260328-108 Onboarding Gate Summary Auto-Refresh (Done)
+
+User objective:
+
+- continue local hardening without drifting from blocker context, and keep
+  onboarding history summary synchronized automatically
+
+Main work areas:
+
+- enhanced one-shot gate wrapper:
+  - `scripts/provider_onboarding_gate.py`
+- added summary refresh controls:
+  - default refresh to
+    `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`
+  - opt-out switch: `--no-history-summary`
+- expanded gate tests:
+  - `tests/test_provider_onboarding_gate.py`
+- synced local runbook outputs:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_GATE_SUMMARY_REFRESH_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_GATE_SUMMARY_REFRESH_REPORT.md)
+
+Key result:
+
+- onboarding gate now writes history and refreshes trend summary in the same
+  run, reducing manual evidence gaps while BL-099 stays blocked.
+
+Verification snapshot on 2026-03-28:
+
+- `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`
+- `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`
+- `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`
+- `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`

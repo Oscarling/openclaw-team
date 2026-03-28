@@ -1,0 +1,23 @@
+{
+  "history_jsonl": "runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl",
+  "entry_count": 2,
+  "status_counts": {
+    "blocked": 2
+  },
+  "block_reason_counts": {
+    "auth_or_access_policy_block": 1,
+    "mixed_with_tls_transport_failures": 1
+  },
+  "exit_code_counts": {
+    "2": 2
+  },
+  "latest": {
+    "timestamp": "2026-03-28T12:26:50",
+    "stamp": "20260328",
+    "status": "blocked",
+    "block_reason": "mixed_with_tls_transport_failures",
+    "exit_code": 2,
+    "probe_tsv": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv",
+    "assessment_json": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json"
+  }
+}

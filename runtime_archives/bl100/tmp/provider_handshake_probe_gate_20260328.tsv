@@ -2,7 +2,7 @@ endpoint	model	probe	http_code	note
 https://aixj.vip/v1/responses	gpt-5-codex	ping	401	key=***c0352c; {"code":"INVALID_API_KEY","message":"API Key 无效，请检查是否正确"}
 https://aixj.vip/responses	gpt-5-codex	ping	401	key=***c0352c; {"code":"INVALID_API_KEY","message":"API Key 无效，请检查是否正确"}
 https://fast.vpsairobot.com/v1/responses	gpt-5-codex	ping	403	key=***c0352c; error code: 1010
-https://fast.vpsairobot.com/responses	gpt-5-codex	ping	403	key=***c0352c; error code: 1010
+https://fast.vpsairobot.com/responses	gpt-5-codex	ping	000	key=***c0352c; <urlopen error EOF occurred in violation of protocol (_ssl.c:1129)>
 https://aixj.vip/v1/responses	gpt-5-codex	ping	401	key=***J86gzy; {"code":"INVALID_API_KEY","message":"API Key 无效，请检查是否正确"}
 https://aixj.vip/responses	gpt-5-codex	ping	401	key=***J86gzy; {"code":"INVALID_API_KEY","message":"API Key 无效，请检查是否正确"}
 https://fast.vpsairobot.com/v1/responses	gpt-5-codex	ping	403	key=***J86gzy; error code: 1010

@@ -59,6 +59,11 @@ Outputs:
 - probe TSV: `runtime_archives/bl100/tmp/provider_handshake_probe_gate_<stamp>.tsv`
 - assessment JSON: `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_<stamp>.json`
 - history JSONL: `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`
+- history summary JSON: `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`
+
+Optional control for tests/special runs:
+
+- add `--no-history-summary` to skip summary refresh in that invocation
 
 ## 4) Decision Rule
 

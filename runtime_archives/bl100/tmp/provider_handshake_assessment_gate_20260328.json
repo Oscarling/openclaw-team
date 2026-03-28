@@ -1,16 +1,18 @@
 {
-  "probe_tsv": "runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv",
+  "probe_tsv": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv",
   "status": "blocked",
-  "block_reason": "auth_or_access_policy_block",
+  "block_reason": "mixed_with_tls_transport_failures",
   "row_count": 8,
   "success_row_count": 0,
   "http_code_counts": {
+    "000": 1,
     "401": 4,
-    "403": 4
+    "403": 3
   },
   "note_class_counts": {
-    "edge_policy_1010": 4,
-    "invalid_api_key": 4
+    "edge_policy_1010": 3,
+    "invalid_api_key": 4,
+    "tls_eof": 1
   },
   "endpoint_counts": {
     "https://aixj.vip/responses": 2,
