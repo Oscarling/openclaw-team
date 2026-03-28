@@ -86,6 +86,7 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
             self.assertEqual(summary["assess_rows_with_snapshot_guard_mismatch"], 0)
             self.assertEqual(summary["assess_rows_with_snapshot_guard_unverified"], 0)
             self.assertEqual(summary["assess_snapshot_guard_match_percent"], 100.0)
+            self.assertEqual(summary["assess_snapshot_guard_mismatch_reason_counts"], {})
             self.assertEqual(summary["latest"]["status"], "ready")
             self.assertEqual(summary["latest"]["exit_code"], 0)
             self.assertEqual(summary["latest"]["note_class_counts"], {"tls_eof": 1})
@@ -181,6 +182,7 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
             self.assertEqual(parsed["assess_rows_with_snapshot_guard_mismatch"], 0)
             self.assertEqual(parsed["assess_rows_with_snapshot_guard_unverified"], 0)
             self.assertEqual(parsed["assess_snapshot_guard_match_percent"], 100.0)
+            self.assertEqual(parsed["assess_snapshot_guard_mismatch_reason_counts"], {})
             self.assertEqual(parsed["latest"]["block_reason"], "mixed_with_tls_transport_failures")
             self.assertEqual(parsed["latest"]["note_class_counts"]["tls_eof"], 1)
             self.assertEqual(parsed["latest"]["assessment_snapshot_json"], str(tmp / "snap2.json"))
@@ -283,6 +285,7 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
             self.assertEqual(parsed["assess_rows_with_snapshot_guard_mismatch"], 0)
             self.assertEqual(parsed["assess_rows_with_snapshot_guard_unverified"], 1)
             self.assertEqual(parsed["assess_snapshot_guard_match_percent"], 0.0)
+            self.assertEqual(parsed["assess_snapshot_guard_mismatch_reason_counts"], {})
             self.assertEqual(parsed["latest"]["block_reason"], "auth_or_access_policy_block")
 
     def test_filter_repo_entries_drops_assess_row_missing_repo_snapshot(self) -> None:
@@ -331,6 +334,36 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
             self.assertEqual(summary["assess_rows_with_snapshot_guard_mismatch"], 1)
             self.assertEqual(summary["assess_rows_with_snapshot_guard_unverified"], 0)
             self.assertEqual(summary["assess_snapshot_guard_match_percent"], 0.0)
+            self.assertEqual(summary["assess_snapshot_guard_mismatch_reason_counts"], {"block_reason": 1})
+
+    def test_build_summary_counts_http_code_guard_mismatch_reason(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-history-") as tmp_raw:
+            tmp = Path(tmp_raw)
+            snapshot = tmp / "snap_http_mismatch.json"
+            snapshot.write_text(
+                json.dumps(
+                    {
+                        "status": "blocked",
+                        "block_reason": "mixed_with_tls_transport_failures",
+                        "http_code_counts": {"000": 1, "401": 4, "403": 3},
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            entries = [
+                {
+                    "timestamp": "2026-03-28T10:00:00",
+                    "stamp": "20260328",
+                    "phase": "assess",
+                    "status": "blocked",
+                    "block_reason": "mixed_with_tls_transport_failures",
+                    "http_code_counts": {"401": 4, "403": 4},
+                    "assessment_snapshot_json": str(snapshot),
+                }
+            ]
+            summary = provider_onboarding_history_summary.build_summary(entries, Path("history.jsonl"))
+            self.assertEqual(summary["assess_snapshot_guard_mismatch_reason_counts"], {"http_code_counts": 1})
 
 
 if __name__ == "__main__":

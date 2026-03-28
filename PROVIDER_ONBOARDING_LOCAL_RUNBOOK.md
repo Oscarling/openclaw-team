@@ -73,7 +73,8 @@ Outputs:
     `assess_rows_with_snapshot_guard_match`,
     `assess_rows_with_snapshot_guard_mismatch`,
     `assess_rows_with_snapshot_guard_unverified`,
-    `assess_snapshot_guard_match_percent`
+    `assess_snapshot_guard_match_percent`,
+    `assess_snapshot_guard_mismatch_reason_counts`
 
 Optional control for tests/special runs:
 
@@ -86,6 +87,8 @@ Optional control for tests/special runs:
 - `assess_rows_with_snapshot_guard_mismatch > 0` signals decision-field drift
   between a history row and its snapshot payload, usually caused by legacy
   mutable-path overwrite before snapshot hardening
+- `assess_snapshot_guard_mismatch_reason_counts` identifies which decision field
+  is drifting (`status`, `block_reason`, or `http_code_counts`)
 
 ## 4) Decision Rule
 

@@ -101,6 +101,18 @@ def _snapshot_guard_matches(entry: Dict[str, Any], snapshot_payload: Dict[str, A
     return True
 
 
+def _snapshot_guard_mismatch_reason(entry: Dict[str, Any], snapshot_payload: Dict[str, Any]) -> str:
+    if str(entry.get("status", "")) != str(snapshot_payload.get("status", "")):
+        return "status"
+    if str(entry.get("block_reason", "")) != str(snapshot_payload.get("block_reason", "")):
+        return "block_reason"
+    entry_http = _normalize_http_counts(entry.get("http_code_counts"))
+    snapshot_http = _normalize_http_counts(snapshot_payload.get("http_code_counts"))
+    if entry_http and snapshot_http and entry_http != snapshot_http:
+        return "http_code_counts"
+    return "unknown"
+
+
 def filter_repo_entries(entries: List[Dict[str, Any]], repo_root: Path, repo_only: bool) -> Tuple[List[Dict[str, Any]], int]:
     if not repo_only:
         return entries, 0
@@ -131,6 +143,7 @@ def build_summary(entries: List[Dict[str, Any]], history_path: Path, dropped_non
     assess_rows_with_snapshot_guard_match = 0
     assess_rows_with_snapshot_guard_mismatch = 0
     assess_rows_with_snapshot_guard_unverified = 0
+    snapshot_guard_mismatch_reason_counter: Counter[str] = Counter()
     for entry in entries:
         if str(entry.get("phase", "")) == "assess":
             assess_rows += 1
@@ -144,6 +157,7 @@ def build_summary(entries: List[Dict[str, Any]], history_path: Path, dropped_non
                     assess_rows_with_snapshot_guard_match += 1
                 else:
                     assess_rows_with_snapshot_guard_mismatch += 1
+                    snapshot_guard_mismatch_reason_counter[_snapshot_guard_mismatch_reason(entry, snapshot_payload)] += 1
         note_counts = entry.get("note_class_counts")
         if not isinstance(note_counts, dict):
             continue
@@ -184,6 +198,7 @@ def build_summary(entries: List[Dict[str, Any]], history_path: Path, dropped_non
         "assess_rows_with_snapshot_guard_mismatch": assess_rows_with_snapshot_guard_mismatch,
         "assess_rows_with_snapshot_guard_unverified": assess_rows_with_snapshot_guard_unverified,
         "assess_snapshot_guard_match_percent": assess_snapshot_guard_match_percent,
+        "assess_snapshot_guard_mismatch_reason_counts": dict(sorted(snapshot_guard_mismatch_reason_counter.items())),
         "dropped_non_repo_entries": dropped_non_repo_entries,
         "latest": {
             "timestamp": latest.get("timestamp"),

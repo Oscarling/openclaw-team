@@ -27,6 +27,9 @@
   "assess_rows_with_snapshot_guard_mismatch": 1,
   "assess_rows_with_snapshot_guard_unverified": 0,
   "assess_snapshot_guard_match_percent": 50.0,
+  "assess_snapshot_guard_mismatch_reason_counts": {
+    "block_reason": 1
+  },
   "dropped_non_repo_entries": 0,
   "latest": {
     "timestamp": "2026-03-28T12:26:50",

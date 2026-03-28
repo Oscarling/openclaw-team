@@ -82,6 +82,7 @@ def compare_summary(expected: Dict[str, Any], actual: Dict[str, Any]) -> List[st
         "assess_rows_with_snapshot_guard_mismatch",
         "assess_rows_with_snapshot_guard_unverified",
         "assess_snapshot_guard_match_percent",
+        "assess_snapshot_guard_mismatch_reason_counts",
         "dropped_non_repo_entries",
         "latest",
     ]

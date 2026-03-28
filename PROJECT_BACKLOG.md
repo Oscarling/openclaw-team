@@ -2080,3 +2080,20 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_history_summary.py`, `scripts/provider_onboarding_history_consistency_check.py`, `tests/test_provider_onboarding_history_summary.py`, `tests/test_provider_onboarding_history_consistency_check.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm snapshot-guard integrity metrics are summary-visible and consistency-gated
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-120
+- title: Add snapshot guard mismatch reason distribution to onboarding summary
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-119
+- start_when: Snapshot guard mismatch count is visible, but operators cannot tell which decision field is drifting without manual row-level inspection
+- done_when: Summary emits mismatch reason counts, consistency checks include the new field, tests cover reason classification, and runbook documents interpretation
+- source: local hardening continuation to make legacy snapshot drift diagnosis actionable while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REASON_METRICS_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_summary.py`, `scripts/provider_onboarding_history_consistency_check.py`, `tests/test_provider_onboarding_history_summary.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm reason-level snapshot-guard mismatch metrics under consistency-gated summary output
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

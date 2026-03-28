@@ -6421,3 +6421,50 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/provider_onboarding_history_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
   (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 133. BL-20260328-120 Snapshot Guard Mismatch Reason Metrics (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and make snapshot guard mismatches
+  directly attributable by reason
+
+Main work areas:
+
+- summary enhancement:
+  - `scripts/provider_onboarding_history_summary.py`
+  - new field:
+    - `assess_snapshot_guard_mismatch_reason_counts`
+  - mismatch reasons are classified by decision field:
+    - `status`
+    - `block_reason`
+    - `http_code_counts`
+- consistency enhancement:
+  - `scripts/provider_onboarding_history_consistency_check.py` now compares the
+    reason-count field
+- test enhancement:
+  - `tests/test_provider_onboarding_history_summary.py` adds reason-focused
+    assertions and an HTTP-count mismatch case
+- runbook update:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+- refreshed artifact:
+  - `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REASON_METRICS_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REASON_METRICS_REPORT.md)
+
+Key result:
+
+- snapshot guard mismatch is now both counted and explained by field; current
+  summary reports `{"block_reason": 1}` for reason distribution.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_history_summary.py tests/test_provider_onboarding_history_consistency_check.py`
+  (passed)
+- `python3 scripts/provider_onboarding_history_summary.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --output-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
+  (passed)
+- `python3 scripts/provider_onboarding_history_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)
