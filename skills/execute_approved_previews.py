@@ -23,7 +23,23 @@ VERDICT_VALUES = {"pass", "fail", "needs_revision"}
 DEFAULT_MAX_SNAPSHOT_CHARS = 120000
 MIN_MAX_SNAPSHOT_CHARS = 4096
 MAX_ALLOWED_SNAPSHOT_CHARS = 500000
-TRANSIENT_AUTOMATION_ERROR_CLASSES = {"http_524", "http_502", "timeout"}
+TRANSIENT_AUTOMATION_ERROR_CLASSES = {
+    "http_500",
+    "http_502",
+    "http_503",
+    "http_504",
+    "http_520",
+    "http_521",
+    "http_522",
+    "http_523",
+    "http_524",
+    "timeout",
+    "tls_eof",
+    "dns_resolution",
+    "connection_reset",
+    "connection_refused",
+    "remote_closed",
+}
 DEFAULT_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS = 1
 MAX_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS = 3
 DEFAULT_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS = 1
@@ -340,9 +356,30 @@ def _extract_llm_error_class(auto_result: dict[str, Any]) -> str | None:
     for item in errors:
         if not isinstance(item, str):
             continue
+        lowered = item.lower()
         match = re.search(r"class=([a-z0-9_]+)", item)
         if match:
             return match.group(1).strip().lower()
+        http_match = re.search(r"http error\s+(\d{3})", lowered)
+        if http_match:
+            return f"http_{http_match.group(1)}"
+        if "unexpected_eof_while_reading" in lowered or "eof occurred in violation of protocol" in lowered:
+            return "tls_eof"
+        if "timed out" in lowered:
+            return "timeout"
+        if (
+            "name or service not known" in lowered
+            or "name resolution" in lowered
+            or "temporary failure in name resolution" in lowered
+            or "nodename nor servname provided" in lowered
+        ):
+            return "dns_resolution"
+        if "connection reset" in lowered:
+            return "connection_reset"
+        if "connection refused" in lowered:
+            return "connection_refused"
+        if "remote end closed connection" in lowered:
+            return "remote_closed"
     return None
 
 

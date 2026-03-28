@@ -7187,3 +7187,45 @@ Verification snapshot on 2026-03-28:
   (passed)
 - `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_consistency_check.py`
   (passed)
+
+### 153. BL-20260328-140 Approval Execution Transient Retry Resilience (Done)
+
+User objective:
+
+- under gstack-style engineering review, implement minimal-change hardening to
+  improve unstable key/base usability without drifting scope
+
+Main work areas:
+
+- outer retry policy hardening:
+  - `skills/execute_approved_previews.py`
+  - expands `TRANSIENT_AUTOMATION_ERROR_CLASSES` to include additional unstable
+    provider/network signatures (`http_520~524`, `tls_eof`, `dns_resolution`,
+    connection-level transient classes)
+- error parsing hardening:
+  - `skills/execute_approved_previews.py`
+  - `_extract_llm_error_class` now falls back to parsing error text when
+    `class=...` tag is missing
+- test hardening:
+  - `tests/test_execute_approved_previews.py`
+  - adds no-class retry recovery coverage for:
+    - `HTTP Error 520`
+    - TLS EOF signature
+    - DNS resolution signature
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_TRANSIENT_RETRY_RESILIENCE_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_TRANSIENT_RETRY_RESILIENCE_REPORT.md)
+
+Key result:
+
+- approval execution path now auto-retries more real-world intermittent route
+  failures instead of failing closed immediately on first outer attempt.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_execute_approved_previews.py` (passed)
+- `python3 -m unittest -v tests/test_argus_hardening.py` (passed)
+- `python3 scripts/backlog_lint.py` (passed)
+- `python3 scripts/backlog_sync.py` (passed)
+- `bash scripts/premerge_check.sh` (passed)

@@ -2420,3 +2420,20 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py` and `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py` confirm summary schema prevalidation now runs in persisted consistency path
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-140
+- title: Expand approval execution transient retry classification for unstable provider/base signatures
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-139
+- start_when: Outer approval execution retries handle a narrow transient class set and can fail closed on common unstable provider signatures (52x/TLS/DNS) even when recovery is possible
+- done_when: `execute_approved_previews` transient class policy includes common unstable upstream/network signatures, missing `class=...` error strings can still classify transient failures, tests cover 520/TLS/DNS no-class retry recovery paths, and governance report records the change
+- source: minimal-change resilience hardening to improve local/onboarding execution pass rate under intermittent route instability
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_TRANSIENT_RETRY_RESILIENCE_REPORT.md
+- issue: -
+- evidence: `skills/execute_approved_previews.py` and `tests/test_execute_approved_previews.py` confirm expanded transient classification and retry recovery under 520/TLS/DNS text-only failure signatures
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
