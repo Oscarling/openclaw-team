@@ -29,6 +29,16 @@ python3 scripts/provider_handshake_probe.py \
   --output runtime_archives/bl100/tmp/provider_handshake_probe_gate.tsv
 ```
 
+Gemini (OpenAI compatibility) example:
+
+```bash
+python3 scripts/provider_handshake_probe.py \
+  --key-file "$HOME/Desktop/备用key4.rtf" \
+  --endpoint "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" \
+  --model "gemini-3-flash-preview" \
+  --output runtime_archives/bl100/tmp/provider_handshake_probe_gemini.tsv
+```
+
 ## 2) Assessment Only
 
 Convert probe TSV into structured decision JSON:

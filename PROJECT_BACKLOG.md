@@ -2573,3 +2573,20 @@ Allowed enum values:
 - evidence: `scripts/provider_handshake_probe.py`, `scripts/provider_handshake_assess.py`, `tests/test_provider_handshake_probe.py`, `tests/test_provider_handshake_assess.py`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` verify retry observability fields and summary counters
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-149
+- title: Adapt provider handshake probe for Gemini OpenAI-compat route and key format
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-148
+- start_when: Existing handshake probe only recognizes `sk-` keys and responses-style payload shape, so Gemini OpenAI-compat (`chat/completions` + `AIza...` key) cannot be validated by the same onboarding gate
+- done_when: Probe key extraction supports `AIza...` keys, payload generation auto-matches endpoint wire shape (`chat/completions` vs `responses`), tests cover Gemini key + payload selection, runbook includes Gemini command example, and live key4 probe+assess evidence confirms `ready`
+- source: minimal-change market adaptation to support prevalent Gemini provider path without relaxing fail-closed readiness semantics
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_GEMINI_COMPAT_ADAPTER_REPORT.md
+- issue: -
+- evidence: `scripts/provider_handshake_probe.py`, `tests/test_provider_handshake_probe.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, `/tmp/provider_handshake_probe_gemini_key4_20260328.tsv`, and `/tmp/provider_handshake_assessment_gemini_key4_20260328.json` confirm Gemini-compatible handshake readiness detection
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

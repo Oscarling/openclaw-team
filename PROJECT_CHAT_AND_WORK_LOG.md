@@ -7230,6 +7230,61 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/backlog_sync.py` (passed)
 - `bash scripts/premerge_check.sh` (passed)
 
+### 161. BL-20260328-149 Gemini OpenAI-Compat Handshake Adapter (Done)
+
+User objective:
+
+- use new Desktop backup key4 (Gemini) and adapt current onboarding probe flow
+  so it can validate Gemini-compatible routes without drifting from minimal-change
+  strategy
+
+Main work areas:
+
+- probe compatibility hardening:
+  - `scripts/provider_handshake_probe.py`
+  - key extraction now accepts both:
+    - `sk-...`
+    - `AIza...`
+  - payload generation now endpoint-aware:
+    - `.../chat/completions` -> OpenAI chat payload (`messages`)
+    - `.../responses` -> responses payload (`input`)
+- tests enhancement:
+  - `tests/test_provider_handshake_probe.py`
+  - adds coverage for:
+    - Gemini key extraction
+    - endpoint-aware payload shape selection
+- runbook hardening:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+  - adds Gemini probe command example using Desktop `备用key4.rtf`
+- live validation:
+  - probe:
+    - `/tmp/provider_handshake_probe_gemini_key4_20260328.tsv`
+  - assess:
+    - `/tmp/provider_handshake_assessment_gemini_key4_20260328.json`
+  - outcome:
+    - `status=ready`
+    - `success_row_count=1`
+    - `http_code_counts={"200":1}`
+
+Primary output:
+
+- [PROVIDER_HANDSHAKE_GEMINI_COMPAT_ADAPTER_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_GEMINI_COMPAT_ADAPTER_REPORT.md)
+
+Key result:
+
+- onboarding handshake flow now supports Gemini OpenAI-compatible key+route
+  validation and can produce a deterministic `ready` signal under the new key4
+  path.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_handshake_probe.py tests/test_provider_handshake_assess.py` (passed)
+- `python3 scripts/provider_handshake_probe.py --key-file "$HOME/Desktop/备用key4.rtf" --endpoint "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" --model "gemini-3-flash-preview" --timeout 20 --output /tmp/provider_handshake_probe_gemini_key4_20260328.tsv` (passed)
+- `python3 scripts/provider_handshake_assess.py --probe-tsv /tmp/provider_handshake_probe_gemini_key4_20260328.tsv --output-json /tmp/provider_handshake_assessment_gemini_key4_20260328.json` (passed; `status=ready`)
+- `python3 scripts/backlog_lint.py` (passed)
+- `python3 scripts/backlog_sync.py` (passed)
+- `bash scripts/premerge_check.sh` (passed)
+
 ### 160. BL-20260328-148 Handshake Retry Observability Fields (Done)
 
 User objective:

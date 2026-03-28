@@ -24,6 +24,32 @@ class ProviderHandshakeProbeTests(unittest.TestCase):
             ["sk-aaaaabbbbbcccccdddddeeeee11111"],
         )
 
+    def test_extract_keys_supports_gemini_style_key(self) -> None:
+        text = "prefix AIzaSyDzMEeTKYGpU1gvoBQJ1XRMmEePUixwyRk suffix"
+        self.assertEqual(
+            provider_handshake_probe.extract_keys(text),
+            ["AIzaSyDzMEeTKYGpU1gvoBQJ1XRMmEePUixwyRk"],
+        )
+
+    def test_build_probe_payload_uses_chat_for_chat_completions_endpoint(self) -> None:
+        payload = provider_handshake_probe.build_probe_payload(
+            model="gemini-3-flash-preview",
+            input_text="ping",
+            endpoint="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+        )
+        self.assertEqual(payload["model"], "gemini-3-flash-preview")
+        self.assertIn("messages", payload)
+        self.assertEqual(payload["messages"][0]["role"], "user")
+        self.assertEqual(payload["messages"][0]["content"], "ping")
+
+    def test_build_probe_payload_uses_input_for_responses_endpoint(self) -> None:
+        payload = provider_handshake_probe.build_probe_payload(
+            model="gpt-5-codex",
+            input_text="ping",
+            endpoint="https://example.invalid/v1/responses",
+        )
+        self.assertEqual(payload, {"model": "gpt-5-codex", "input": "ping"})
+
     def test_build_probe_rows_missing_key(self) -> None:
         rows = provider_handshake_probe.build_probe_rows(
             keys=[],

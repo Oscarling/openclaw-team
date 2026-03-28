@@ -17,7 +17,7 @@ import urllib.request
 from pathlib import Path
 from typing import Callable, Iterable, List, Sequence, Tuple
 
-KEY_RE = re.compile(r"sk-[A-Za-z0-9_-]{20,}")
+KEY_RE = re.compile(r"(?:sk-[A-Za-z0-9_-]{20,}|AIza[A-Za-z0-9_-]{20,})")
 DEFAULT_ENDPOINTS = [
     "https://aixj.vip/v1/responses",
     "https://aixj.vip/responses",
@@ -77,8 +77,27 @@ def load_keys(paths: Iterable[str]) -> List[str]:
     return extract_keys(text)
 
 
+def infer_wire_api(endpoint: str) -> str:
+    lowered = (endpoint or "").strip().lower().rstrip("/")
+    if lowered.endswith("/chat/completions"):
+        return "chat_completions"
+    if lowered.endswith("/responses"):
+        return "responses"
+    return "responses"
+
+
+def build_probe_payload(model: str, input_text: str, endpoint: str) -> dict:
+    wire_api = infer_wire_api(endpoint)
+    if wire_api == "chat_completions":
+        return {
+            "model": model,
+            "messages": [{"role": "user", "content": input_text}],
+        }
+    return {"model": model, "input": input_text}
+
+
 def probe_once(endpoint: str, key: str, model: str, input_text: str, timeout: int) -> tuple[str, str, str]:
-    payload = json.dumps({"model": model, "input": input_text}).encode("utf-8")
+    payload = json.dumps(build_probe_payload(model=model, input_text=input_text, endpoint=endpoint)).encode("utf-8")
     req = urllib.request.Request(
         endpoint,
         data=payload,
