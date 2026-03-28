@@ -2114,3 +2114,20 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_snapshot_guard_report.py`, `tests/test_provider_onboarding_snapshot_guard_report.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm deterministic row-level snapshot-guard reporting under premerge checks
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-122
+- title: Enforce snapshot guard summary/report consistency in premerge
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-121
+- start_when: Snapshot guard summary and detail report both exist, but no explicit cross-artifact consistency gate prevents silent drift
+- done_when: A dedicated consistency-check script validates summary metrics against guard-report metrics, unit tests cover pass/fail paths, premerge enforces the check, and runbook documents command usage
+- source: local hardening continuation to keep snapshot-guard evidence fail-closed while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_CONSISTENCY_CHECK_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm summary/report consistency is now merge-gated
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

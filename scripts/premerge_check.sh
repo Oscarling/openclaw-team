@@ -225,6 +225,12 @@ else
   fail "tests/test_provider_onboarding_snapshot_guard_report.py failed."
 fi
 
+if python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_consistency_check.py; then
+  pass "tests/test_provider_onboarding_snapshot_guard_consistency_check.py passed."
+else
+  fail "tests/test_provider_onboarding_snapshot_guard_consistency_check.py failed."
+fi
+
 if python3 scripts/provider_onboarding_history_backfill.py \
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --dry-run; then
@@ -257,6 +263,14 @@ if python3 scripts/provider_onboarding_snapshot_guard_report.py \
   pass "provider onboarding snapshot guard report check passed."
 else
   fail "provider onboarding snapshot guard report check failed."
+fi
+
+if python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py \
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
+  --guard-report-json /tmp/provider_onboarding_snapshot_guard_report_premerge.json; then
+  pass "provider onboarding snapshot guard summary/report consistency check passed."
+else
+  fail "provider onboarding snapshot guard summary/report consistency check failed."
 fi
 
 if python3 scripts/provider_onboarding_history_validate.py \

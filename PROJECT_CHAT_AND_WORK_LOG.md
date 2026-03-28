@@ -6511,3 +6511,43 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/provider_onboarding_snapshot_guard_report.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --output-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
   (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 135. BL-20260328-122 Snapshot Guard Summary/Report Consistency Gate (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and prevent summary/report drift across
+  snapshot-guard artifacts
+
+Main work areas:
+
+- added consistency-check script:
+  - `scripts/provider_onboarding_snapshot_guard_consistency_check.py`
+  - validates summary snapshot-guard fields against report fields
+- added tests:
+  - `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`
+  - covers matching and diverging paths
+- premerge integration:
+  - `scripts/premerge_check.sh` now runs:
+    - new unit test
+    - summary/report consistency check against
+      `/tmp/provider_onboarding_snapshot_guard_report_premerge.json`
+- runbook update:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_CONSISTENCY_CHECK_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_CONSISTENCY_CHECK_REPORT.md)
+
+Key result:
+
+- snapshot-guard evidence now has cross-artifact fail-closed protection, so
+  summary and row-level report cannot diverge silently in merge flow.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report.py tests/test_provider_onboarding_snapshot_guard_consistency_check.py`
+  (passed)
+- `python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --guard-report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)

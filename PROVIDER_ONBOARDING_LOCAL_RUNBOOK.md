@@ -164,3 +164,11 @@ python3 scripts/provider_onboarding_snapshot_guard_report.py \
 
 `reason_counts` and `non_match_rows` expose exact drift causes beyond summary
 aggregates (for example `guard_mismatch_block_reason` on legacy rows).
+
+To enforce summary/report snapshot-guard metric consistency:
+
+```bash
+python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py \
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
+  --guard-report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json
+```
