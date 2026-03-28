@@ -10,6 +10,19 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+MISMATCH_REASONS = {
+    "guard_mismatch_status",
+    "guard_mismatch_block_reason",
+    "guard_mismatch_http_code_counts",
+}
+UNVERIFIED_REASONS = {
+    "snapshot_missing",
+    "snapshot_not_found",
+    "snapshot_parse_error",
+    "snapshot_not_repo_scoped",
+}
+ALLOWED_REASON_KEYS = {"guard_match"} | MISMATCH_REASONS | UNVERIFIED_REASONS
+ALLOWED_NON_MATCH_ROW_REASONS = MISMATCH_REASONS | UNVERIFIED_REASONS
 
 
 def parse_args() -> argparse.Namespace:
@@ -59,6 +72,9 @@ def _validate_reason_counts(value: Any) -> tuple[Dict[str, int], List[str]]:
     for key, raw_count in value.items():
         if not isinstance(key, str) or not key.strip():
             errors.append("reason_counts keys must be non-empty strings")
+            continue
+        if key not in ALLOWED_REASON_KEYS:
+            errors.append(f"reason_counts['{key}'] is not an allowed reason key")
             continue
         count = _as_non_negative_int(raw_count)
         if count is None:
@@ -112,6 +128,10 @@ def validate_report(report: Dict[str, Any], repo_root: Path, require_repo_paths:
         reason = row.get("reason")
         if not isinstance(reason, str) or not reason.strip():
             errors.append(f"non_match_rows[{idx}].reason must be non-empty string")
+        elif reason not in ALLOWED_NON_MATCH_ROW_REASONS:
+            errors.append(
+                f"non_match_rows[{idx}].reason must be one of {sorted(ALLOWED_NON_MATCH_ROW_REASONS)}"
+            )
         if require_repo_paths:
             for key in ("assessment_json", "assessment_snapshot_json"):
                 value = row.get(key)
@@ -136,6 +156,14 @@ def validate_report(report: Dict[str, Any], repo_root: Path, require_repo_paths:
             errors.append("non_match_rows length must equal guard_mismatch_rows + guard_unverified_rows")
         if sum(reason_counts.values()) != evaluated:
             errors.append("sum(reason_counts values) must equal evaluated_assess_rows")
+        if reason_counts.get("guard_match", 0) != parsed["guard_match_rows"]:
+            errors.append("reason_counts['guard_match'] must equal guard_match_rows")
+        mismatch_reason_total = sum(reason_counts.get(key, 0) for key in MISMATCH_REASONS)
+        if mismatch_reason_total != parsed["guard_mismatch_rows"]:
+            errors.append("sum(mismatch reason_counts) must equal guard_mismatch_rows")
+        unverified_reason_total = sum(reason_counts.get(key, 0) for key in UNVERIFIED_REASONS)
+        if unverified_reason_total != parsed["guard_unverified_rows"]:
+            errors.append("sum(unverified reason_counts) must equal guard_unverified_rows")
         expected_match_percent = 0.0
         if evaluated > 0:
             expected_match_percent = round((parsed["guard_match_rows"] / evaluated) * 100.0, 2)

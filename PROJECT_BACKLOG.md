@@ -2165,3 +2165,37 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm persisted report freshness is merge-gated against history
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-125
+- title: Enforce snapshot-guard report reason taxonomy and count partition integrity
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-124
+- start_when: Snapshot-guard report schema/path validation exists, but reason keys and reason/count partition can still drift semantically without explicit taxonomy enforcement
+- done_when: Validator enforces allowed reason keys, non-match row reason domain, and mismatch/unverified/match count partition checks; tests cover fail paths for taxonomy drift
+- source: local hardening continuation to keep snapshot-guard diagnostics semantically stable while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REASON_TAXONOMY_VALIDATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `tests/test_provider_onboarding_snapshot_guard_report_validate.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm fail-closed reason taxonomy and reason-count partition validation
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-126
+- title: Add persisted snapshot-guard report schema/path validation gate in premerge
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-125
+- start_when: Persisted report freshness check exists, but persisted report file itself is not explicitly schema/path-validated in merge gates
+- done_when: Premerge validates persisted report via report validator with repo-path enforcement, runbook documents command, and governance reports capture the added gate
+- source: local hardening continuation to prevent malformed persisted snapshot-guard artifacts from entering evidence chain while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_SCHEMA_GATE_REPORT.md
+- issue: -
+- evidence: `scripts/premerge_check.sh`, `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm persisted report schema/path validation is now merge-gated
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

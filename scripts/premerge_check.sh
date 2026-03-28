@@ -296,6 +296,15 @@ else
   fail "provider onboarding snapshot guard persisted report consistency check failed."
 fi
 
+if python3 scripts/provider_onboarding_snapshot_guard_report_validate.py \
+  --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json \
+  --repo-root "$repo_root" \
+  --require-repo-paths; then
+  pass "provider onboarding snapshot guard persisted report schema/path validation passed."
+else
+  fail "provider onboarding snapshot guard persisted report schema/path validation failed."
+fi
+
 if python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py \
   --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
   --guard-report-json /tmp/provider_onboarding_snapshot_guard_report_premerge.json; then

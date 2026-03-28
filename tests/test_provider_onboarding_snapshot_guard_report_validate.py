@@ -77,6 +77,30 @@ class ProviderOnboardingSnapshotGuardReportValidateTests(unittest.TestCase):
             )
             self.assertTrue(any("evaluated_assess_rows must equal" in err for err in errors))
 
+    def test_validate_report_rejects_unknown_reason_key(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-snapshot-guard-validate-") as tmp_raw:
+            tmp = Path(tmp_raw)
+            report = self._valid_report(tmp)
+            report["reason_counts"]["unexpected_reason"] = 1
+            errors = provider_onboarding_snapshot_guard_report_validate.validate_report(
+                report,
+                repo_root=tmp,
+                require_repo_paths=False,
+            )
+            self.assertTrue(any("not an allowed reason key" in err for err in errors))
+
+    def test_validate_report_rejects_non_match_row_guard_match_reason(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-snapshot-guard-validate-") as tmp_raw:
+            tmp = Path(tmp_raw)
+            report = self._valid_report(tmp)
+            report["non_match_rows"][0]["reason"] = "guard_match"
+            errors = provider_onboarding_snapshot_guard_report_validate.validate_report(
+                report,
+                repo_root=tmp,
+                require_repo_paths=False,
+            )
+            self.assertTrue(any("must be one of" in err for err in errors))
+
     def test_main_passes_with_repo_path_enforcement(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-snapshot-guard-validate-") as tmp_raw:
             tmp = Path(tmp_raw)

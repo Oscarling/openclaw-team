@@ -6636,3 +6636,74 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/provider_onboarding_snapshot_guard_report_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
   (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 138. BL-20260328-125 Snapshot Guard Reason Taxonomy Validation (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and ensure snapshot-guard reasons remain
+  semantically stable under merge-time checks
+
+Main work areas:
+
+- validator hardening:
+  - `scripts/provider_onboarding_snapshot_guard_report_validate.py`
+  - enforces allowed reason taxonomy for `reason_counts`
+  - enforces `non_match_rows[].reason` domain excludes `guard_match`
+  - enforces partition checks:
+    - `reason_counts['guard_match'] == guard_match_rows`
+    - mismatch-reason totals equal `guard_mismatch_rows`
+    - unverified-reason totals equal `guard_unverified_rows`
+- test hardening:
+  - `tests/test_provider_onboarding_snapshot_guard_report_validate.py`
+  - adds unknown-reason and invalid-row-reason fail cases
+- governance coverage:
+  - existing premerge validator invocation now enforces these stronger
+    semantics automatically
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REASON_TAXONOMY_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REASON_TAXONOMY_VALIDATION_REPORT.md)
+
+Key result:
+
+- snapshot-guard report validation now blocks semantic taxonomy drift, not only
+  structural shape errors.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_validate.py`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)
+
+### 139. BL-20260328-126 Persisted Snapshot Guard Report Schema Gate (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and ensure persisted snapshot-guard
+  artifact itself is schema/path validated in merge flow
+
+Main work areas:
+
+- premerge gate update:
+  - `scripts/premerge_check.sh` now validates persisted report path:
+    - `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json`
+    - with `--require-repo-paths`
+- runbook update:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` includes persisted report validation
+    command
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_SCHEMA_GATE_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_SCHEMA_GATE_REPORT.md)
+
+Key result:
+
+- persisted snapshot-guard report is now protected by both freshness checks and
+  direct schema/path checks before merge.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 scripts/provider_onboarding_snapshot_guard_report_validate.py --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)
