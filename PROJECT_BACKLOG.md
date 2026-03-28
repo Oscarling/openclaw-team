@@ -2437,3 +2437,20 @@ Allowed enum values:
 - evidence: `skills/execute_approved_previews.py` and `tests/test_execute_approved_previews.py` confirm expanded transient classification and retry recovery under 520/TLS/DNS text-only failure signatures
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-141
+- title: Add bounded auto-replay path for retryable rejected previews
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-140
+- start_when: Retryable transient failures may still become operationally sticky because rejected previews require manual `--allow-replay` even when automatic retry would be safe
+- done_when: Rejected previews with retryable transient signatures can auto-replay within bounded attempts, non-retryable rejections remain fail-closed, tests cover one-time auto-replay and budget exhaustion paths, and governance report documents behavior
+- source: minimal-change resilience hardening to reduce manual recovery overhead for intermittent route instability
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_REJECTED_AUTO_REPLAY_GUARD_REPORT.md
+- issue: -
+- evidence: `skills/execute_approved_previews.py` and `tests/test_execute_approved_previews.py` confirm bounded retryable-rejection auto-replay behavior without broadening non-retryable replay scope
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

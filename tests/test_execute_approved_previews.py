@@ -956,6 +956,153 @@ class ExecuteApprovedPreviewsTransientRetryTests(unittest.TestCase):
             self.assertEqual(result["automation_transient_retries_used"], 0)
             self.assertEqual(calls, ["automation"])
 
+    def test_process_approval_allows_one_auto_replay_for_retryable_rejected_preview(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="execute-approved-previews-") as tmp:
+            repo_root = Path(tmp)
+            preview_dir = repo_root / "preview"
+            approvals_dir = repo_root / "approvals"
+            artifacts_dir = repo_root / "artifacts"
+            preview_dir.mkdir(parents=True, exist_ok=True)
+            approvals_dir.mkdir(parents=True, exist_ok=True)
+            (artifacts_dir / "scripts").mkdir(parents=True, exist_ok=True)
+            (artifacts_dir / "reviews").mkdir(parents=True, exist_ok=True)
+            (artifacts_dir / "scripts" / "demo.py").write_text("print('ok')\n", encoding="utf-8")
+            (artifacts_dir / "reviews" / "demo_review.md").write_text(
+                "# Review\n\n- Verdict: pass\n", encoding="utf-8"
+            )
+
+            preview_id = "preview-test-003-auto-replay"
+            preview_payload = {
+                "preview_id": preview_id,
+                "internal_tasks": {
+                    "automation": self._valid_automation_task(),
+                    "critic": self._valid_critic_task(),
+                },
+                "execution": {"status": "rejected", "attempts": 1},
+                "last_execution": {
+                    "decision": "rejected",
+                    "decision_reason": "Automation task failed",
+                    "automation_result": {
+                        "status": "failed",
+                        "errors": [
+                            "LLM call exhausted (attempts=1/1, class=http_520, endpoint=https://fast.vpsairobot.com/v1/chat/completions, retryable=True): HTTP Error 520: Bad Gateway"
+                        ],
+                    },
+                },
+            }
+            approval_payload = {
+                "preview_id": preview_id,
+                "approved": True,
+                "approved_by": "tester",
+                "approved_at": "2026-03-26T00:00:00Z",
+            }
+            preview_path = preview_dir / f"{preview_id}.json"
+            approval_path = approvals_dir / f"{preview_id}.json"
+            preview_path.write_text(json.dumps(preview_payload), encoding="utf-8")
+            approval_path.write_text(json.dumps(approval_payload), encoding="utf-8")
+
+            calls: list[str] = []
+
+            def fake_delegate(worker: str, task: dict, **kwargs: object) -> dict:  # noqa: ARG001
+                calls.append(worker)
+                if worker == "automation":
+                    return {
+                        "task_id": task["task_id"],
+                        "worker": "automation",
+                        "status": "success",
+                        "summary": "automation success",
+                        "artifacts": [{"path": "artifacts/scripts/demo.py", "type": "script"}],
+                        "metadata": {},
+                    }
+                return {
+                    "task_id": task["task_id"],
+                    "worker": "critic",
+                    "status": "success",
+                    "summary": "critic success",
+                    "artifacts": [{"path": "artifacts/reviews/demo_review.md", "type": "review"}],
+                    "metadata": {"verdict": "pass"},
+                }
+
+            original_repo_root = executor.REPO_ROOT
+            original_preview_dir = executor.PREVIEW_DIR
+            original_approvals_dir = executor.APPROVALS_DIR
+            try:
+                executor.REPO_ROOT = repo_root
+                executor.PREVIEW_DIR = preview_dir
+                executor.APPROVALS_DIR = approvals_dir
+                with mock.patch.object(executor, "delegate_task", side_effect=fake_delegate):
+                    result = executor.process_approval(
+                        approval_path,
+                        approval_payload,
+                        SimpleNamespace(test_mode="off", allow_replay=False),
+                    )
+            finally:
+                executor.REPO_ROOT = original_repo_root
+                executor.PREVIEW_DIR = original_preview_dir
+                executor.APPROVALS_DIR = original_approvals_dir
+
+            self.assertEqual(result["status"], "processed")
+            self.assertEqual(result["critic_verdict"], "pass")
+            self.assertEqual(calls, ["automation", "critic"])
+
+    def test_process_approval_skips_retryable_rejected_preview_after_auto_replay_budget_exhausted(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="execute-approved-previews-") as tmp:
+            repo_root = Path(tmp)
+            preview_dir = repo_root / "preview"
+            approvals_dir = repo_root / "approvals"
+            preview_dir.mkdir(parents=True, exist_ok=True)
+            approvals_dir.mkdir(parents=True, exist_ok=True)
+
+            preview_id = "preview-test-004-auto-replay-budget"
+            preview_payload = {
+                "preview_id": preview_id,
+                "internal_tasks": {
+                    "automation": self._valid_automation_task(),
+                    "critic": self._valid_critic_task(),
+                },
+                "execution": {"status": "rejected", "attempts": 2},
+                "last_execution": {
+                    "decision": "rejected",
+                    "decision_reason": "Automation task failed",
+                    "automation_result": {
+                        "status": "failed",
+                        "errors": [
+                            "LLM call exhausted (attempts=1/1, class=http_520, endpoint=https://fast.vpsairobot.com/v1/chat/completions, retryable=True): HTTP Error 520: Bad Gateway"
+                        ],
+                    },
+                },
+            }
+            approval_payload = {
+                "preview_id": preview_id,
+                "approved": True,
+                "approved_by": "tester",
+                "approved_at": "2026-03-26T00:00:00Z",
+            }
+            preview_path = preview_dir / f"{preview_id}.json"
+            approval_path = approvals_dir / f"{preview_id}.json"
+            preview_path.write_text(json.dumps(preview_payload), encoding="utf-8")
+            approval_path.write_text(json.dumps(approval_payload), encoding="utf-8")
+
+            original_repo_root = executor.REPO_ROOT
+            original_preview_dir = executor.PREVIEW_DIR
+            original_approvals_dir = executor.APPROVALS_DIR
+            try:
+                executor.REPO_ROOT = repo_root
+                executor.PREVIEW_DIR = preview_dir
+                executor.APPROVALS_DIR = approvals_dir
+                result = executor.process_approval(
+                    approval_path,
+                    approval_payload,
+                    SimpleNamespace(test_mode="off", allow_replay=False),
+                )
+            finally:
+                executor.REPO_ROOT = original_repo_root
+                executor.PREVIEW_DIR = original_preview_dir
+                executor.APPROVALS_DIR = original_approvals_dir
+
+            self.assertEqual(result["status"], "skipped")
+            self.assertEqual(result["decision_reason"], "already_executed_use_allow_replay")
+
 
 if __name__ == "__main__":
     unittest.main()

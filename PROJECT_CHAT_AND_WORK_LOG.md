@@ -7229,3 +7229,45 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/backlog_lint.py` (passed)
 - `python3 scripts/backlog_sync.py` (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 154. BL-20260328-141 Bounded Auto-Replay For Retryable Rejections (Done)
+
+User objective:
+
+- continue minimal-change resilience hardening so transiently rejected previews
+  do not require immediate manual `--allow-replay` intervention
+
+Main work areas:
+
+- replay gating hardening:
+  - `skills/execute_approved_previews.py`
+  - adds bounded config:
+    - `ARGUS_AUTO_REPLAY_RETRYABLE_REJECTION_ATTEMPTS`
+  - adds helper classification for retryable rejected preview state
+  - allows auto-replay only when:
+    - last rejection is transient/workspace-recoverable
+    - execution attempts are within configured budget
+- safety behavior retained:
+  - processed previews still require explicit `--allow-replay`
+  - non-retryable rejected previews remain skipped without explicit replay
+- tests enhancement:
+  - `tests/test_execute_approved_previews.py`
+  - adds one-time auto-replay success case
+  - adds budget-exhausted skip case
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_REJECTED_AUTO_REPLAY_GUARD_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_REJECTED_AUTO_REPLAY_GUARD_REPORT.md)
+
+Key result:
+
+- retryable transient rejections can self-recover on subsequent runs within a
+  strict budget, reducing manual replay overhead without opening replay loops.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_execute_approved_previews.py` (passed)
+- `python3 -m unittest -v tests/test_argus_hardening.py` (passed)
+- `python3 scripts/backlog_lint.py` (passed)
+- `python3 scripts/backlog_sync.py` (passed)
+- `bash scripts/premerge_check.sh` (passed)

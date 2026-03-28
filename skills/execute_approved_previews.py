@@ -44,6 +44,8 @@ DEFAULT_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS = 1
 MAX_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS = 3
 DEFAULT_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS = 1
 MAX_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS = 2
+DEFAULT_AUTO_REPLAY_RETRYABLE_REJECTION_ATTEMPTS = 1
+MAX_AUTO_REPLAY_RETRYABLE_REJECTION_ATTEMPTS = 3
 WORKSPACE_PRESENCE_FAILURE_SNIPPETS = (
     "repository not present in execution environment",
     "workspace directory was empty",
@@ -86,6 +88,17 @@ def _resolve_automation_workspace_retry_attempts() -> int:
     except Exception:
         return DEFAULT_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS
     return max(0, min(parsed, MAX_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS))
+
+
+def _resolve_auto_replay_retryable_rejection_attempts() -> int:
+    raw = os.environ.get("ARGUS_AUTO_REPLAY_RETRYABLE_REJECTION_ATTEMPTS", "").strip()
+    if not raw:
+        return DEFAULT_AUTO_REPLAY_RETRYABLE_REJECTION_ATTEMPTS
+    try:
+        parsed = int(raw)
+    except Exception:
+        return DEFAULT_AUTO_REPLAY_RETRYABLE_REJECTION_ATTEMPTS
+    return max(0, min(parsed, MAX_AUTO_REPLAY_RETRYABLE_REJECTION_ATTEMPTS))
 
 
 def utc_now() -> str:
@@ -429,6 +442,54 @@ def _can_retry_automation_after_workspace_presence_failure(
     return _is_workspace_presence_failure(auto_result)
 
 
+def _execution_attempts(preview_payload: dict[str, Any]) -> int:
+    execution = preview_payload.get("execution")
+    if not isinstance(execution, dict):
+        return 0
+    raw = execution.get("attempts", 0)
+    if isinstance(raw, int):
+        return max(0, raw)
+    if isinstance(raw, str) and raw.isdigit():
+        return int(raw)
+    return 0
+
+
+def _is_retryable_rejected_preview(preview_payload: dict[str, Any]) -> bool:
+    last_execution = preview_payload.get("last_execution")
+    if not isinstance(last_execution, dict):
+        return False
+    if str(last_execution.get("decision", "")).strip().lower() != "rejected":
+        return False
+
+    auto_result = last_execution.get("automation_result")
+    if isinstance(auto_result, dict):
+        if _can_retry_automation_after_transient_failure(
+            auto_result,
+            retries_used=0,
+            retry_budget=1,
+        ):
+            return True
+        if _is_workspace_presence_failure(auto_result):
+            return True
+
+    reason = str(last_execution.get("decision_reason", "")).strip()
+    if reason:
+        error_class = _extract_llm_error_class({"errors": [reason]})
+        if error_class and error_class in TRANSIENT_AUTOMATION_ERROR_CLASSES:
+            return True
+    return False
+
+
+def _can_auto_replay_rejected_preview(preview_payload: dict[str, Any]) -> bool:
+    budget = _resolve_auto_replay_retryable_rejection_attempts()
+    if budget <= 0:
+        return False
+    attempts = _execution_attempts(preview_payload)
+    if attempts <= 0 or attempts > budget:
+        return False
+    return _is_retryable_rejected_preview(preview_payload)
+
+
 def load_approvals(preview_id: str | None) -> list[tuple[Path, dict[str, Any]]]:
     approvals = []
     if preview_id:
@@ -515,13 +576,21 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
     preview_payload = load_json(preview_path)
     execution = preview_payload.get("execution", {})
     execution_status = str(execution.get("status", "")).strip().lower() if isinstance(execution, dict) else ""
-    if execution_status in {"processed", "rejected"} and not args.allow_replay:
+    if execution_status == "processed" and not args.allow_replay:
         return {
             "status": "skipped",
             "decision_reason": "already_executed_use_allow_replay",
             "preview_id": preview_id,
             "approval_file": str(approval_path),
         }
+    if execution_status == "rejected" and not args.allow_replay:
+        if not _can_auto_replay_rejected_preview(preview_payload):
+            return {
+                "status": "skipped",
+                "decision_reason": "already_executed_use_allow_replay",
+                "preview_id": preview_id,
+                "approval_file": str(approval_path),
+            }
 
     tasks = preview_payload.get("internal_tasks")
     if not isinstance(tasks, dict):
