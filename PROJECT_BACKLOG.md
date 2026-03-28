@@ -1734,11 +1734,11 @@ Allowed enum values:
 - depends_on: BL-20260326-098
 - start_when: BL-098 confirms timeout budget tuning (`120/180/240/300`) cannot bypass the current fast-route gateway ceiling (`http_524` near ~126s)
 - done_when: A newly supplied provider/base route (new key/base topology) passes lightweight ping and real prompt-shape probe, then is promoted into controlled replay validation
-- source: `PROVIDER_ROUTE_RETEST_20260327_REPORT.md` on 2026-03-27 confirms previous Desktop key/base candidates still fail authenticated handshake
+- source: `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md` on 2026-03-28 confirms retest matrix remains blocked and classifies dominant cause as auth/access policy block
 - link: /Users/lingguozhong/openclaw-team/PROVIDER_ROUTE_RETEST_20260327_REPORT.md
 - issue: -
-- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md`, `PROVIDER_ROUTE_RETEST_20260327_REPORT.md`, `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`, and `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv` show all currently known Desktop key candidates still fail handshake (`aixj=401 INVALID_API_KEY`, `fast=403/1010`) with no `2xx` route available for controlled replay
-- last_reviewed_at: 2026-03-27
+- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md`, `PROVIDER_ROUTE_RETEST_20260327_REPORT.md`, `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md`, `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`, `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv`, and `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json` show all currently known Desktop key candidates still fail handshake (`aixj=401 INVALID_API_KEY`, `fast=403/1010`) with no `2xx` route available for controlled replay
+- last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-26
 
 ### BL-20260326-100
@@ -1774,3 +1774,20 @@ Allowed enum values:
 - evidence: `PROBE_GATE_REQUIRE_SUCCESS_HARDENING_REPORT.md`, `scripts/provider_handshake_probe.py`, `tests/test_provider_handshake_probe.py`, and `runtime_archives/bl100/tmp/provider_handshake_probe_gatecheck_20260327.tsv` verify explicit `--require-success` gating with passing unit coverage and live non-2xx fail-fast behavior (exit code `2`)
 - last_reviewed_at: 2026-03-27
 - opened_at: 2026-03-27
+
+### BL-20260328-102
+- title: Automate handshake probe assessment and blocked-cause classification
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260327-101
+- start_when: Probe execution and success-gating are in place but matrix interpretation is still manual
+- done_when: A repo script consumes handshake TSV, emits structured readiness summary, supports fail-fast `--require-ready`, and is covered by dedicated unit tests integrated in premerge checks
+- source: `PROVIDER_ROUTE_RETEST_20260327_REPORT.md` on 2026-03-27 leaves BL-099 blocked and motivates deterministic post-probe classification
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_handshake_assess.py`, `tests/test_provider_handshake_assess.py`, `scripts/premerge_check.sh`, and `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json` provide automated `ready/blocked` assessment with explicit `block_reason` and fail-fast exit semantics
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

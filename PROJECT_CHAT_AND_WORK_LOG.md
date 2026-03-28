@@ -5710,3 +5710,40 @@ Verification snapshot on 2026-03-27:
 - `runtime_archives/bl100/tmp/provider_handshake_probe_gatecheck_20260327.tsv`
 - command outcome: exit code `2` with message
   `No successful (2xx) probe rows detected.`
+
+### 115. BL-20260328-102 Handshake Assessment Automation (Done)
+
+User objective:
+
+- continue local non-key hardening while BL-099 remains blocked
+- keep provider issue recorded and avoid manual interpretation drift
+
+Main work areas:
+
+- added assessment script:
+  - `scripts/provider_handshake_assess.py`
+- script now converts probe TSV into structured readiness summary (`ready` /
+  `blocked`) with explicit `block_reason`
+- added fail-fast gate option:
+  - `--require-ready` (non-ready exits with code `2`)
+- added dedicated unit tests:
+  - `tests/test_provider_handshake_assess.py`
+- wired new tests into merge gate:
+  - `scripts/premerge_check.sh`
+- generated live assessment from latest retest matrix:
+  - `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json`
+
+Primary output:
+
+- [PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md)
+
+Key result:
+
+- handshake matrix interpretation is now deterministic and script-enforced;
+  latest assessment remains `blocked` with reason
+  `auth_or_access_policy_block`.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_handshake_assess.py` (passed)
+- `python3 scripts/provider_handshake_assess.py --probe-tsv runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv --output-json runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json --require-ready` (exit code `2`, expected)
