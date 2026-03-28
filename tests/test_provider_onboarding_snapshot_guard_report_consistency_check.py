@@ -56,6 +56,12 @@ class ProviderOnboardingSnapshotGuardReportConsistencyCheckTests(unittest.TestCa
         errors = provider_onboarding_snapshot_guard_report_consistency_check.compare_report(expected, actual)
         self.assertTrue(any("guard_match_rows" in err for err in errors))
 
+    def test_compare_report_detects_history_path_mismatch(self) -> None:
+        expected = {"history_jsonl": "/tmp/a/history.jsonl"}
+        actual = {"history_jsonl": "/tmp/b/history.jsonl"}
+        errors = provider_onboarding_snapshot_guard_report_consistency_check.compare_report(expected, actual)
+        self.assertTrue(any("history_jsonl" in err for err in errors))
+
     def test_main_passes_when_report_matches_history(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-snapshot-guard-report-consistency-") as tmp_raw:
             tmp = Path(tmp_raw)
@@ -75,6 +81,7 @@ class ProviderOnboardingSnapshotGuardReportConsistencyCheckTests(unittest.TestCa
                 str(report_json),
                 "--repo-root",
                 str(tmp),
+                "--require-repo-paths",
             ]
             with mock.patch.object(sys, "argv", argv):
                 code = provider_onboarding_snapshot_guard_report_consistency_check.main()
@@ -100,6 +107,33 @@ class ProviderOnboardingSnapshotGuardReportConsistencyCheckTests(unittest.TestCa
                 str(report_json),
                 "--repo-root",
                 str(tmp),
+                "--require-repo-paths",
+            ]
+            with mock.patch.object(sys, "argv", argv):
+                code = provider_onboarding_snapshot_guard_report_consistency_check.main()
+            self.assertEqual(code, 2)
+
+    def test_main_fails_when_report_schema_is_invalid(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-snapshot-guard-report-consistency-") as tmp_raw:
+            tmp = Path(tmp_raw)
+            history = self._write_history_and_snapshot(tmp)
+            report = provider_onboarding_snapshot_guard_report_consistency_check.build_expected_report(
+                history_path=history,
+                repo_root=tmp,
+                repo_only=False,
+            )
+            report["reason_counts"]["unknown_reason"] = 1
+            report_json = tmp / "report.json"
+            report_json.write_text(json.dumps(report, ensure_ascii=False), encoding="utf-8")
+            argv = [
+                str(MODULE_PATH),
+                "--history-jsonl",
+                str(history),
+                "--report-json",
+                str(report_json),
+                "--repo-root",
+                str(tmp),
+                "--require-repo-paths",
             ]
             with mock.patch.object(sys, "argv", argv):
                 code = provider_onboarding_snapshot_guard_report_consistency_check.main()

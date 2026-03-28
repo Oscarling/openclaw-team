@@ -6707,3 +6707,77 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/provider_onboarding_snapshot_guard_report_validate.py --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths`
   (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 140. BL-20260328-127 Persisted Snapshot Guard Summary/Report Consistency Gate (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and ensure persisted snapshot-guard
+  summary/report artifacts are also cross-checked in merge gates
+
+Main work areas:
+
+- premerge hardening:
+  - `scripts/premerge_check.sh` now runs an additional consistency check:
+    - summary:
+      `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`
+    - report:
+      `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json`
+- existing generated-report consistency check remains in place
+- runbook continuity:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_SUMMARY_REPORT_CONSISTENCY_GATE_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_SUMMARY_REPORT_CONSISTENCY_GATE_REPORT.md)
+
+Key result:
+
+- premerge now validates both generated and persisted snapshot-guard
+  summary/report pairs, reducing persisted cross-artifact drift risk.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --guard-report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)
+
+### 141. BL-20260328-128 Snapshot Guard Report Consistency Schema Hardening (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and make report consistency checks
+  fail-closed on malformed artifacts and source-path drift
+
+Main work areas:
+
+- checker hardening:
+  - `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py`
+  - validates report schema/path before compare by reusing report validator
+  - adds `--require-repo-paths` strict mode
+  - compares normalized `history_jsonl` between expected and actual report
+- test hardening:
+  - `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`
+  - adds history-path mismatch case and schema-invalid report case
+- premerge integration:
+  - `scripts/premerge_check.sh` now passes `--require-repo-paths` when running
+    persisted report consistency check
+- runbook update:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` includes stricter checker invocation
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REPORT_CONSISTENCY_SCHEMA_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REPORT_CONSISTENCY_SCHEMA_HARDENING_REPORT.md)
+
+Key result:
+
+- persisted report freshness validation now blocks malformed report payloads and
+  source-history path divergence before field-level comparisons.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py tests/test_provider_onboarding_snapshot_guard_report_validate.py`
+  (passed)
+- `python3 scripts/provider_onboarding_snapshot_guard_report_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --repo-only --require-repo-paths`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)

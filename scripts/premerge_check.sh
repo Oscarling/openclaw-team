@@ -290,7 +290,8 @@ if python3 scripts/provider_onboarding_snapshot_guard_report_consistency_check.p
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json \
   --repo-root "$repo_root" \
-  --repo-only; then
+  --repo-only \
+  --require-repo-paths; then
   pass "provider onboarding snapshot guard persisted report is consistent with history."
 else
   fail "provider onboarding snapshot guard persisted report consistency check failed."
@@ -311,6 +312,14 @@ if python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py \
   pass "provider onboarding snapshot guard summary/report consistency check passed."
 else
   fail "provider onboarding snapshot guard summary/report consistency check failed."
+fi
+
+if python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py \
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
+  --guard-report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json; then
+  pass "provider onboarding snapshot guard persisted summary/report consistency check passed."
+else
+  fail "provider onboarding snapshot guard persisted summary/report consistency check failed."
 fi
 
 if python3 scripts/provider_onboarding_history_validate.py \

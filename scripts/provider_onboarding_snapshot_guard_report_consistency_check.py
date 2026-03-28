@@ -12,6 +12,7 @@ from typing import Any, Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORT_SCRIPT = REPO_ROOT / "scripts" / "provider_onboarding_snapshot_guard_report.py"
+VALIDATE_SCRIPT = REPO_ROOT / "scripts" / "provider_onboarding_snapshot_guard_report_validate.py"
 
 
 def parse_args() -> argparse.Namespace:
@@ -36,6 +37,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Apply repo-only filtering while recomputing expected report",
     )
+    parser.add_argument(
+        "--require-repo-paths",
+        action="store_true",
+        help="Validate report row paths as absolute repo-scoped paths before comparing",
+    )
     return parser.parse_args()
 
 
@@ -43,6 +49,15 @@ def _load_report_module():
     spec = importlib.util.spec_from_file_location("provider_onboarding_snapshot_guard_report", REPORT_SCRIPT)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Unable to load report module from {REPORT_SCRIPT}")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _load_validate_module():
+    spec = importlib.util.spec_from_file_location("provider_onboarding_snapshot_guard_report_validate", VALIDATE_SCRIPT)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Unable to load report validate module from {VALIDATE_SCRIPT}")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -63,6 +78,12 @@ def load_report_json(path: Path) -> Dict[str, Any]:
     return data
 
 
+def _normalized_path(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip():
+        return ""
+    return str(Path(value).expanduser().resolve(strict=False))
+
+
 def compare_report(expected: Dict[str, Any], actual: Dict[str, Any]) -> List[str]:
     keys_to_compare = [
         "repo_only",
@@ -80,6 +101,11 @@ def compare_report(expected: Dict[str, Any], actual: Dict[str, Any]) -> List[str
     for key in keys_to_compare:
         if actual.get(key) != expected.get(key):
             errors.append(f"report mismatch for '{key}': expected={expected.get(key)!r} actual={actual.get(key)!r}")
+    if _normalized_path(actual.get("history_jsonl")) != _normalized_path(expected.get("history_jsonl")):
+        errors.append(
+            "report mismatch for 'history_jsonl': "
+            f"expected={expected.get('history_jsonl')!r} actual={actual.get('history_jsonl')!r}"
+        )
     return errors
 
 
@@ -90,8 +116,18 @@ def main() -> int:
     repo_root = Path(args.repo_root)
 
     try:
-        expected = build_expected_report(history_path=history_path, repo_root=repo_root, repo_only=args.repo_only)
+        validate_mod = _load_validate_module()
         actual = load_report_json(report_path)
+        validation_errors = validate_mod.validate_report(
+            actual,
+            repo_root=repo_root,
+            require_repo_paths=args.require_repo_paths,
+        )
+        if validation_errors:
+            for err in validation_errors:
+                print(f"report validation error: {err}", file=sys.stderr)
+            return 2
+        expected = build_expected_report(history_path=history_path, repo_root=repo_root, repo_only=args.repo_only)
     except Exception as exc:
         print(str(exc), file=sys.stderr)
         return 2

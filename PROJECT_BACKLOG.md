@@ -2199,3 +2199,37 @@ Allowed enum values:
 - evidence: `scripts/premerge_check.sh`, `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm persisted report schema/path validation is now merge-gated
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-127
+- title: Enforce persisted snapshot-guard summary/report consistency in premerge
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-126
+- start_when: Premerge validates generated guard report vs summary, but persisted runtime summary/report pair is not explicitly consistency-gated
+- done_when: Premerge runs snapshot-guard summary/report consistency check against persisted runtime summary and persisted runtime report and fails on divergence
+- source: local hardening continuation to prevent stale persisted cross-artifact drift while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_SUMMARY_REPORT_CONSISTENCY_GATE_REPORT.md
+- issue: -
+- evidence: `scripts/premerge_check.sh`, `scripts/provider_onboarding_snapshot_guard_consistency_check.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm persisted summary/report consistency is merge-gated
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-128
+- title: Harden snapshot-guard report consistency checker with schema/path and history-path validation
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-127
+- start_when: Persisted report freshness check compares recomputed and stored report fields, but checker does not fail early on malformed report schema/path or mismatched history source path
+- done_when: Consistency checker validates report schema/path before diff, supports repo-path enforcement flag, validates normalized `history_jsonl` source path parity, and tests cover schema/path and path-mismatch fail paths
+- source: local hardening continuation to keep persisted report freshness checks fail-closed and source-consistent while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REPORT_CONSISTENCY_SCHEMA_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`, `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm schema/path-first consistency checking with history-path parity validation
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
