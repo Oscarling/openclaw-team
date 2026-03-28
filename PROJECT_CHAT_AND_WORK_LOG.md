@@ -5867,3 +5867,31 @@ Verification snapshot on 2026-03-28:
 
 - `python3 -m unittest -v tests/test_provider_handshake_assess.py` (passed)
 - `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`
+
+### 120. BL-20260328-107 Onboarding History Summary Automation (Done)
+
+User objective:
+
+- continue local hardening and keep blocked-provider trend visible without
+  manual log reading
+
+Main work areas:
+
+- added history summary script:
+  - `scripts/provider_onboarding_history_summary.py`
+- script generates counters + latest snapshot from gate history JSONL
+- added tests:
+  - `tests/test_provider_onboarding_history_summary.py`
+- wired tests into premerge gate:
+  - `scripts/premerge_check.sh`
+- generated current summary artifact:
+  - `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary_20260328.json`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_HISTORY_SUMMARY_AUTOMATION_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_SUMMARY_AUTOMATION_REPORT.md)
+
+Key result:
+
+- gate history trend is now machine-readable and can be refreshed after each
+  onboarding attempt.
