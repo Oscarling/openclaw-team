@@ -21,6 +21,7 @@ class ProviderOnboardingSnapshotGuardConsistencyCheckTests(unittest.TestCase):
     def _summary_payload(self) -> dict:
         return {
             "assess_entry_count": 2,
+            "assess_rows_with_snapshot": 2,
             "assess_rows_with_snapshot_guard_match": 1,
             "assess_rows_with_snapshot_guard_mismatch": 1,
             "assess_rows_with_snapshot_guard_unverified": 0,
@@ -133,6 +134,29 @@ class ProviderOnboardingSnapshotGuardConsistencyCheckTests(unittest.TestCase):
             payload["reason_counts"]["unknown_reason"] = 1
             summary_path.write_text(json.dumps(self._summary_payload(), ensure_ascii=False), encoding="utf-8")
             report_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+            argv = [
+                str(MODULE_PATH),
+                "--summary-json",
+                str(summary_path),
+                "--guard-report-json",
+                str(report_path),
+                "--repo-root",
+                str(tmp),
+                "--require-repo-paths",
+            ]
+            with mock.patch.object(sys, "argv", argv):
+                code = provider_onboarding_snapshot_guard_consistency_check.main()
+            self.assertEqual(code, 2)
+
+    def test_main_fails_when_summary_schema_invalid(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-snapshot-guard-consistency-") as tmp_raw:
+            tmp = Path(tmp_raw)
+            summary_path = tmp / "summary.json"
+            report_path = tmp / "report.json"
+            summary = self._summary_payload()
+            summary["assess_snapshot_guard_mismatch_reason_counts"] = {"unexpected": 1}
+            summary_path.write_text(json.dumps(summary, ensure_ascii=False), encoding="utf-8")
+            report_path.write_text(json.dumps(self._report_payload(tmp), ensure_ascii=False), encoding="utf-8")
             argv = [
                 str(MODULE_PATH),
                 "--summary-json",

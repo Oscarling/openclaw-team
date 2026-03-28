@@ -12,6 +12,7 @@ from typing import Any, Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VALIDATE_SCRIPT = REPO_ROOT / "scripts" / "provider_onboarding_snapshot_guard_report_validate.py"
+SUMMARY_VALIDATE_SCRIPT = REPO_ROOT / "scripts" / "provider_onboarding_snapshot_guard_summary_validate.py"
 
 
 def parse_args() -> argparse.Namespace:
@@ -52,6 +53,15 @@ def _load_validate_module():
     spec = importlib.util.spec_from_file_location("provider_onboarding_snapshot_guard_report_validate", VALIDATE_SCRIPT)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Unable to load snapshot guard report validate module from {VALIDATE_SCRIPT}")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _load_summary_validate_module():
+    spec = importlib.util.spec_from_file_location("provider_onboarding_snapshot_guard_summary_validate", SUMMARY_VALIDATE_SCRIPT)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Unable to load snapshot guard summary validate module from {SUMMARY_VALIDATE_SCRIPT}")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -101,6 +111,12 @@ def main() -> int:
     try:
         summary = load_json_object(summary_path)
         report = load_json_object(report_path)
+        summary_validate_mod = _load_summary_validate_module()
+        summary_validation_errors = summary_validate_mod.validate_summary(summary)
+        if summary_validation_errors:
+            for err in summary_validation_errors:
+                print(f"summary validation error: {err}", file=sys.stderr)
+            return 2
         validate_mod = _load_validate_module()
         validation_errors = validate_mod.validate_report(
             report,

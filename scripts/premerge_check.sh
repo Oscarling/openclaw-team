@@ -231,6 +231,12 @@ else
   fail "tests/test_provider_onboarding_snapshot_guard_consistency_check.py failed."
 fi
 
+if python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_summary_validate.py; then
+  pass "tests/test_provider_onboarding_snapshot_guard_summary_validate.py passed."
+else
+  fail "tests/test_provider_onboarding_snapshot_guard_summary_validate.py failed."
+fi
+
 if python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_validate.py; then
   pass "tests/test_provider_onboarding_snapshot_guard_report_validate.py passed."
 else
@@ -305,6 +311,13 @@ if python3 scripts/provider_onboarding_snapshot_guard_report_validate.py \
   pass "provider onboarding snapshot guard persisted report schema/path validation passed."
 else
   fail "provider onboarding snapshot guard persisted report schema/path validation failed."
+fi
+
+if python3 scripts/provider_onboarding_snapshot_guard_summary_validate.py \
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json; then
+  pass "provider onboarding snapshot guard summary schema validation passed."
+else
+  fail "provider onboarding snapshot guard summary schema validation failed."
 fi
 
 if python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py \

@@ -204,3 +204,10 @@ python3 scripts/provider_onboarding_snapshot_guard_report_validate.py \
   --repo-root /Users/lingguozhong/openclaw-team \
   --require-repo-paths
 ```
+
+To validate snapshot-guard summary schema integrity:
+
+```bash
+python3 scripts/provider_onboarding_snapshot_guard_summary_validate.py \
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json
+```

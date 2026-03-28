@@ -7001,3 +7001,76 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/backlog_lint.py` (passed)
 - `python3 scripts/backlog_sync.py` (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 148. BL-20260328-135 Snapshot Guard Summary Schema Validation Gate (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and add explicit schema/invariant
+  validation for snapshot-guard summary artifacts
+
+Main work areas:
+
+- new validator:
+  - `scripts/provider_onboarding_snapshot_guard_summary_validate.py`
+  - validates required snapshot-guard summary fields
+  - validates mismatch reason key taxonomy and reason-sum consistency
+  - validates match-percent formula and guard-total invariants
+- new tests:
+  - `tests/test_provider_onboarding_snapshot_guard_summary_validate.py`
+  - includes missing-field no-crash regression case
+- premerge integration:
+  - `scripts/premerge_check.sh` now runs summary validator on persisted summary
+- runbook update:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_VALIDATION_REPORT.md)
+
+Key result:
+
+- snapshot-guard summary artifacts are now independently schema-gated before
+  consistency checks consume them.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_summary_validate.py`
+  (passed)
+- `python3 scripts/provider_onboarding_snapshot_guard_summary_validate.py --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`
+  (passed)
+
+### 149. BL-20260328-136 Snapshot Guard Summary Consistency Input Hardening (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and make summary/report consistency check
+  fail-closed when summary input is malformed
+
+Main work areas:
+
+- checker hardening:
+  - `scripts/provider_onboarding_snapshot_guard_consistency_check.py`
+  - now runs summary validator before report validation and metric compare
+- tests enhancement:
+  - `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`
+  - adds summary-schema-invalid fail path
+  - report payload fixtures aligned to strict validator contract
+- premerge and runbook strict path retained
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_CONSISTENCY_INPUT_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_CONSISTENCY_INPUT_HARDENING_REPORT.md)
+
+Key result:
+
+- summary/report consistency now validates both inputs (summary + report)
+  before semantic comparison, improving fail-closed behavior.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_summary_validate.py tests/test_provider_onboarding_snapshot_guard_consistency_check.py tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`
+  (passed)
+- `python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --guard-report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)

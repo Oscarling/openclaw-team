@@ -2335,3 +2335,37 @@ Allowed enum values:
 - evidence: `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `scripts/provider_onboarding_snapshot_guard_consistency_check.py` confirm strict repo-path summary/report consistency enforcement in both merge gates and operator workflow
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-135
+- title: Add snapshot-guard summary schema validator with premerge coverage
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-134
+- start_when: Summary/report consistency checks exist, but snapshot-guard summary fields themselves lack dedicated schema/invariant validation gate
+- done_when: Dedicated summary validator script and tests exist, premerge runs summary validator on persisted summary, and runbook includes validator command
+- source: local hardening continuation to prevent malformed snapshot-guard summary artifacts from entering governance chain while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_VALIDATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_summary_validate.py`, `tests/test_provider_onboarding_snapshot_guard_summary_validate.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm fail-closed snapshot-guard summary schema validation
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-136
+- title: Enforce summary schema prevalidation inside snapshot-guard summary/report consistency checker
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-135
+- start_when: Standalone summary validator exists, but summary/report consistency checker can still compare metrics without first validating summary schema
+- done_when: Consistency checker validates summary schema before report/schema and metric comparison, tests cover summary-schema-invalid fail path, and premerge uses stricter checker path
+- source: local hardening continuation to keep snapshot-guard consistency checks fail-closed on malformed summary inputs while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_CONSISTENCY_INPUT_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_consistency_check.py`, `scripts/provider_onboarding_snapshot_guard_summary_validate.py`, `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`, and `scripts/premerge_check.sh` confirm summary-schema-first consistency checking in merge flow
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
