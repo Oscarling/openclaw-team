@@ -66,6 +66,9 @@ Outputs:
   - includes note-signal coverage metrics:
     `rows_with_note_class_counts`, `rows_missing_note_class_counts`,
     `note_signal_coverage_percent`
+  - includes assess-snapshot coverage metrics:
+    `assess_entry_count`, `assess_rows_with_snapshot`,
+    `assess_rows_missing_snapshot`, `assess_snapshot_coverage_percent`
 
 Optional control for tests/special runs:
 
@@ -73,6 +76,8 @@ Optional control for tests/special runs:
 - gate default summary refresh uses repo-only evidence filtering; add
   `--no-history-summary-repo-only` only when you intentionally need to include
   non-repo paths
+- under repo-only filtering, `assess` rows must have repo-scoped
+  `assessment_snapshot_json`; otherwise they are dropped from summary counts
 
 ## 4) Decision Rule
 

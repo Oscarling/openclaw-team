@@ -74,6 +74,10 @@ def compare_summary(expected: Dict[str, Any], actual: Dict[str, Any]) -> List[st
         "rows_with_note_class_counts",
         "rows_missing_note_class_counts",
         "note_signal_coverage_percent",
+        "assess_entry_count",
+        "assess_rows_with_snapshot",
+        "assess_rows_missing_snapshot",
+        "assess_snapshot_coverage_percent",
         "dropped_non_repo_entries",
         "latest",
     ]

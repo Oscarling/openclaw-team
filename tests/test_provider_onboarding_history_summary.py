@@ -23,18 +23,22 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
             {
                 "timestamp": "2026-03-28T10:00:00",
                 "stamp": "20260328",
+                "phase": "assess",
                 "status": "blocked",
                 "block_reason": "auth_or_access_policy_block",
                 "exit_code": 2,
                 "note_class_counts": {"invalid_api_key": 2},
+                "assessment_snapshot_json": "/repo/runtime_archives/bl100/tmp/snap1.json",
             },
             {
                 "timestamp": "2026-03-28T11:00:00",
                 "stamp": "20260328",
+                "phase": "assess",
                 "status": "ready",
                 "block_reason": "none",
                 "exit_code": 0,
                 "note_class_counts": {"tls_eof": 1},
+                "assessment_snapshot_json": "/repo/runtime_archives/bl100/tmp/snap2.json",
             },
         ]
         summary = provider_onboarding_history_summary.build_summary(entries, Path("history.jsonl"))
@@ -46,9 +50,14 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
         self.assertEqual(summary["rows_with_note_class_counts"], 2)
         self.assertEqual(summary["rows_missing_note_class_counts"], 0)
         self.assertEqual(summary["note_signal_coverage_percent"], 100.0)
+        self.assertEqual(summary["assess_entry_count"], 2)
+        self.assertEqual(summary["assess_rows_with_snapshot"], 2)
+        self.assertEqual(summary["assess_rows_missing_snapshot"], 0)
+        self.assertEqual(summary["assess_snapshot_coverage_percent"], 100.0)
         self.assertEqual(summary["latest"]["status"], "ready")
         self.assertEqual(summary["latest"]["exit_code"], 0)
         self.assertEqual(summary["latest"]["note_class_counts"], {"tls_eof": 1})
+        self.assertEqual(summary["latest"]["assessment_snapshot_json"], "/repo/runtime_archives/bl100/tmp/snap2.json")
 
     def test_main_writes_summary_json(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-history-") as tmp_raw:
@@ -61,10 +70,12 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
                             {
                                 "timestamp": "2026-03-28T10:00:00",
                                 "stamp": "20260328",
+                                "phase": "assess",
                                 "status": "blocked",
                                 "block_reason": "auth_or_access_policy_block",
                                 "exit_code": 2,
                                 "note_class_counts": {"invalid_api_key": 4},
+                                "assessment_snapshot_json": str(tmp / "snap1.json"),
                             },
                             ensure_ascii=False,
                         ),
@@ -72,10 +83,12 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
                             {
                                 "timestamp": "2026-03-28T11:00:00",
                                 "stamp": "20260328",
+                                "phase": "assess",
                                 "status": "blocked",
                                 "block_reason": "mixed_with_tls_transport_failures",
                                 "exit_code": 2,
                                 "note_class_counts": {"edge_policy_1010": 3, "tls_eof": 1},
+                                "assessment_snapshot_json": str(tmp / "snap2.json"),
                             },
                             ensure_ascii=False,
                         ),
@@ -104,23 +117,32 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
             self.assertEqual(parsed["rows_with_note_class_counts"], 2)
             self.assertEqual(parsed["rows_missing_note_class_counts"], 0)
             self.assertEqual(parsed["note_signal_coverage_percent"], 100.0)
+            self.assertEqual(parsed["assess_entry_count"], 2)
+            self.assertEqual(parsed["assess_rows_with_snapshot"], 2)
+            self.assertEqual(parsed["assess_rows_missing_snapshot"], 0)
+            self.assertEqual(parsed["assess_snapshot_coverage_percent"], 100.0)
             self.assertEqual(parsed["latest"]["block_reason"], "mixed_with_tls_transport_failures")
             self.assertEqual(parsed["latest"]["note_class_counts"]["tls_eof"], 1)
+            self.assertEqual(parsed["latest"]["assessment_snapshot_json"], str(tmp / "snap2.json"))
 
     def test_filter_repo_entries_drops_non_repo_when_enabled(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-history-") as tmp_raw:
             repo_root = Path(tmp_raw)
             entries = [
                 {
+                    "phase": "assess",
                     "probe_tsv": str(repo_root / "runtime_archives/bl100/tmp/probe.tsv"),
                     "assessment_json": str(repo_root / "runtime_archives/bl100/tmp/assessment.json"),
+                    "assessment_snapshot_json": str(repo_root / "runtime_archives/bl100/tmp/snapshot.json"),
                     "status": "blocked",
                     "block_reason": "auth_or_access_policy_block",
                     "exit_code": 2,
                 },
                 {
+                    "phase": "assess",
                     "probe_tsv": "/var/folders/xx/nonrepo_probe.tsv",
                     "assessment_json": "/var/folders/xx/nonrepo_assessment.json",
+                    "assessment_snapshot_json": "/var/folders/xx/nonrepo_snapshot.json",
                     "status": "blocked",
                     "block_reason": "auth_or_access_policy_block",
                     "exit_code": 2,
@@ -143,11 +165,13 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
                             {
                                 "timestamp": "2026-03-28T10:00:00",
                                 "stamp": "20260328",
+                                "phase": "assess",
                                 "status": "blocked",
                                 "block_reason": "auth_or_access_policy_block",
                                 "exit_code": 2,
                                 "probe_tsv": str(repo_root / "runtime_archives/bl100/tmp/probe_1.tsv"),
                                 "assessment_json": str(repo_root / "runtime_archives/bl100/tmp/assessment_1.json"),
+                                "assessment_snapshot_json": str(repo_root / "runtime_archives/bl100/tmp/snapshot_1.json"),
                             },
                             ensure_ascii=False,
                         ),
@@ -155,11 +179,13 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
                             {
                                 "timestamp": "2026-03-28T11:00:00",
                                 "stamp": "20260328",
+                                "phase": "assess",
                                 "status": "blocked",
                                 "block_reason": "mixed_with_tls_transport_failures",
                                 "exit_code": 2,
                                 "probe_tsv": "/var/folders/xx/nonrepo_probe.tsv",
                                 "assessment_json": "/var/folders/xx/nonrepo_assessment.json",
+                                "assessment_snapshot_json": "/var/folders/xx/nonrepo_snapshot.json",
                             },
                             ensure_ascii=False,
                         ),
@@ -189,7 +215,26 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
             self.assertEqual(parsed["rows_with_note_class_counts"], 0)
             self.assertEqual(parsed["rows_missing_note_class_counts"], 1)
             self.assertEqual(parsed["note_signal_coverage_percent"], 0.0)
+            self.assertEqual(parsed["assess_entry_count"], 1)
+            self.assertEqual(parsed["assess_rows_with_snapshot"], 1)
+            self.assertEqual(parsed["assess_rows_missing_snapshot"], 0)
+            self.assertEqual(parsed["assess_snapshot_coverage_percent"], 100.0)
             self.assertEqual(parsed["latest"]["block_reason"], "auth_or_access_policy_block")
+
+    def test_filter_repo_entries_drops_assess_row_missing_repo_snapshot(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-history-") as tmp_raw:
+            repo_root = Path(tmp_raw)
+            entries = [
+                {
+                    "phase": "assess",
+                    "probe_tsv": str(repo_root / "runtime_archives/bl100/tmp/probe.tsv"),
+                    "assessment_json": str(repo_root / "runtime_archives/bl100/tmp/assessment.json"),
+                    "assessment_snapshot_json": "/var/folders/xx/nonrepo_snapshot.json",
+                }
+            ]
+            kept, dropped = provider_onboarding_history_summary.filter_repo_entries(entries, repo_root, repo_only=True)
+            self.assertEqual(len(kept), 0)
+            self.assertEqual(dropped, 1)
 
 
 if __name__ == "__main__":

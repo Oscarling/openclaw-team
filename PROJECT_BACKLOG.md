@@ -2046,3 +2046,20 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_history_snapshot_backfill.py`, `scripts/provider_onboarding_history_validate.py`, `scripts/premerge_check.sh`, `tests/test_provider_onboarding_history_snapshot_backfill.py`, `tests/test_provider_onboarding_history_validate.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl` confirm legacy snapshot backfill and strict assess-row snapshot/file validation
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-118
+- title: Add snapshot coverage metrics to onboarding history summary and consistency gate
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-117
+- start_when: Snapshot backfill/validation is enforced, but summary lacks explicit assess-snapshot coverage metrics and latest snapshot pointer exposure
+- done_when: Summary exposes assess-snapshot coverage metrics and latest snapshot pointer, repo-only filtering drops assess rows without repo-scoped snapshot path, and consistency/test coverage includes new fields
+- source: local hardening continuation to keep snapshot integrity continuously observable while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_COVERAGE_SUMMARY_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_summary.py`, `scripts/provider_onboarding_history_consistency_check.py`, `tests/test_provider_onboarding_history_summary.py`, `tests/test_provider_onboarding_history_consistency_check.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm assess-snapshot coverage metrics and consistency-gated snapshot observability
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

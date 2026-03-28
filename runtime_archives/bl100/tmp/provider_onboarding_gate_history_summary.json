@@ -19,6 +19,10 @@
   "rows_with_note_class_counts": 1,
   "rows_missing_note_class_counts": 1,
   "note_signal_coverage_percent": 50.0,
+  "assess_entry_count": 2,
+  "assess_rows_with_snapshot": 2,
+  "assess_rows_missing_snapshot": 0,
+  "assess_snapshot_coverage_percent": 100.0,
   "dropped_non_repo_entries": 0,
   "latest": {
     "timestamp": "2026-03-28T12:26:50",
@@ -32,6 +36,7 @@
       "tls_eof": 1
     },
     "probe_tsv": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv",
-    "assessment_json": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json"
+    "assessment_json": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json",
+    "assessment_snapshot_json": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_assessment_snapshots/provider_handshake_assessment_gate_20260328_20260328T122650_line2.json"
   }
 }

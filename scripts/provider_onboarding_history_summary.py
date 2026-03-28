@@ -70,10 +70,16 @@ def filter_repo_entries(entries: List[Dict[str, Any]], repo_root: Path, repo_onl
     kept: List[Dict[str, Any]] = []
     dropped = 0
     for entry in entries:
-        if _is_under_root(entry.get("probe_tsv"), repo_root) and _is_under_root(entry.get("assessment_json"), repo_root):
-            kept.append(entry)
-        else:
+        base_ok = _is_under_root(entry.get("probe_tsv"), repo_root) and _is_under_root(entry.get("assessment_json"), repo_root)
+        if not base_ok:
             dropped += 1
+            continue
+        if str(entry.get("phase", "")) == "assess":
+            snapshot_path = entry.get("assessment_snapshot_json")
+            if not _is_under_root(snapshot_path, repo_root):
+                dropped += 1
+                continue
+        kept.append(entry)
     return kept, dropped
 
 
@@ -83,7 +89,14 @@ def build_summary(entries: List[Dict[str, Any]], history_path: Path, dropped_non
     exit_counter = Counter(str(e.get("exit_code", "unknown")) for e in entries)
     note_counter: Counter[str] = Counter()
     rows_with_note_counts = 0
+    assess_rows = 0
+    assess_rows_with_snapshot = 0
     for entry in entries:
+        if str(entry.get("phase", "")) == "assess":
+            assess_rows += 1
+            snapshot_path = entry.get("assessment_snapshot_json")
+            if isinstance(snapshot_path, str) and snapshot_path.strip():
+                assess_rows_with_snapshot += 1
         note_counts = entry.get("note_class_counts")
         if not isinstance(note_counts, dict):
             continue
@@ -98,6 +111,10 @@ def build_summary(entries: List[Dict[str, Any]], history_path: Path, dropped_non
     note_signal_coverage_percent = 0.0
     if total_rows > 0:
         note_signal_coverage_percent = round((rows_with_note_counts / total_rows) * 100.0, 2)
+    assess_rows_missing_snapshot = assess_rows - assess_rows_with_snapshot
+    assess_snapshot_coverage_percent = 0.0
+    if assess_rows > 0:
+        assess_snapshot_coverage_percent = round((assess_rows_with_snapshot / assess_rows) * 100.0, 2)
 
     return {
         "history_jsonl": str(history_path),
@@ -109,6 +126,10 @@ def build_summary(entries: List[Dict[str, Any]], history_path: Path, dropped_non
         "rows_with_note_class_counts": rows_with_note_counts,
         "rows_missing_note_class_counts": rows_missing_note_counts,
         "note_signal_coverage_percent": note_signal_coverage_percent,
+        "assess_entry_count": assess_rows,
+        "assess_rows_with_snapshot": assess_rows_with_snapshot,
+        "assess_rows_missing_snapshot": assess_rows_missing_snapshot,
+        "assess_snapshot_coverage_percent": assess_snapshot_coverage_percent,
         "dropped_non_repo_entries": dropped_non_repo_entries,
         "latest": {
             "timestamp": latest.get("timestamp"),
@@ -119,6 +140,7 @@ def build_summary(entries: List[Dict[str, Any]], history_path: Path, dropped_non
             "note_class_counts": latest.get("note_class_counts"),
             "probe_tsv": latest.get("probe_tsv"),
             "assessment_json": latest.get("assessment_json"),
+            "assessment_snapshot_json": latest.get("assessment_snapshot_json"),
         },
     }
 
