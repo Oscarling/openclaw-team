@@ -7152,3 +7152,38 @@ Verification snapshot on 2026-03-28:
   (passed)
 - `python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --guard-report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths`
   (passed)
+
+### 152. BL-20260328-139 Persisted Summary Schema Prevalidation Hardening (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and ensure persisted report consistency
+  checks fail closed when optional summary input is malformed
+
+Main work areas:
+
+- checker hardening:
+  - `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py`
+  - when `--summary-json` is provided, it now:
+    - loads summary validator module
+    - validates summary schema with strict path args
+    - fails before summary/report compare on malformed summary payload
+- tests enhancement:
+  - `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`
+  - adds summary-schema-invalid fail case
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_SUMMARY_SCHEMA_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_SUMMARY_SCHEMA_HARDENING_REPORT.md)
+
+Key result:
+
+- persisted consistency checks now validate optional summary input schema first,
+  avoiding metric-compare execution on malformed summary artifacts.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`
+  (passed)
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_consistency_check.py`
+  (passed)

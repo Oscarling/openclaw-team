@@ -219,6 +219,37 @@ class ProviderOnboardingSnapshotGuardReportConsistencyCheckTests(unittest.TestCa
                 code = provider_onboarding_snapshot_guard_report_consistency_check.main()
             self.assertEqual(code, 2)
 
+    def test_main_fails_when_summary_schema_invalid_given(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-snapshot-guard-report-consistency-") as tmp_raw:
+            tmp = Path(tmp_raw)
+            history = self._write_history_and_snapshot(tmp)
+            report = provider_onboarding_snapshot_guard_report_consistency_check.build_expected_report(
+                history_path=history,
+                repo_root=tmp,
+                repo_only=False,
+            )
+            report_json = tmp / "report.json"
+            report_json.write_text(json.dumps(report, ensure_ascii=False), encoding="utf-8")
+            summary = self._build_summary_from_report(report)
+            summary["assess_snapshot_guard_mismatch_reason_counts"] = {"unexpected": 1}
+            summary_json = tmp / "summary.json"
+            summary_json.write_text(json.dumps(summary, ensure_ascii=False), encoding="utf-8")
+            argv = [
+                str(MODULE_PATH),
+                "--history-jsonl",
+                str(history),
+                "--report-json",
+                str(report_json),
+                "--summary-json",
+                str(summary_json),
+                "--repo-root",
+                str(tmp),
+                "--require-repo-paths",
+            ]
+            with mock.patch.object(sys, "argv", argv):
+                code = provider_onboarding_snapshot_guard_report_consistency_check.main()
+            self.assertEqual(code, 2)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2403,3 +2403,20 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_snapshot_guard_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`, and `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py` confirm fail-closed history source parity enforcement in consistency paths
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-139
+- title: Harden persisted snapshot-guard report consistency check with summary schema prevalidation
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-138
+- start_when: Persisted report consistency check optionally compares summary/report metrics, but does not fail early on malformed summary payloads in that path
+- done_when: Persisted report consistency checker validates summary schema before summary/report comparison when `--summary-json` is present, tests cover summary-schema-invalid fail path, and governance report captures hardening
+- source: local hardening continuation to keep persisted cross-artifact consistency checks fail-closed while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_SUMMARY_SCHEMA_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py` and `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py` confirm summary schema prevalidation now runs in persisted consistency path
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
