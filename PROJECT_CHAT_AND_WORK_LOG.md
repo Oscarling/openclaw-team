@@ -5782,3 +5782,33 @@ Verification snapshot on 2026-03-28:
 - `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`
 - `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`
 - `python3 -m unittest -v tests/test_provider_onboarding_gate.py` (passed)
+
+### 117. BL-20260328-104 Onboarding Gate History Persistence (Done)
+
+User objective:
+
+- continue local hardening while keeping provider blocker traceable across sessions
+
+Main work areas:
+
+- enhanced `scripts/provider_onboarding_gate.py` with history controls:
+  - `--history-jsonl`
+  - `--no-history`
+- gate now appends run metadata (exit/status/reason) to
+  `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`
+- updated gate tests to avoid history noise in non-history scenarios
+- preserved one real live history entry for 2026-03-28 blocked run
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_GATE_HISTORY_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_GATE_HISTORY_HARDENING_REPORT.md)
+
+Key result:
+
+- onboarding gate now has persistent, machine-readable run history, and test
+  runs no longer pollute project history artifacts.
+
+Verification snapshot on 2026-03-28:
+
+- `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`
+- `python3 -m unittest -v tests/test_provider_onboarding_gate.py` (passed)

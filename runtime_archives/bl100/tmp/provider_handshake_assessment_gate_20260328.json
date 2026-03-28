@@ -1,13 +1,12 @@
 {
   "probe_tsv": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv",
   "status": "blocked",
-  "block_reason": "mixed_with_transport_failures",
+  "block_reason": "auth_or_access_policy_block",
   "row_count": 8,
   "success_row_count": 0,
   "http_code_counts": {
-    "000": 1,
     "401": 4,
-    "403": 3
+    "403": 4
   },
   "endpoint_counts": {
     "https://aixj.vip/responses": 2,

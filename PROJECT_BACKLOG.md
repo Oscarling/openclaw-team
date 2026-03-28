@@ -1808,3 +1808,20 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_gate.py`, `tests/test_provider_onboarding_gate.py`, `scripts/premerge_check.sh`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, and `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json` provide one-shot gating with expected blocked fail-fast behavior (exit code `2`)
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-104
+- title: Persist onboarding gate run history and keep test runs noise-free
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-103
+- start_when: One-shot gate wrapper is available but outcome history is not yet persisted for cross-session auditing
+- done_when: Gate wrapper appends run metadata to JSONL history, tests avoid writing noise via `--no-history`, and one real run history entry is archived
+- source: `PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md` on 2026-03-28 establishes wrapper baseline and motivates persistent run tracking
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_GATE_HISTORY_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_gate.py`, `tests/test_provider_onboarding_gate.py`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, and `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json` confirm history persistence with blocked status metadata and noise-free test behavior
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
