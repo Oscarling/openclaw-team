@@ -82,22 +82,33 @@ def build_summary(entries: List[Dict[str, Any]], history_path: Path, dropped_non
     reason_counter = Counter(str(e.get("block_reason", "unknown")) for e in entries)
     exit_counter = Counter(str(e.get("exit_code", "unknown")) for e in entries)
     note_counter: Counter[str] = Counter()
+    rows_with_note_counts = 0
     for entry in entries:
         note_counts = entry.get("note_class_counts")
         if not isinstance(note_counts, dict):
             continue
+        if note_counts:
+            rows_with_note_counts += 1
         for key, count in note_counts.items():
             if isinstance(key, str) and isinstance(count, int) and count >= 0:
                 note_counter[key] += count
     latest = entries[-1] if entries else {}
+    total_rows = len(entries)
+    rows_missing_note_counts = total_rows - rows_with_note_counts
+    note_signal_coverage_percent = 0.0
+    if total_rows > 0:
+        note_signal_coverage_percent = round((rows_with_note_counts / total_rows) * 100.0, 2)
 
     return {
         "history_jsonl": str(history_path),
-        "entry_count": len(entries),
+        "entry_count": total_rows,
         "status_counts": dict(sorted(status_counter.items())),
         "block_reason_counts": dict(sorted(reason_counter.items())),
         "exit_code_counts": dict(sorted(exit_counter.items())),
         "note_class_counts": dict(sorted(note_counter.items())),
+        "rows_with_note_class_counts": rows_with_note_counts,
+        "rows_missing_note_class_counts": rows_missing_note_counts,
+        "note_signal_coverage_percent": note_signal_coverage_percent,
         "dropped_non_repo_entries": dropped_non_repo_entries,
         "latest": {
             "timestamp": latest.get("timestamp"),

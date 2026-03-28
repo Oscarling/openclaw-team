@@ -62,6 +62,9 @@ Outputs:
 - history summary JSON: `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`
   - includes aggregated `note_class_counts` (e.g. `invalid_api_key`,
     `edge_policy_1010`, `tls_eof`) for signal-level trend tracking
+  - includes note-signal coverage metrics:
+    `rows_with_note_class_counts`, `rows_missing_note_class_counts`,
+    `note_signal_coverage_percent`
 
 Optional control for tests/special runs:
 

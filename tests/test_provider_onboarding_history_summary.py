@@ -43,6 +43,9 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
         self.assertEqual(summary["status_counts"]["ready"], 1)
         self.assertEqual(summary["note_class_counts"]["invalid_api_key"], 2)
         self.assertEqual(summary["note_class_counts"]["tls_eof"], 1)
+        self.assertEqual(summary["rows_with_note_class_counts"], 2)
+        self.assertEqual(summary["rows_missing_note_class_counts"], 0)
+        self.assertEqual(summary["note_signal_coverage_percent"], 100.0)
         self.assertEqual(summary["latest"]["status"], "ready")
         self.assertEqual(summary["latest"]["exit_code"], 0)
         self.assertEqual(summary["latest"]["note_class_counts"], {"tls_eof": 1})
@@ -98,6 +101,9 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
             self.assertEqual(parsed["entry_count"], 2)
             self.assertEqual(parsed["note_class_counts"]["invalid_api_key"], 4)
             self.assertEqual(parsed["note_class_counts"]["edge_policy_1010"], 3)
+            self.assertEqual(parsed["rows_with_note_class_counts"], 2)
+            self.assertEqual(parsed["rows_missing_note_class_counts"], 0)
+            self.assertEqual(parsed["note_signal_coverage_percent"], 100.0)
             self.assertEqual(parsed["latest"]["block_reason"], "mixed_with_tls_transport_failures")
             self.assertEqual(parsed["latest"]["note_class_counts"]["tls_eof"], 1)
 
@@ -180,6 +186,9 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
             parsed = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(parsed["entry_count"], 1)
             self.assertEqual(parsed["dropped_non_repo_entries"], 1)
+            self.assertEqual(parsed["rows_with_note_class_counts"], 0)
+            self.assertEqual(parsed["rows_missing_note_class_counts"], 1)
+            self.assertEqual(parsed["note_signal_coverage_percent"], 0.0)
             self.assertEqual(parsed["latest"]["block_reason"], "auth_or_access_policy_block")
 
 

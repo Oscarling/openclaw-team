@@ -6099,3 +6099,45 @@ Verification snapshot on 2026-03-28:
   (passed)
 - `python3 scripts/provider_onboarding_history_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
   (passed)
+
+### 126. BL-20260328-113 Note-Signal Coverage Metrics (Done)
+
+User objective:
+
+- continue local hardening while explicitly surfacing whether note-level signal
+  data is fully covered in historical summaries
+
+Main work areas:
+
+- extended history summary metrics:
+  - `scripts/provider_onboarding_history_summary.py`
+  - new fields:
+    - `rows_with_note_class_counts`
+    - `rows_missing_note_class_counts`
+    - `note_signal_coverage_percent`
+- extended consistency gate:
+  - `scripts/provider_onboarding_history_consistency_check.py` now compares
+    coverage metrics too
+- updated tests:
+  - `tests/test_provider_onboarding_history_summary.py`
+  - `tests/test_provider_onboarding_history_consistency_check.py`
+- synced runbook metric guidance:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+- regenerated summary artifact:
+  - `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_NOTE_SIGNAL_COVERAGE_METRICS_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_NOTE_SIGNAL_COVERAGE_METRICS_REPORT.md)
+
+Key result:
+
+- note-signal completeness is now measurable (not implicit), making missing
+  historical signal payloads visible during blocker tracking.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_history_summary.py tests/test_provider_onboarding_history_consistency_check.py tests/test_provider_onboarding_gate.py`
+  (passed)
+- `python3 scripts/provider_onboarding_history_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
+  (passed)
