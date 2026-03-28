@@ -2556,3 +2556,20 @@ Allowed enum values:
 - evidence: `scripts/provider_handshake_probe.py`, `tests/test_provider_handshake_probe.py`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm bounded retry behavior with explicit non-retry auth handling
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-148
+- title: Add retry observability fields for provider handshake probe and assessment summaries
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-147
+- start_when: Bounded retry exists, but operators still need direct metrics to distinguish network jitter from auth/policy failures without manually reading verbose note text
+- done_when: Probe TSV includes structured `retry_count` and `retry_reasons` columns, assessment JSON includes `retry_attempt_total` + `rows_with_retry` + `retry_reason_counts`, tests cover retry observability contract, and runbook/report document usage
+- source: minimal-change environment adaptation to improve triage clarity under unstable provider/base conditions without changing readiness gating semantics
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_RETRY_OBSERVABILITY_REPORT.md
+- issue: -
+- evidence: `scripts/provider_handshake_probe.py`, `scripts/provider_handshake_assess.py`, `tests/test_provider_handshake_probe.py`, `tests/test_provider_handshake_assess.py`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` verify retry observability fields and summary counters
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

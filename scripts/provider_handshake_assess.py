@@ -89,6 +89,45 @@ def count_success(rows: List[Dict[str, str]]) -> int:
     return total
 
 
+def parse_retry_count(row: Dict[str, str]) -> int:
+    raw = (row.get("retry_count", "") or "").strip()
+    if not raw:
+        return 0
+    if raw.isdigit():
+        return int(raw)
+    return 0
+
+
+def parse_retry_reasons(row: Dict[str, str]) -> List[str]:
+    raw = (row.get("retry_reasons", "") or "").strip()
+    if not raw:
+        return []
+    return [part.strip() for part in raw.split(",") if part.strip()]
+
+
+def build_retry_metrics(rows: List[Dict[str, str]]) -> Dict[str, Any]:
+    retry_attempt_total = 0
+    rows_with_retry = 0
+    reason_counter: Counter[str] = Counter()
+    for row in rows:
+        retry_count = parse_retry_count(row)
+        retry_reasons = parse_retry_reasons(row)
+        retry_attempt_total += retry_count
+        if retry_count > 0:
+            rows_with_retry += 1
+        if retry_reasons:
+            reason_counter.update(retry_reasons)
+            if retry_count > len(retry_reasons):
+                reason_counter.update(["unknown"] * (retry_count - len(retry_reasons)))
+        elif retry_count > 0:
+            reason_counter.update(["unknown"] * retry_count)
+    return {
+        "retry_attempt_total": retry_attempt_total,
+        "rows_with_retry": rows_with_retry,
+        "retry_reason_counts": dict(sorted(reason_counter.items())),
+    }
+
+
 def classify_note_signal(row: Dict[str, str]) -> str:
     note = row.get("note", "") or ""
     http_code = row.get("http_code", "") or ""
@@ -141,6 +180,7 @@ def build_summary(rows: List[Dict[str, str]], probe_tsv: Path) -> Dict[str, Any]
     success_count = count_success(rows)
     status = "ready" if success_count > 0 else "blocked"
     block_reason = decide_block_reason(code_counter, note_class_counter, success_count)
+    retry_metrics = build_retry_metrics(rows)
 
     return {
         "probe_tsv": str(probe_tsv),
@@ -152,6 +192,9 @@ def build_summary(rows: List[Dict[str, str]], probe_tsv: Path) -> Dict[str, Any]
         "note_class_counts": dict(sorted(note_class_counter.items())),
         "endpoint_counts": dict(sorted(endpoint_counter.items())),
         "key_tails": extract_key_tails(rows),
+        "retry_attempt_total": retry_metrics["retry_attempt_total"],
+        "rows_with_retry": retry_metrics["rows_with_retry"],
+        "retry_reason_counts": retry_metrics["retry_reason_counts"],
     }
 
 

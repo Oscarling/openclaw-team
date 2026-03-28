@@ -62,6 +62,37 @@ class ProviderHandshakeAssessTests(unittest.TestCase):
         self.assertEqual(summary["status"], "ready")
         self.assertEqual(summary["block_reason"], "none")
         self.assertEqual(summary["success_row_count"], 1)
+        self.assertEqual(summary["retry_attempt_total"], 0)
+        self.assertEqual(summary["rows_with_retry"], 0)
+        self.assertEqual(summary["retry_reason_counts"], {})
+
+    def test_build_summary_collects_retry_metrics(self) -> None:
+        rows = [
+            {
+                "endpoint": "https://example.invalid/v1/responses",
+                "model": "gpt-5-codex",
+                "probe": "ping",
+                "http_code": "401",
+                "note": "key=***abc123; invalid",
+                "retry_count": "0",
+                "retry_reasons": "",
+            },
+            {
+                "endpoint": "https://example.invalid/responses",
+                "model": "gpt-5-codex",
+                "probe": "ping",
+                "http_code": "200",
+                "note": "key=***abc123; api_like=true; ok",
+                "retry_count": "2",
+                "retry_reasons": "timeout,http_5xx",
+                "api_like": "1",
+            },
+        ]
+        summary = provider_handshake_assess.build_summary(rows, Path("dummy.tsv"))
+        self.assertEqual(summary["retry_attempt_total"], 2)
+        self.assertEqual(summary["rows_with_retry"], 1)
+        self.assertEqual(summary["retry_reason_counts"]["timeout"], 1)
+        self.assertEqual(summary["retry_reason_counts"]["http_5xx"], 1)
 
     def test_build_summary_blocks_non_api_success_payload(self) -> None:
         rows = [

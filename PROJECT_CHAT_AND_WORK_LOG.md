@@ -7230,6 +7230,57 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/backlog_sync.py` (passed)
 - `bash scripts/premerge_check.sh` (passed)
 
+### 160. BL-20260328-148 Handshake Retry Observability Fields (Done)
+
+User objective:
+
+- continue optimization for unstable provider/base market and make retry effects
+  directly visible in structured outputs so triage is faster and less manual
+
+Main work areas:
+
+- probe observability hardening:
+  - `scripts/provider_handshake_probe.py`
+  - keeps existing retry policy unchanged
+  - extends TSV output with:
+    - `retry_count`
+    - `retry_reasons`
+  - retry reasons are structured (`timeout`, `tls_eof`, `dns_resolution`,
+    `http_5xx`, `transport_other`)
+- assess observability hardening:
+  - `scripts/provider_handshake_assess.py`
+  - extends summary output with:
+    - `retry_attempt_total`
+    - `rows_with_retry`
+    - `retry_reason_counts`
+- tests enhancement:
+  - `tests/test_provider_handshake_probe.py`
+  - `tests/test_provider_handshake_assess.py`
+  - adds coverage for retry observability contract and reason attribution
+- runbook hardening:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+  - documents new retry observability columns
+
+Primary output:
+
+- [PROVIDER_HANDSHAKE_RETRY_OBSERVABILITY_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_RETRY_OBSERVABILITY_REPORT.md)
+
+Key result:
+
+- operators can now determine at a glance whether blocked/ready outcomes were
+  reached under retry pressure and which retry class dominated.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_handshake_probe.py` (passed)
+- `python3 -m unittest -v tests/test_provider_handshake_assess.py` (passed)
+- `python3 -m unittest -v tests/test_project_delivery_status.py` (passed)
+- `python3 -m unittest -v tests/test_execute_approved_previews.py` (passed)
+- `python3 -m unittest -v tests/test_argus_hardening.py` (passed)
+- `python3 scripts/backlog_lint.py` (passed)
+- `python3 scripts/backlog_sync.py` (passed)
+- `bash scripts/premerge_check.sh` (passed)
+
 ### 160. BL-20260328-147 Retryable Handshake Probe Bounded Retry Hardening (Done)
 
 User objective:

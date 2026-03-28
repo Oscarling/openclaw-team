@@ -17,6 +17,8 @@ python3 scripts/provider_handshake_probe.py \
 
 Probe command now defaults to `--retry-attempts 2` for retryable transport/5xx
 failures. Use `--retry-attempts 1` to disable retries in strict single-shot mode.
+Generated TSV now includes retry observability columns:
+`retry_count` and `retry_reasons`.
 
 Fail fast when no `2xx` exists:
 

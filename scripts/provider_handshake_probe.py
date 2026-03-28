@@ -32,11 +32,9 @@ DEFAULT_KEY_FILES = [
     "~/Desktop/备用key",
     "~/Desktop/备用key.rtf",
 ]
-RETRYABLE_TEXT_MARKERS = (
-    "timed out",
-    "timeout",
-    "eof occurred in violation of protocol",
-    "unexpected_eof_while_reading",
+TIMEOUT_TEXT_MARKERS = ("timed out", "timeout")
+TLS_EOF_TEXT_MARKERS = ("eof occurred in violation of protocol", "unexpected_eof_while_reading")
+DNS_TEXT_MARKERS = (
     "nodename nor servname provided",
     "name or service not known",
     "temporary failure in name resolution",
@@ -137,16 +135,32 @@ def is_api_like_success(http_code: str, content_type: str, body: str) -> bool:
 
 def is_retryable_probe_failure(http_code: str, body: str) -> bool:
     code = (http_code or "").strip()
-    lowered = (body or "").lower()
-    if code == "000":
-        return True
     if code.isdigit():
         value = int(code)
+        if 200 <= value < 300:
+            return False
         if 400 <= value < 500:
             return False
         if 500 <= value < 600:
             return True
-    return any(marker in lowered for marker in RETRYABLE_TEXT_MARKERS)
+    reason = classify_retry_reason(http_code, body)
+    return reason in {"timeout", "tls_eof", "dns_resolution", "transport_other"}
+
+
+def classify_retry_reason(http_code: str, body: str) -> str:
+    code = (http_code or "").strip()
+    if code.isdigit() and 500 <= int(code) < 600:
+        return "http_5xx"
+    lowered = (body or "").lower()
+    if any(marker in lowered for marker in TIMEOUT_TEXT_MARKERS):
+        return "timeout"
+    if any(marker in lowered for marker in TLS_EOF_TEXT_MARKERS):
+        return "tls_eof"
+    if any(marker in lowered for marker in DNS_TEXT_MARKERS):
+        return "dns_resolution"
+    if code == "000":
+        return "transport_other"
+    return "other"
 
 
 def probe_with_retry(
@@ -157,14 +171,16 @@ def probe_with_retry(
     timeout: int,
     retry_attempts: int,
     probe_func: Callable[[str, str, str, str, int], Tuple[str, str, str]],
-) -> Tuple[str, str, str]:
+) -> Tuple[str, str, str, int, str]:
     attempts = max(1, retry_attempts)
+    retry_reasons: List[str] = []
     code, body, content_type = probe_func(endpoint, key, model, input_text, timeout)
     for _ in range(1, attempts):
         if not is_retryable_probe_failure(code, body):
             break
+        retry_reasons.append(classify_retry_reason(code, body))
         code, body, content_type = probe_func(endpoint, key, model, input_text, timeout)
-    return code, body, content_type
+    return code, body, content_type, len(retry_reasons), ",".join(retry_reasons)
 
 
 def build_probe_rows(
@@ -175,19 +191,19 @@ def build_probe_rows(
     timeout: int,
     retry_attempts: int = 1,
     probe_func: Callable[[str, str, str, str, int], Tuple[str, str, str]] | None = None,
-) -> List[Tuple[str, str, str, str, str]]:
+) -> List[Tuple[str, str, str, str, str, str, str]]:
     if probe_func is None:
         probe_func = probe_once
-    rows: List[Tuple[str, str, str, str, str]] = []
+    rows: List[Tuple[str, str, str, str, str, str, str]] = []
     if not keys:
         for endpoint in endpoints:
-            rows.append((endpoint, model, input_text, "000", "missing_key"))
+            rows.append((endpoint, model, input_text, "000", "missing_key", "0", ""))
         return rows
 
     for key in keys:
         masked = f"***{key[-6:]}"
         for endpoint in endpoints:
-            code, body, content_type = probe_with_retry(
+            code, body, content_type, retry_count, retry_reasons = probe_with_retry(
                 endpoint=endpoint,
                 key=key,
                 model=model,
@@ -207,14 +223,18 @@ def build_probe_rows(
                     + masked
                     + f"; api_like={'true' if api_like else 'false'}; content_type={(content_type or '').strip()}; "
                     + body_snippet(body),
+                    str(retry_count),
+                    retry_reasons,
                 )
             )
     return rows
 
 
-def count_success_codes(rows: Sequence[Tuple[str, str, str, str, str]]) -> int:
+def count_success_codes(rows: Sequence[Tuple[str, ...]]) -> int:
     total = 0
-    for _endpoint, _model, _probe, code, note in rows:
+    for row in rows:
+        code = row[3]
+        note = row[4]
         if not (code.isdigit() and 200 <= int(code) < 300):
             continue
         lowered_note = (note or "").lower()
@@ -278,13 +298,15 @@ def main() -> int:
     )
 
     with output_path.open("w", encoding="utf-8") as handle:
-        handle.write("endpoint\tmodel\tprobe\thttp_code\tnote\tapi_like\n")
-        for endpoint, model, probe, code, note in rows:
-            handle.write(f"{endpoint}\t{model}\t{probe}\t{code}\t{note}\t{note_api_like_flag(note)}\n")
+        handle.write("endpoint\tmodel\tprobe\thttp_code\tnote\tapi_like\tretry_count\tretry_reasons\n")
+        for endpoint, model, probe, code, note, retry_count, retry_reasons in rows:
+            handle.write(
+                f"{endpoint}\t{model}\t{probe}\t{code}\t{note}\t{note_api_like_flag(note)}\t{retry_count}\t{retry_reasons}\n"
+            )
 
     print(output_path)
     if args.require_success and count_success_codes(rows) == 0:
-        print("No successful (2xx) probe rows detected.", file=sys.stderr)
+        print("No successful (2xx + api_like) probe rows detected.", file=sys.stderr)
         return 2
     return 0
 
