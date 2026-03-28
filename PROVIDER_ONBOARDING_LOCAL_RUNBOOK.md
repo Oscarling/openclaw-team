@@ -172,3 +172,22 @@ python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py \
   --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
   --guard-report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json
 ```
+
+To validate snapshot-guard report schema/path integrity:
+
+```bash
+python3 scripts/provider_onboarding_snapshot_guard_report_validate.py \
+  --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json \
+  --repo-root /Users/lingguozhong/openclaw-team \
+  --require-repo-paths
+```
+
+To ensure persisted snapshot-guard report is fresh against history:
+
+```bash
+python3 scripts/provider_onboarding_snapshot_guard_report_consistency_check.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json \
+  --repo-root /Users/lingguozhong/openclaw-team \
+  --repo-only
+```

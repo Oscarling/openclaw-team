@@ -231,6 +231,18 @@ else
   fail "tests/test_provider_onboarding_snapshot_guard_consistency_check.py failed."
 fi
 
+if python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_validate.py; then
+  pass "tests/test_provider_onboarding_snapshot_guard_report_validate.py passed."
+else
+  fail "tests/test_provider_onboarding_snapshot_guard_report_validate.py failed."
+fi
+
+if python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py; then
+  pass "tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py passed."
+else
+  fail "tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py failed."
+fi
+
 if python3 scripts/provider_onboarding_history_backfill.py \
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --dry-run; then
@@ -263,6 +275,25 @@ if python3 scripts/provider_onboarding_snapshot_guard_report.py \
   pass "provider onboarding snapshot guard report check passed."
 else
   fail "provider onboarding snapshot guard report check failed."
+fi
+
+if python3 scripts/provider_onboarding_snapshot_guard_report_validate.py \
+  --report-json /tmp/provider_onboarding_snapshot_guard_report_premerge.json \
+  --repo-root "$repo_root" \
+  --require-repo-paths; then
+  pass "provider onboarding snapshot guard report schema/path validation passed."
+else
+  fail "provider onboarding snapshot guard report schema/path validation failed."
+fi
+
+if python3 scripts/provider_onboarding_snapshot_guard_report_consistency_check.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json \
+  --repo-root "$repo_root" \
+  --repo-only; then
+  pass "provider onboarding snapshot guard persisted report is consistent with history."
+else
+  fail "provider onboarding snapshot guard persisted report consistency check failed."
 fi
 
 if python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py \

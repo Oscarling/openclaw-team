@@ -6551,3 +6551,88 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --guard-report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json`
   (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 136. BL-20260328-123 Snapshot Guard Report Schema/Path Validation Gate (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and ensure snapshot-guard report artifacts
+  are structurally valid and repo-scoped before merge
+
+Main work areas:
+
+- added report validator:
+  - `scripts/provider_onboarding_snapshot_guard_report_validate.py`
+  - enforces non-negative numeric fields and report-count invariants
+  - validates `reason_counts` shape and `non_match_rows` row structure
+  - optional `--require-repo-paths` enforcement validates
+    `assessment_json`/`assessment_snapshot_json` paths are absolute and
+    repo-scoped
+- added tests:
+  - `tests/test_provider_onboarding_snapshot_guard_report_validate.py`
+  - covers valid payload, invariant failure, and repo-path enforcement failure
+- premerge integration:
+  - `scripts/premerge_check.sh` now runs:
+    - new unit test
+    - schema/path validation against
+      `/tmp/provider_onboarding_snapshot_guard_report_premerge.json`
+- runbook update:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REPORT_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REPORT_VALIDATION_REPORT.md)
+
+Key result:
+
+- snapshot-guard report generation is no longer enough; malformed/stale-shaped
+  artifacts are now blocked by explicit schema/path validation in merge gates.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_validate.py`
+  (passed)
+- `python3 scripts/provider_onboarding_snapshot_guard_report_validate.py --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)
+
+### 137. BL-20260328-124 Persisted Snapshot Guard Report Freshness Check (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and fail-close when persisted
+  snapshot-guard report drifts from current onboarding history
+
+Main work areas:
+
+- added persisted-report freshness checker:
+  - `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py`
+  - recomputes expected report from history (via report module import)
+  - compares key aggregate fields plus row-level `non_match_rows`
+- added tests:
+  - `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`
+  - covers both matching report and stale-report failure paths
+- premerge integration:
+  - `scripts/premerge_check.sh` now runs:
+    - new unit test
+    - persisted report consistency check against
+      `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json`
+- runbook update:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_REPORT_CONSISTENCY_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_REPORT_CONSISTENCY_REPORT.md)
+
+Key result:
+
+- persisted snapshot-guard report files are now merge-gated for freshness
+  against history, reducing risk that operators consume outdated drift evidence.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`
+  (passed)
+- `python3 scripts/provider_onboarding_snapshot_guard_report_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)

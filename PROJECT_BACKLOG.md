@@ -2131,3 +2131,37 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_snapshot_guard_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm summary/report consistency is now merge-gated
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-123
+- title: Validate snapshot guard detail report schema/path integrity in premerge
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-122
+- start_when: Snapshot guard report generation is merge-gated, but malformed report shapes and out-of-repo paths are not fail-closed before merge
+- done_when: A dedicated report validator enforces numeric/count invariants and optional repo-path constraints, unit tests cover pass/fail paths, premerge executes schema/path validation, and runbook documents command usage
+- source: local hardening continuation to keep snapshot-guard report artifacts structurally trustworthy while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REPORT_VALIDATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `tests/test_provider_onboarding_snapshot_guard_report_validate.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm fail-closed schema/path validation for snapshot-guard report artifacts
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-124
+- title: Enforce persisted snapshot guard report freshness against history in premerge
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-123
+- start_when: Snapshot guard summary/report consistency is guarded, but persisted report JSON can still become stale versus current history rows
+- done_when: A dedicated persisted-report consistency checker recomputes expected report from history and fails on mismatches, tests cover stale-report detection, premerge enforces the check, and runbook documents command usage
+- source: local hardening continuation to prevent stale snapshot-guard report evidence drift while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_REPORT_CONSISTENCY_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm persisted report freshness is merge-gated against history
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
