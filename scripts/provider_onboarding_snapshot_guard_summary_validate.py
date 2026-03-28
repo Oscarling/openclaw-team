@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 ALLOWED_MISMATCH_KEYS = {"status", "block_reason", "http_code_counts"}
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def parse_args() -> argparse.Namespace:
@@ -18,6 +19,16 @@ def parse_args() -> argparse.Namespace:
         "--summary-json",
         default="runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json",
         help="Summary json path",
+    )
+    parser.add_argument(
+        "--repo-root",
+        default=str(REPO_ROOT),
+        help="Repo root for --require-repo-paths checks",
+    )
+    parser.add_argument(
+        "--require-repo-paths",
+        action="store_true",
+        help="Require history_jsonl to resolve under --repo-root",
     )
     return parser.parse_args()
 
@@ -28,9 +39,30 @@ def _as_non_negative_int(value: Any) -> int | None:
     return None
 
 
-def validate_summary(summary: Dict[str, Any]) -> List[str]:
+def _is_repo_path(value: Any, repo_root: Path) -> bool:
+    if not isinstance(value, str) or not value.strip():
+        return False
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = (repo_root / path).expanduser()
+    try:
+        path.resolve(strict=False).relative_to(repo_root.resolve(strict=False))
+    except Exception:
+        return False
+    return True
+
+
+def validate_summary(summary: Dict[str, Any], repo_root: Path | None = None, require_repo_paths: bool = False) -> List[str]:
     errors: List[str] = []
     parsed: Dict[str, int] = {}
+
+    history_jsonl = summary.get("history_jsonl")
+    if not isinstance(history_jsonl, str) or not history_jsonl.strip():
+        errors.append("history_jsonl must be non-empty string")
+    elif require_repo_paths:
+        root = repo_root if repo_root is not None else REPO_ROOT
+        if not _is_repo_path(history_jsonl, root):
+            errors.append(f"history_jsonl must resolve under repo root {root}")
 
     numeric_fields = [
         "assess_entry_count",
@@ -105,6 +137,7 @@ def validate_summary(summary: Dict[str, Any]) -> List[str]:
 def main() -> int:
     args = parse_args()
     summary_path = Path(args.summary_json)
+    repo_root = Path(args.repo_root)
     if not summary_path.exists():
         print(f"summary file not found: {summary_path}", file=sys.stderr)
         return 2
@@ -117,7 +150,7 @@ def main() -> int:
         print(f"summary JSON must be object: {summary_path}", file=sys.stderr)
         return 2
 
-    errors = validate_summary(summary)
+    errors = validate_summary(summary, repo_root=repo_root, require_repo_paths=args.require_repo_paths)
     if errors:
         for err in errors:
             print(err, file=sys.stderr)

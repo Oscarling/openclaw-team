@@ -20,6 +20,7 @@ SPEC.loader.exec_module(provider_onboarding_snapshot_guard_summary_validate)
 class ProviderOnboardingSnapshotGuardSummaryValidateTests(unittest.TestCase):
     def _valid_summary(self) -> dict:
         return {
+            "history_jsonl": "runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl",
             "assess_entry_count": 2,
             "assess_rows_with_snapshot": 2,
             "assess_rows_with_snapshot_guard_match": 1,
@@ -51,6 +52,29 @@ class ProviderOnboardingSnapshotGuardSummaryValidateTests(unittest.TestCase):
         errors = provider_onboarding_snapshot_guard_summary_validate.validate_summary(payload)
         self.assertTrue(any("must equal assess_rows_with_snapshot" in err for err in errors))
 
+    def test_validate_summary_rejects_missing_history_jsonl(self) -> None:
+        payload = self._valid_summary()
+        payload.pop("history_jsonl")
+        errors = provider_onboarding_snapshot_guard_summary_validate.validate_summary(payload)
+        self.assertTrue(any("history_jsonl must be non-empty string" in err for err in errors))
+
+    def test_validate_summary_repo_path_scope_check(self) -> None:
+        payload = self._valid_summary()
+        ok_errors = provider_onboarding_snapshot_guard_summary_validate.validate_summary(
+            payload,
+            repo_root=REPO_ROOT,
+            require_repo_paths=True,
+        )
+        self.assertEqual(ok_errors, [])
+
+        payload["history_jsonl"] = "/var/folders/xx/outside_repo_history.jsonl"
+        bad_errors = provider_onboarding_snapshot_guard_summary_validate.validate_summary(
+            payload,
+            repo_root=REPO_ROOT,
+            require_repo_paths=True,
+        )
+        self.assertTrue(any("history_jsonl must resolve under repo root" in err for err in bad_errors))
+
     def test_main_fails_for_invalid_mismatch_key(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-snapshot-guard-summary-validate-") as tmp_raw:
             tmp = Path(tmp_raw)
@@ -69,7 +93,14 @@ class ProviderOnboardingSnapshotGuardSummaryValidateTests(unittest.TestCase):
             payload = self._valid_summary()
             summary_json = tmp / "summary.json"
             summary_json.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
-            argv = [str(MODULE_PATH), "--summary-json", str(summary_json)]
+            argv = [
+                str(MODULE_PATH),
+                "--summary-json",
+                str(summary_json),
+                "--repo-root",
+                str(REPO_ROOT),
+                "--require-repo-paths",
+            ]
             with mock.patch.object(sys, "argv", argv):
                 code = provider_onboarding_snapshot_guard_summary_validate.main()
             self.assertEqual(code, 0)

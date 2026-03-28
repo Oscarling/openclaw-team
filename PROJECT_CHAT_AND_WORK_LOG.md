@@ -7074,3 +7074,81 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --guard-report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths`
   (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 150. BL-20260328-137 Snapshot Guard Summary Path Validation Hardening (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and enforce strict source-path integrity
+  on snapshot-guard summary artifacts
+
+Main work areas:
+
+- summary validator hardening:
+  - `scripts/provider_onboarding_snapshot_guard_summary_validate.py`
+  - requires non-empty `history_jsonl`
+  - strict mode now validates `history_jsonl` resolves under `--repo-root`
+- tests enhancement:
+  - `tests/test_provider_onboarding_snapshot_guard_summary_validate.py`
+  - adds missing-history fail case
+  - adds strict repo-scope pass/fail coverage
+- governance path hardening:
+  - `scripts/premerge_check.sh` summary validator now runs with:
+    - `--repo-root "$repo_root"`
+    - `--require-repo-paths`
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` now documents same strict command
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_PATH_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_PATH_VALIDATION_REPORT.md)
+
+Key result:
+
+- snapshot-guard summary source metadata is now fail-closed path-scoped in both
+  merge gate and operator runbook paths.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_summary_validate.py`
+  (passed)
+- `python3 scripts/provider_onboarding_snapshot_guard_summary_validate.py --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths`
+  (passed)
+
+### 151. BL-20260328-138 Snapshot Guard History Source Parity Hardening (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and prevent summary/report metric parity
+  from masking cross-artifact history source drift
+
+Main work areas:
+
+- consistency checker hardening:
+  - `scripts/provider_onboarding_snapshot_guard_consistency_check.py`
+  - summary prevalidation now receives strict path args:
+    - `repo_root`
+    - `require_repo_paths`
+  - adds normalized `history_jsonl` parity check between summary and report
+  - adds expected parity check for `assess_rows_with_snapshot`
+- tests enhancement:
+  - `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`
+  - adds history-source-mismatch fail case
+  - updates fixtures with `history_jsonl`
+  - `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`
+  - aligns synthetic summary payload fields with stricter consistency contract
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_HISTORY_SOURCE_PARITY_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_HISTORY_SOURCE_PARITY_REPORT.md)
+
+Key result:
+
+- summary/report consistency now fails closed on source-path divergence, not
+  just metric divergence.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_consistency_check.py tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`
+  (passed)
+- `python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --guard-report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths`
+  (passed)

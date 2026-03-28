@@ -81,9 +81,16 @@ def _build_expected_mismatch_reason_counts(report_reason_counts: Dict[str, Any])
     return dict(sorted(out.items()))
 
 
+def _normalized_path(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip():
+        return ""
+    return str(Path(value).expanduser().resolve(strict=False))
+
+
 def compare_summary_vs_guard_report(summary: Dict[str, Any], report: Dict[str, Any]) -> List[str]:
     expected = {
         "assess_entry_count": report.get("evaluated_assess_rows"),
+        "assess_rows_with_snapshot": report.get("evaluated_assess_rows"),
         "assess_rows_with_snapshot_guard_match": report.get("guard_match_rows"),
         "assess_rows_with_snapshot_guard_mismatch": report.get("guard_mismatch_rows"),
         "assess_rows_with_snapshot_guard_unverified": report.get("guard_unverified_rows"),
@@ -99,6 +106,11 @@ def compare_summary_vs_guard_report(summary: Dict[str, Any], report: Dict[str, A
             errors.append(
                 f"summary/report mismatch for '{key}': expected={expected_value!r} actual={actual_value!r}"
             )
+    if _normalized_path(summary.get("history_jsonl")) != _normalized_path(report.get("history_jsonl")):
+        errors.append(
+            "summary/report mismatch for 'history_jsonl': "
+            f"expected={report.get('history_jsonl')!r} actual={summary.get('history_jsonl')!r}"
+        )
     return errors
 
 
@@ -112,7 +124,11 @@ def main() -> int:
         summary = load_json_object(summary_path)
         report = load_json_object(report_path)
         summary_validate_mod = _load_summary_validate_module()
-        summary_validation_errors = summary_validate_mod.validate_summary(summary)
+        summary_validation_errors = summary_validate_mod.validate_summary(
+            summary,
+            repo_root=repo_root,
+            require_repo_paths=args.require_repo_paths,
+        )
         if summary_validation_errors:
             for err in summary_validation_errors:
                 print(f"summary validation error: {err}", file=sys.stderr)

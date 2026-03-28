@@ -59,7 +59,9 @@ class ProviderOnboardingSnapshotGuardReportConsistencyCheckTests(unittest.TestCa
         if int(report.get("reason_counts", {}).get("guard_mismatch_http_code_counts", 0)) > 0:
             mismatch_reason_counts["http_code_counts"] = int(report["reason_counts"]["guard_mismatch_http_code_counts"])
         return {
+            "history_jsonl": report["history_jsonl"],
             "assess_entry_count": report["evaluated_assess_rows"],
+            "assess_rows_with_snapshot": report["evaluated_assess_rows"],
             "assess_rows_with_snapshot_guard_match": report["guard_match_rows"],
             "assess_rows_with_snapshot_guard_mismatch": report["guard_mismatch_rows"],
             "assess_rows_with_snapshot_guard_unverified": report["guard_unverified_rows"],

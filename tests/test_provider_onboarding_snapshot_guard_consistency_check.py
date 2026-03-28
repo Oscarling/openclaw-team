@@ -18,8 +18,9 @@ SPEC.loader.exec_module(provider_onboarding_snapshot_guard_consistency_check)
 
 
 class ProviderOnboardingSnapshotGuardConsistencyCheckTests(unittest.TestCase):
-    def _summary_payload(self) -> dict:
+    def _summary_payload(self, repo_root: Path) -> dict:
         return {
+            "history_jsonl": str(repo_root / "runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl"),
             "assess_entry_count": 2,
             "assess_rows_with_snapshot": 2,
             "assess_rows_with_snapshot_guard_match": 1,
@@ -67,13 +68,13 @@ class ProviderOnboardingSnapshotGuardConsistencyCheckTests(unittest.TestCase):
 
     def test_compare_summary_vs_guard_report_passes_on_match(self) -> None:
         errors = provider_onboarding_snapshot_guard_consistency_check.compare_summary_vs_guard_report(
-            self._summary_payload(),
+            self._summary_payload(REPO_ROOT),
             self._report_payload(REPO_ROOT),
         )
         self.assertEqual(errors, [])
 
     def test_compare_summary_vs_guard_report_detects_mismatch(self) -> None:
-        summary = self._summary_payload()
+        summary = self._summary_payload(REPO_ROOT)
         summary["assess_rows_with_snapshot_guard_match"] = 2
         errors = provider_onboarding_snapshot_guard_consistency_check.compare_summary_vs_guard_report(
             summary,
@@ -81,12 +82,21 @@ class ProviderOnboardingSnapshotGuardConsistencyCheckTests(unittest.TestCase):
         )
         self.assertTrue(any("assess_rows_with_snapshot_guard_match" in err for err in errors))
 
+    def test_compare_summary_vs_guard_report_detects_history_jsonl_mismatch(self) -> None:
+        summary = self._summary_payload(REPO_ROOT)
+        summary["history_jsonl"] = str(REPO_ROOT / "runtime_archives/bl100/tmp/other_history.jsonl")
+        errors = provider_onboarding_snapshot_guard_consistency_check.compare_summary_vs_guard_report(
+            summary,
+            self._report_payload(REPO_ROOT),
+        )
+        self.assertTrue(any("history_jsonl" in err for err in errors))
+
     def test_main_passes_when_files_match(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-snapshot-guard-consistency-") as tmp_raw:
             tmp = Path(tmp_raw)
             summary_path = tmp / "summary.json"
             report_path = tmp / "report.json"
-            summary_path.write_text(json.dumps(self._summary_payload(), ensure_ascii=False), encoding="utf-8")
+            summary_path.write_text(json.dumps(self._summary_payload(tmp), ensure_ascii=False), encoding="utf-8")
             report_path.write_text(json.dumps(self._report_payload(tmp), ensure_ascii=False), encoding="utf-8")
             argv = [
                 str(MODULE_PATH),
@@ -107,7 +117,7 @@ class ProviderOnboardingSnapshotGuardConsistencyCheckTests(unittest.TestCase):
             tmp = Path(tmp_raw)
             summary_path = tmp / "summary.json"
             report_path = tmp / "report.json"
-            summary = self._summary_payload()
+            summary = self._summary_payload(tmp)
             summary["assess_snapshot_guard_mismatch_reason_counts"] = {"status": 1}
             summary_path.write_text(json.dumps(summary, ensure_ascii=False), encoding="utf-8")
             report_path.write_text(json.dumps(self._report_payload(tmp), ensure_ascii=False), encoding="utf-8")
@@ -132,7 +142,7 @@ class ProviderOnboardingSnapshotGuardConsistencyCheckTests(unittest.TestCase):
             report_path = tmp / "report.json"
             payload = self._report_payload(tmp)
             payload["reason_counts"]["unknown_reason"] = 1
-            summary_path.write_text(json.dumps(self._summary_payload(), ensure_ascii=False), encoding="utf-8")
+            summary_path.write_text(json.dumps(self._summary_payload(tmp), ensure_ascii=False), encoding="utf-8")
             report_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
             argv = [
                 str(MODULE_PATH),
@@ -153,7 +163,7 @@ class ProviderOnboardingSnapshotGuardConsistencyCheckTests(unittest.TestCase):
             tmp = Path(tmp_raw)
             summary_path = tmp / "summary.json"
             report_path = tmp / "report.json"
-            summary = self._summary_payload()
+            summary = self._summary_payload(tmp)
             summary["assess_snapshot_guard_mismatch_reason_counts"] = {"unexpected": 1}
             summary_path.write_text(json.dumps(summary, ensure_ascii=False), encoding="utf-8")
             report_path.write_text(json.dumps(self._report_payload(tmp), ensure_ascii=False), encoding="utf-8")

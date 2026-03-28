@@ -2369,3 +2369,37 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_snapshot_guard_consistency_check.py`, `scripts/provider_onboarding_snapshot_guard_summary_validate.py`, `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`, and `scripts/premerge_check.sh` confirm summary-schema-first consistency checking in merge flow
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-137
+- title: Enforce snapshot-guard summary history path validation and strict premerge invocation
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-136
+- start_when: Snapshot-guard summary schema validation exists, but history source path is not explicitly required/scoped and merge gate still allows non-strict invocation
+- done_when: Summary validator requires non-empty `history_jsonl`, supports strict repo-scope path checks, tests cover history-path pass/fail, premerge uses strict repo-root path mode, and runbook documents the strict command
+- source: local hardening continuation to keep summary source metadata fail-closed while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_PATH_VALIDATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_summary_validate.py`, `tests/test_provider_onboarding_snapshot_guard_summary_validate.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm strict summary history-path validation is merge-gated
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-138
+- title: Enforce snapshot-guard summary/report history source parity in consistency checks
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-137
+- start_when: Summary/report consistency validates schema and metrics, but does not explicitly enforce same normalized history source path across artifacts
+- done_when: Consistency checker compares normalized summary/report `history_jsonl`, passes strict repo-path args into summary prevalidation, tests cover history source mismatch fail path, and governance report captures change
+- source: local hardening continuation to prevent cross-artifact source drift hidden by metric parity while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_HISTORY_SOURCE_PARITY_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`, and `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py` confirm fail-closed history source parity enforcement in consistency paths
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

@@ -314,7 +314,9 @@ else
 fi
 
 if python3 scripts/provider_onboarding_snapshot_guard_summary_validate.py \
-  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json; then
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
+  --repo-root "$repo_root" \
+  --require-repo-paths; then
   pass "provider onboarding snapshot guard summary schema validation passed."
 else
   fail "provider onboarding snapshot guard summary schema validation failed."
