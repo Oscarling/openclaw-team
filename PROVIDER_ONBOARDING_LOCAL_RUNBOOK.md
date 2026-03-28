@@ -115,3 +115,11 @@ python3 scripts/provider_onboarding_history_backfill.py \
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --backup-jsonl /tmp/provider_onboarding_gate_history.backup.jsonl
 ```
+
+To inspect remaining missing rows and their reasons:
+
+```bash
+python3 scripts/provider_onboarding_history_backfill_gaps.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --output-json runtime_archives/bl100/tmp/provider_onboarding_history_backfill_gaps.json
+```

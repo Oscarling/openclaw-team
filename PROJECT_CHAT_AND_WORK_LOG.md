@@ -6184,3 +6184,49 @@ Verification snapshot on 2026-03-28:
   (passed)
 - `python3 scripts/provider_onboarding_history_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
   (passed)
+
+### 128. BL-20260328-115 Backfill Gap Reason Reporting (Done)
+
+User objective:
+
+- continue local hardening and make residual note-signal gaps explicit instead
+  of implicit
+
+Main work areas:
+
+- added deterministic gap-report script:
+  - `scripts/provider_onboarding_history_backfill_gaps.py`
+- script classifies unresolved rows by reason:
+  - `guard_mismatch_status`
+  - `guard_mismatch_block_reason`
+  - `guard_mismatch_http_code_counts`
+  - `assessment_missing`
+  - `assessment_parse_error`
+  - `assessment_note_counts_missing`
+  - `backfillable_now`
+- added tests:
+  - `tests/test_provider_onboarding_history_backfill_gaps.py`
+- integrated into premerge:
+  - `scripts/premerge_check.sh` now runs unit test + no-write report check
+    (`/tmp/provider_onboarding_history_backfill_gaps_premerge.json`)
+- synced runbook:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+- generated current artifact:
+  - `runtime_archives/bl100/tmp/provider_onboarding_history_backfill_gaps.json`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_HISTORY_BACKFILL_GAP_REPORTING.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_BACKFILL_GAP_REPORTING.md)
+
+Key result:
+
+- remaining missing-note row is now explicitly classified as
+  `guard_mismatch_block_reason`, making residual risk visible and traceable.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_history_backfill_gaps.py`
+  (passed)
+- `python3 scripts/provider_onboarding_history_backfill_gaps.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --output-json runtime_archives/bl100/tmp/provider_onboarding_history_backfill_gaps.json`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)

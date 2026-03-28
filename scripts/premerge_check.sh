@@ -207,12 +207,26 @@ else
   fail "tests/test_provider_onboarding_history_backfill.py failed."
 fi
 
+if python3 -m unittest -v tests/test_provider_onboarding_history_backfill_gaps.py; then
+  pass "tests/test_provider_onboarding_history_backfill_gaps.py passed."
+else
+  fail "tests/test_provider_onboarding_history_backfill_gaps.py failed."
+fi
+
 if python3 scripts/provider_onboarding_history_backfill.py \
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --dry-run; then
   pass "provider onboarding history backfill dry-run check passed."
 else
   fail "provider onboarding history backfill dry-run check failed."
+fi
+
+if python3 scripts/provider_onboarding_history_backfill_gaps.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --output-json /tmp/provider_onboarding_history_backfill_gaps_premerge.json; then
+  pass "provider onboarding history backfill gaps report check passed."
+else
+  fail "provider onboarding history backfill gaps report check failed."
 fi
 
 if python3 scripts/provider_onboarding_history_validate.py \

@@ -1737,7 +1737,7 @@ Allowed enum values:
 - source: `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md` on 2026-03-28 confirms retest matrix remains blocked and classifies dominant cause as auth/access policy block
 - link: /Users/lingguozhong/openclaw-team/PROVIDER_ROUTE_RETEST_20260327_REPORT.md
 - issue: -
-- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md`, `PROVIDER_ROUTE_RETEST_20260327_REPORT.md`, `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_SUMMARY_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_SUMMARY_REFRESH_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_REPO_FILTER_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_VALIDATION_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_CONSISTENCY_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_NOTE_SIGNAL_HISTORY_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_NOTE_SIGNAL_COVERAGE_METRICS_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_NOTE_BACKFILL_REPORT.md`, `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`, `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` show all currently known Desktop key candidates still fail handshake (`aixj=401 INVALID_API_KEY`, `fast=403/1010` with occasional transport/TLS `000`) and no `2xx` route is available for controlled replay
+- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md`, `PROVIDER_ROUTE_RETEST_20260327_REPORT.md`, `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_SUMMARY_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_SUMMARY_REFRESH_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_REPO_FILTER_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_VALIDATION_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_CONSISTENCY_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_NOTE_SIGNAL_HISTORY_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_NOTE_SIGNAL_COVERAGE_METRICS_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_NOTE_BACKFILL_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_BACKFILL_GAP_REPORTING.md`, `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`, `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`, and `runtime_archives/bl100/tmp/provider_onboarding_history_backfill_gaps.json` show all currently known Desktop key candidates still fail handshake (`aixj=401 INVALID_API_KEY`, `fast=403/1010` with occasional transport/TLS `000`) and no `2xx` route is available for controlled replay
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-26
 
@@ -1993,5 +1993,22 @@ Allowed enum values:
 - link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_NOTE_BACKFILL_REPORT.md
 - issue: -
 - evidence: `scripts/provider_onboarding_history_backfill.py`, `tests/test_provider_onboarding_history_backfill.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm guarded backfill (`backfilled=1`, `skipped_guard_mismatch=1`) and note coverage uplift to `50.0%`
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-115
+- title: Add backfill-gap reason reporting for unresolved note-signal rows
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-114
+- start_when: Guarded backfill leaves unresolved rows but there is no structured report classifying why each row remains missing
+- done_when: A gap-report script outputs unresolved-row reasons, tests cover classification, premerge runs a no-write check, and repo artifact is refreshed for current state
+- source: local hardening continuation to keep residual note-signal gaps transparent and actionable
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_BACKFILL_GAP_REPORTING.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_backfill_gaps.py`, `tests/test_provider_onboarding_history_backfill_gaps.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_history_backfill_gaps.json` confirm deterministic unresolved-gap classification (`guard_mismatch_block_reason`) and merge-time checkability
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
