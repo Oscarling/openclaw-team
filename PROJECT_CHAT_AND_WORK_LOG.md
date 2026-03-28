@@ -6781,3 +6781,75 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/provider_onboarding_snapshot_guard_report_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --repo-only --require-repo-paths`
   (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 142. BL-20260328-129 Snapshot Guard Reason-to-Row Reconciliation (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and ensure aggregate reason counts remain
+  losslessly aligned with row-level non-match evidence
+
+Main work areas:
+
+- validator enhancement:
+  - `scripts/provider_onboarding_snapshot_guard_report_validate.py`
+  - now reconciles each non-match reason count in `reason_counts` against
+    actual frequency in `non_match_rows`
+- tests enhancement:
+  - `tests/test_provider_onboarding_snapshot_guard_report_validate.py`
+  - adds reconciliation drift failure case
+- governance path:
+  - existing premerge report-validation gate automatically enforces stricter
+    reconciliation
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REASON_ROW_RECONCILIATION_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REASON_ROW_RECONCILIATION_REPORT.md)
+
+Key result:
+
+- snapshot-guard reason aggregates and row-level non-match entries are now
+  fail-closed reconciled per reason.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_validate.py`
+  (passed)
+- `python3 scripts/provider_onboarding_snapshot_guard_report_validate.py --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)
+
+### 143. BL-20260328-130 Snapshot Guard Non-Match Ordering Guard (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and enforce deterministic row ordering
+  for snapshot-guard non-match evidence
+
+Main work areas:
+
+- validator enhancement:
+  - `scripts/provider_onboarding_snapshot_guard_report_validate.py`
+  - enforces `non_match_rows` `history_line` values are strictly increasing and
+    unique
+- tests enhancement:
+  - `tests/test_provider_onboarding_snapshot_guard_report_validate.py`
+  - adds duplicate/non-increasing `history_line` failure case
+- governance path:
+  - premerge inherited stricter ordering/uniqueness checks via existing
+    validator invocation
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_NON_MATCH_ORDERING_GUARD_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_NON_MATCH_ORDERING_GUARD_REPORT.md)
+
+Key result:
+
+- row-level snapshot-guard mismatch artifacts now have deterministic ordering
+  and dedupe-safe integrity constraints.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_validate.py tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)

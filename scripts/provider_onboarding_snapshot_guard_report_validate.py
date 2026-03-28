@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -118,6 +119,8 @@ def validate_report(report: Dict[str, Any], repo_root: Path, require_repo_paths:
         errors.append("non_match_rows must be array")
         non_match_rows = []
 
+    non_match_reason_counter: Counter[str] = Counter()
+    history_lines: List[int] = []
     for idx, row in enumerate(non_match_rows, start=1):
         if not isinstance(row, dict):
             errors.append(f"non_match_rows[{idx}] must be object")
@@ -125,6 +128,8 @@ def validate_report(report: Dict[str, Any], repo_root: Path, require_repo_paths:
         history_line = row.get("history_line")
         if not isinstance(history_line, int) or history_line <= 0:
             errors.append(f"non_match_rows[{idx}].history_line must be positive integer")
+        else:
+            history_lines.append(history_line)
         reason = row.get("reason")
         if not isinstance(reason, str) or not reason.strip():
             errors.append(f"non_match_rows[{idx}].reason must be non-empty string")
@@ -132,6 +137,8 @@ def validate_report(report: Dict[str, Any], repo_root: Path, require_repo_paths:
             errors.append(
                 f"non_match_rows[{idx}].reason must be one of {sorted(ALLOWED_NON_MATCH_ROW_REASONS)}"
             )
+        else:
+            non_match_reason_counter[reason] += 1
         if require_repo_paths:
             for key in ("assessment_json", "assessment_snapshot_json"):
                 value = row.get(key)
@@ -141,6 +148,9 @@ def validate_report(report: Dict[str, Any], repo_root: Path, require_repo_paths:
                     errors.append(
                         f"non_match_rows[{idx}].{key} must be absolute repo path under {repo_root}"
                     )
+    if history_lines:
+        if history_lines != sorted(history_lines) or len(set(history_lines)) != len(history_lines):
+            errors.append("non_match_rows history_line values must be strictly increasing and unique")
 
     if parsed:
         evaluated = parsed["evaluated_assess_rows"]
@@ -164,6 +174,9 @@ def validate_report(report: Dict[str, Any], repo_root: Path, require_repo_paths:
         unverified_reason_total = sum(reason_counts.get(key, 0) for key in UNVERIFIED_REASONS)
         if unverified_reason_total != parsed["guard_unverified_rows"]:
             errors.append("sum(unverified reason_counts) must equal guard_unverified_rows")
+        for key in ALLOWED_NON_MATCH_ROW_REASONS:
+            if reason_counts.get(key, 0) != non_match_reason_counter.get(key, 0):
+                errors.append(f"reason_counts['{key}'] must equal non_match_rows reason count")
         expected_match_percent = 0.0
         if evaluated > 0:
             expected_match_percent = round((parsed["guard_match_rows"] / evaluated) * 100.0, 2)

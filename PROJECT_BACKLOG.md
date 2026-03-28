@@ -2233,3 +2233,37 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`, `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm schema/path-first consistency checking with history-path parity validation
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-129
+- title: Enforce snapshot-guard reason-count reconciliation with row-level non-match reasons
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-128
+- start_when: Reason taxonomy checks exist, but validator does not yet verify each non-match reason count exactly reconciles with row-level non-match reason distribution
+- done_when: Validator enforces per-reason reconciliation between `reason_counts` and `non_match_rows` for all non-match reasons; tests cover reconciliation drift failures
+- source: local hardening continuation to keep aggregate drift counters and row-level diagnostics lossless while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REASON_ROW_RECONCILIATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `tests/test_provider_onboarding_snapshot_guard_report_validate.py`, `scripts/premerge_check.sh`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm non-match reason-count reconciliation is fail-closed
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-130
+- title: Enforce non-match row ordering/uniqueness invariants in snapshot-guard report validation
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-129
+- start_when: Snapshot-guard row-level details exist, but validator does not enforce deterministic `history_line` ordering and uniqueness for `non_match_rows`
+- done_when: Validator rejects non-increasing or duplicate `history_line` values in `non_match_rows`, tests cover ordering/duplicate fail path, and premerge inherits stricter validation via existing gate
+- source: local hardening continuation to keep row-level drift evidence deterministic and dedupe-safe while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_NON_MATCH_ORDERING_GUARD_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `tests/test_provider_onboarding_snapshot_guard_report_validate.py`, and `scripts/premerge_check.sh` confirm non-match row ordering/uniqueness is now merge-gated
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
