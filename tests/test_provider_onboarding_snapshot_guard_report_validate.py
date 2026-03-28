@@ -137,6 +137,39 @@ class ProviderOnboardingSnapshotGuardReportValidateTests(unittest.TestCase):
             )
             self.assertTrue(any("history_line values must be strictly increasing and unique" in err for err in errors))
 
+    def test_validate_report_rejects_block_reason_detail_shape_drift(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-snapshot-guard-validate-") as tmp_raw:
+            tmp = Path(tmp_raw)
+            report = self._valid_report(tmp)
+            report["non_match_rows"][0]["detail"] = {"entry_block_reason": "x"}
+            errors = provider_onboarding_snapshot_guard_report_validate.validate_report(
+                report,
+                repo_root=tmp,
+                require_repo_paths=False,
+            )
+            self.assertTrue(any("snapshot_block_reason must be string" in err for err in errors))
+
+    def test_validate_report_rejects_unverified_detail_missing_snapshot_pointer(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-snapshot-guard-validate-") as tmp_raw:
+            tmp = Path(tmp_raw)
+            report = self._valid_report(tmp)
+            report["assess_entry_count"] = 3
+            report["evaluated_assess_rows"] = 3
+            report["guard_unverified_rows"] = 1
+            report["guard_match_percent"] = 33.33
+            report["reason_counts"]["snapshot_not_found"] = 1
+            second_row = dict(report["non_match_rows"][0])
+            second_row["history_line"] = 2
+            second_row["reason"] = "snapshot_not_found"
+            second_row["detail"] = {}
+            report["non_match_rows"].append(second_row)
+            errors = provider_onboarding_snapshot_guard_report_validate.validate_report(
+                report,
+                repo_root=tmp,
+                require_repo_paths=False,
+            )
+            self.assertTrue(any("detail.assessment_snapshot_json is required" in err for err in errors))
+
     def test_main_passes_with_repo_path_enforcement(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-snapshot-guard-validate-") as tmp_raw:
             tmp = Path(tmp_raw)

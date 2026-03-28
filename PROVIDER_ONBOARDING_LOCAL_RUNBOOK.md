@@ -188,6 +188,7 @@ To ensure persisted snapshot-guard report is fresh against history:
 python3 scripts/provider_onboarding_snapshot_guard_report_consistency_check.py \
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json \
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
   --repo-root /Users/lingguozhong/openclaw-team \
   --repo-only \
   --require-repo-paths

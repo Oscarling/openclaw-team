@@ -2267,3 +2267,37 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `tests/test_provider_onboarding_snapshot_guard_report_validate.py`, and `scripts/premerge_check.sh` confirm non-match row ordering/uniqueness is now merge-gated
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-131
+- title: Enforce reason-specific non-match detail schema in snapshot-guard report validation
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-130
+- start_when: Non-match row and reason taxonomy checks exist, but validator does not enforce detail payload schema per reason type
+- done_when: Validator enforces reason-specific detail fields/types for mismatch and unverified reasons; tests cover detail-shape drift failures
+- source: local hardening continuation to keep row-level drift evidence semantically parseable while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_DETAIL_SCHEMA_VALIDATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `tests/test_provider_onboarding_snapshot_guard_report_validate.py`, and `scripts/premerge_check.sh` confirm fail-closed reason-specific detail schema validation
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-132
+- title: Triangulate persisted snapshot-guard report consistency against history and summary
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-131
+- start_when: Persisted report freshness and persisted summary/report checks both exist, but are separate and can drift operationally
+- done_when: Report consistency checker optionally validates summary/report consistency in the same invocation, premerge uses unified persisted check path, tests cover summary-mismatch fail path, and runbook command reflects unified check
+- source: local hardening continuation to keep persisted artifact checks coherent and fail-closed while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_TRIANGULATION_GATE_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm persisted report is now validated against history and summary in one gate path
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

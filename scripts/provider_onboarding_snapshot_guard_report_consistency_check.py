@@ -13,6 +13,7 @@ from typing import Any, Dict, List
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORT_SCRIPT = REPO_ROOT / "scripts" / "provider_onboarding_snapshot_guard_report.py"
 VALIDATE_SCRIPT = REPO_ROOT / "scripts" / "provider_onboarding_snapshot_guard_report_validate.py"
+SUMMARY_CONSISTENCY_SCRIPT = REPO_ROOT / "scripts" / "provider_onboarding_snapshot_guard_consistency_check.py"
 
 
 def parse_args() -> argparse.Namespace:
@@ -38,6 +39,11 @@ def parse_args() -> argparse.Namespace:
         help="Apply repo-only filtering while recomputing expected report",
     )
     parser.add_argument(
+        "--summary-json",
+        default="",
+        help="Optional summary json path. When set, enforce summary/report consistency on the same report.",
+    )
+    parser.add_argument(
         "--require-repo-paths",
         action="store_true",
         help="Validate report row paths as absolute repo-scoped paths before comparing",
@@ -58,6 +64,15 @@ def _load_validate_module():
     spec = importlib.util.spec_from_file_location("provider_onboarding_snapshot_guard_report_validate", VALIDATE_SCRIPT)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Unable to load report validate module from {VALIDATE_SCRIPT}")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _load_summary_consistency_module():
+    spec = importlib.util.spec_from_file_location("provider_onboarding_snapshot_guard_consistency_check", SUMMARY_CONSISTENCY_SCRIPT)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Unable to load summary consistency module from {SUMMARY_CONSISTENCY_SCRIPT}")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -114,6 +129,7 @@ def main() -> int:
     history_path = Path(args.history_jsonl)
     report_path = Path(args.report_json)
     repo_root = Path(args.repo_root)
+    summary_path = Path(args.summary_json) if args.summary_json else None
 
     try:
         validate_mod = _load_validate_module()
@@ -128,6 +144,14 @@ def main() -> int:
                 print(f"report validation error: {err}", file=sys.stderr)
             return 2
         expected = build_expected_report(history_path=history_path, repo_root=repo_root, repo_only=args.repo_only)
+        if summary_path is not None:
+            summary_mod = _load_summary_consistency_module()
+            summary = summary_mod.load_json_object(summary_path)
+            summary_errors = summary_mod.compare_summary_vs_guard_report(summary, actual)
+            if summary_errors:
+                for err in summary_errors:
+                    print(f"summary/report mismatch: {err}", file=sys.stderr)
+                return 2
     except Exception as exc:
         print(str(exc), file=sys.stderr)
         return 2

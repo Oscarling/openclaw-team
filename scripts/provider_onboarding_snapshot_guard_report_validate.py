@@ -85,6 +85,43 @@ def _validate_reason_counts(value: Any) -> tuple[Dict[str, int], List[str]]:
     return out, errors
 
 
+def _is_http_count_map(value: Any) -> bool:
+    if not isinstance(value, dict) or not value:
+        return False
+    for key, raw_count in value.items():
+        if not isinstance(key, str) or not key.isdigit():
+            return False
+        if _as_non_negative_int(raw_count) is None:
+            return False
+    return True
+
+
+def _validate_non_match_detail(reason: str, detail: Any, idx: int) -> List[str]:
+    errors: List[str] = []
+    if not isinstance(detail, dict):
+        return [f"non_match_rows[{idx}].detail must be object"]
+
+    if reason == "guard_mismatch_status":
+        if not isinstance(detail.get("entry_status"), str):
+            errors.append(f"non_match_rows[{idx}].detail.entry_status must be string")
+        if not isinstance(detail.get("snapshot_status"), str):
+            errors.append(f"non_match_rows[{idx}].detail.snapshot_status must be string")
+    elif reason == "guard_mismatch_block_reason":
+        if not isinstance(detail.get("entry_block_reason"), str):
+            errors.append(f"non_match_rows[{idx}].detail.entry_block_reason must be string")
+        if not isinstance(detail.get("snapshot_block_reason"), str):
+            errors.append(f"non_match_rows[{idx}].detail.snapshot_block_reason must be string")
+    elif reason == "guard_mismatch_http_code_counts":
+        if not _is_http_count_map(detail.get("entry_http_code_counts")):
+            errors.append(f"non_match_rows[{idx}].detail.entry_http_code_counts must be non-empty code-count map")
+        if not _is_http_count_map(detail.get("snapshot_http_code_counts")):
+            errors.append(f"non_match_rows[{idx}].detail.snapshot_http_code_counts must be non-empty code-count map")
+    elif reason in UNVERIFIED_REASONS:
+        if "assessment_snapshot_json" not in detail:
+            errors.append(f"non_match_rows[{idx}].detail.assessment_snapshot_json is required for reason {reason}")
+    return errors
+
+
 def validate_report(report: Dict[str, Any], repo_root: Path, require_repo_paths: bool) -> List[str]:
     errors: List[str] = []
 
@@ -139,6 +176,7 @@ def validate_report(report: Dict[str, Any], repo_root: Path, require_repo_paths:
             )
         else:
             non_match_reason_counter[reason] += 1
+            errors.extend(_validate_non_match_detail(reason=reason, detail=row.get("detail"), idx=idx))
         if require_repo_paths:
             for key in ("assessment_json", "assessment_snapshot_json"):
                 value = row.get(key)

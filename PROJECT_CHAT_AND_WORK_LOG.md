@@ -6853,3 +6853,83 @@ Verification snapshot on 2026-03-28:
 - `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_validate.py tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`
   (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 144. BL-20260328-131 Snapshot Guard Non-Match Detail Schema Validation (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and ensure each non-match reason carries
+  reason-specific detail schema guarantees
+
+Main work areas:
+
+- validator enhancement:
+  - `scripts/provider_onboarding_snapshot_guard_report_validate.py`
+  - validates `non_match_rows[].detail` fields per reason:
+    - `guard_mismatch_status`
+    - `guard_mismatch_block_reason`
+    - `guard_mismatch_http_code_counts`
+    - unverified reason family requires
+      `detail.assessment_snapshot_json`
+- test enhancement:
+  - `tests/test_provider_onboarding_snapshot_guard_report_validate.py`
+  - adds detail-schema drift fail cases
+- governance path:
+  - existing premerge report validation gate inherits stricter detail checks
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_DETAIL_SCHEMA_VALIDATION_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_DETAIL_SCHEMA_VALIDATION_REPORT.md)
+
+Key result:
+
+- row-level snapshot-guard diagnostics are now reason-contract validated, not
+  just reason-labeled.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_validate.py`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)
+
+### 145. BL-20260328-132 Snapshot Guard Persisted Triangulation Gate (Done)
+
+User objective:
+
+- continue local hardening without跑偏 and consolidate persisted report checks
+  into one coherent history+summary consistency path
+
+Main work areas:
+
+- consistency checker enhancement:
+  - `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py`
+  - adds optional `--summary-json` for same-invocation summary/report checks
+- test enhancement:
+  - `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`
+  - adds summary-pass and summary-mismatch paths
+- premerge update:
+  - `scripts/premerge_check.sh` now runs persisted report check with:
+    - `--history-jsonl`
+    - `--report-json`
+    - `--summary-json`
+    - `--require-repo-paths`
+  - redundant separate persisted summary/report check removed
+- runbook update:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_SNAPSHOT_GUARD_TRIANGULATION_GATE_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_TRIANGULATION_GATE_REPORT.md)
+
+Key result:
+
+- persisted snapshot-guard report is now fail-closed triangulated against both
+  history and summary via one gate path.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py tests/test_provider_onboarding_snapshot_guard_report_validate.py`
+  (passed)
+- `python3 scripts/provider_onboarding_snapshot_guard_report_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --repo-only --require-repo-paths`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)
