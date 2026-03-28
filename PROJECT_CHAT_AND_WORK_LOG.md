@@ -5972,3 +5972,45 @@ Verification snapshot on 2026-03-28:
   (passed)
 - `python3 -m unittest -v tests/test_provider_onboarding_gate.py` (passed)
 - `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`
+
+### 123. BL-20260328-110 Onboarding History Schema/Path Validation (Done)
+
+User objective:
+
+- continue local hardening with strict process discipline and prevent evidence
+  drift before merge
+
+Main work areas:
+
+- added dedicated history validator:
+  - `scripts/provider_onboarding_history_validate.py`
+- validator checks:
+  - jsonl parseability and object-only entries
+  - required fields (`timestamp`, `stamp`, `phase`, `status`, `block_reason`,
+    `exit_code`)
+  - optional counters shape (`success_row_count`, `http_code_counts`)
+  - repo-path enforcement for `probe_tsv` / `assessment_json` when requested
+- added test suite:
+  - `tests/test_provider_onboarding_history_validate.py`
+- integrated into merge gate:
+  - `scripts/premerge_check.sh` now runs validator tests and real-history
+    validation against
+    `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`
+- synced runbook with explicit history integrity command:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_HISTORY_VALIDATION_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_VALIDATION_HARDENING_REPORT.md)
+
+Key result:
+
+- onboarding history evidence now has a fail-closed schema/path guard in
+  premerge, reducing risk of malformed or off-repo entries silently landing.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_history_validate.py`
+  (passed)
+- `python3 scripts/provider_onboarding_history_validate.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths`
+  (passed)

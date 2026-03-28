@@ -80,3 +80,14 @@ Optional control for tests/special runs:
 - Never print full API keys in logs/reports.
 - Keep masked key tails only (`***tail`).
 - Preserve local-first workflow and commit only validated evidence.
+
+## 6) History Integrity Check
+
+Before finalizing local evidence commits, validate onboarding history structure:
+
+```bash
+python3 scripts/provider_onboarding_history_validate.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --repo-root /Users/lingguozhong/openclaw-team \
+  --require-repo-paths
+```

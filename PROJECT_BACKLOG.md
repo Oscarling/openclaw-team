@@ -1737,7 +1737,7 @@ Allowed enum values:
 - source: `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md` on 2026-03-28 confirms retest matrix remains blocked and classifies dominant cause as auth/access policy block
 - link: /Users/lingguozhong/openclaw-team/PROVIDER_ROUTE_RETEST_20260327_REPORT.md
 - issue: -
-- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md`, `PROVIDER_ROUTE_RETEST_20260327_REPORT.md`, `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_SUMMARY_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_SUMMARY_REFRESH_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_REPO_FILTER_HARDENING_REPORT.md`, `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`, `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` show all currently known Desktop key candidates still fail handshake (`aixj=401 INVALID_API_KEY`, `fast=403/1010` with occasional transport/TLS `000`) and no `2xx` route is available for controlled replay
+- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md`, `PROVIDER_ROUTE_RETEST_20260327_REPORT.md`, `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_SUMMARY_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_SUMMARY_REFRESH_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_REPO_FILTER_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_VALIDATION_HARDENING_REPORT.md`, `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`, `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` show all currently known Desktop key candidates still fail handshake (`aixj=401 INVALID_API_KEY`, `fast=403/1010` with occasional transport/TLS `000`) and no `2xx` route is available for controlled replay
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-26
 
@@ -1908,5 +1908,22 @@ Allowed enum values:
 - link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_REPO_FILTER_HARDENING_REPORT.md
 - issue: -
 - evidence: `scripts/provider_onboarding_history_summary.py`, `scripts/provider_onboarding_gate.py`, `tests/test_provider_onboarding_history_summary.py`, `tests/test_provider_onboarding_gate.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm repo-only summary filtering and explicit opt-out (`--no-history-summary-repo-only`)
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-110
+- title: Enforce onboarding history JSONL schema/path integrity in premerge
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-109
+- start_when: History aggregation is hardened, but no dedicated fail-closed schema/path validator guards JSONL integrity before merge
+- done_when: Dedicated history validation script and tests exist, premerge gate runs both tests and real-history validation with repo-path enforcement
+- source: local hardening continuation to keep blocker evidence deterministic and merge-safe
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_VALIDATION_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_validate.py`, `tests/test_provider_onboarding_history_validate.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl` confirm fail-closed validation for history schema and repo-path integrity
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28

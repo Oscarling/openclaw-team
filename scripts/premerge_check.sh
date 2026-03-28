@@ -189,6 +189,21 @@ else
   fail "tests/test_provider_onboarding_history_summary.py failed."
 fi
 
+if python3 -m unittest -v tests/test_provider_onboarding_history_validate.py; then
+  pass "tests/test_provider_onboarding_history_validate.py passed."
+else
+  fail "tests/test_provider_onboarding_history_validate.py failed."
+fi
+
+if python3 scripts/provider_onboarding_history_validate.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --repo-root "$repo_root" \
+  --require-repo-paths; then
+  pass "provider onboarding gate history jsonl passes schema/path validation."
+else
+  fail "provider onboarding gate history jsonl validation failed."
+fi
+
 echo
 echo "Warnings: $warnings"
 echo "Failures: $failures"
