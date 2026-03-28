@@ -5931,3 +5931,44 @@ Verification snapshot on 2026-03-28:
 - `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`
 - `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`
 - `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`
+
+### 122. BL-20260328-109 Onboarding History Repo-Filter Hardening (Done)
+
+User objective:
+
+- continue local-first execution and avoid summary drift/noise while provider
+  onboarding remains blocked
+
+Main work areas:
+
+- hardened summary script:
+  - `scripts/provider_onboarding_history_summary.py`
+- added repo-only filtering controls:
+  - `--repo-root`
+  - `--repo-only`
+- added explicit dropped-entry telemetry:
+  - `dropped_non_repo_entries` in summary JSON
+- integrated gate default behavior:
+  - `scripts/provider_onboarding_gate.py` now refreshes summary in repo-only
+    mode by default
+  - opt-out switch: `--no-history-summary-repo-only`
+- expanded tests:
+  - `tests/test_provider_onboarding_history_summary.py`
+  - `tests/test_provider_onboarding_gate.py`
+- synced runbook guidance and regenerated summary artifact
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_HISTORY_REPO_FILTER_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_REPO_FILTER_HARDENING_REPORT.md)
+
+Key result:
+
+- onboarding trend summary is now robust against non-repo temp-path pollution
+  without changing BL-099 blocked decision.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_history_summary.py`
+  (passed)
+- `python3 -m unittest -v tests/test_provider_onboarding_gate.py` (passed)
+- `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`

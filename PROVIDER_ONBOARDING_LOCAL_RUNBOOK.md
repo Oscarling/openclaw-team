@@ -64,6 +64,9 @@ Outputs:
 Optional control for tests/special runs:
 
 - add `--no-history-summary` to skip summary refresh in that invocation
+- gate default summary refresh uses repo-only evidence filtering; add
+  `--no-history-summary-repo-only` only when you intentionally need to include
+  non-repo paths
 
 ## 4) Decision Rule
 

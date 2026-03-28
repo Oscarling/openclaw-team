@@ -136,6 +136,7 @@ class ProviderOnboardingGateTests(unittest.TestCase):
             self.assertEqual(row["block_reason"], "auth_or_access_policy_block")
             self.assertEqual(row["success_row_count"], 0)
             self.assertIn("provider_onboarding_history_summary.py", calls[2][1])
+            self.assertIn("--repo-only", calls[2])
 
     def test_main_no_history_disables_history_file(self) -> None:
         def fake_run(cmd: list[str]):
@@ -199,6 +200,43 @@ class ProviderOnboardingGateTests(unittest.TestCase):
             self.assertIn("provider_handshake_probe.py", calls[0][1])
             self.assertIn("provider_handshake_assess.py", calls[1][1])
             self.assertTrue(history.exists())
+
+    def test_main_can_disable_repo_only_summary_filter(self) -> None:
+        calls: list[list[str]] = []
+
+        def fake_run(cmd: list[str]):
+            calls.append(cmd)
+            if "provider_handshake_probe.py" in cmd[1]:
+                return subprocess.CompletedProcess(cmd, 0, stdout="probe.tsv", stderr="")
+            if "provider_onboarding_history_summary.py" in cmd[1]:
+                return subprocess.CompletedProcess(cmd, 0, stdout="history-summary.json", stderr="")
+            assess_json = Path(self._arg_value(cmd, "--output-json"))
+            assess_json.write_text(
+                json.dumps({"status": "blocked", "block_reason": "auth_or_access_policy_block"}, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            return subprocess.CompletedProcess(cmd, 2, stdout="summary.json", stderr="blocked")
+
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-gate-") as tmp:
+            history = Path(tmp) / "history.jsonl"
+            argv = [
+                str(MODULE_PATH),
+                "--output-dir",
+                tmp,
+                "--stamp",
+                "20260328",
+                "--history-jsonl",
+                str(history),
+                "--no-history-summary-repo-only",
+            ]
+            with mock.patch.object(provider_onboarding_gate, "run_command", side_effect=fake_run):
+                with mock.patch.object(sys, "argv", argv):
+                    code = provider_onboarding_gate.main()
+
+            self.assertEqual(code, 2)
+            self.assertEqual(len(calls), 3)
+            self.assertIn("provider_onboarding_history_summary.py", calls[2][1])
+            self.assertNotIn("--repo-only", calls[2])
 
 
 if __name__ == "__main__":

@@ -91,6 +91,87 @@ class ProviderOnboardingHistorySummaryTests(unittest.TestCase):
             self.assertEqual(parsed["entry_count"], 2)
             self.assertEqual(parsed["latest"]["block_reason"], "mixed_with_tls_transport_failures")
 
+    def test_filter_repo_entries_drops_non_repo_when_enabled(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-history-") as tmp_raw:
+            repo_root = Path(tmp_raw)
+            entries = [
+                {
+                    "probe_tsv": str(repo_root / "runtime_archives/bl100/tmp/probe.tsv"),
+                    "assessment_json": str(repo_root / "runtime_archives/bl100/tmp/assessment.json"),
+                    "status": "blocked",
+                    "block_reason": "auth_or_access_policy_block",
+                    "exit_code": 2,
+                },
+                {
+                    "probe_tsv": "/var/folders/xx/nonrepo_probe.tsv",
+                    "assessment_json": "/var/folders/xx/nonrepo_assessment.json",
+                    "status": "blocked",
+                    "block_reason": "auth_or_access_policy_block",
+                    "exit_code": 2,
+                },
+            ]
+            kept, dropped = provider_onboarding_history_summary.filter_repo_entries(entries, repo_root, repo_only=True)
+            self.assertEqual(len(kept), 1)
+            self.assertEqual(dropped, 1)
+
+    def test_main_repo_only_counts_only_repo_entries(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-history-") as tmp_raw:
+            tmp = Path(tmp_raw)
+            repo_root = tmp / "repo"
+            repo_root.mkdir(parents=True, exist_ok=True)
+            history = tmp / "history.jsonl"
+            history.write_text(
+                "\n".join(
+                    [
+                        json.dumps(
+                            {
+                                "timestamp": "2026-03-28T10:00:00",
+                                "stamp": "20260328",
+                                "status": "blocked",
+                                "block_reason": "auth_or_access_policy_block",
+                                "exit_code": 2,
+                                "probe_tsv": str(repo_root / "runtime_archives/bl100/tmp/probe_1.tsv"),
+                                "assessment_json": str(repo_root / "runtime_archives/bl100/tmp/assessment_1.json"),
+                            },
+                            ensure_ascii=False,
+                        ),
+                        json.dumps(
+                            {
+                                "timestamp": "2026-03-28T11:00:00",
+                                "stamp": "20260328",
+                                "status": "blocked",
+                                "block_reason": "mixed_with_tls_transport_failures",
+                                "exit_code": 2,
+                                "probe_tsv": "/var/folders/xx/nonrepo_probe.tsv",
+                                "assessment_json": "/var/folders/xx/nonrepo_assessment.json",
+                            },
+                            ensure_ascii=False,
+                        ),
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            output = tmp / "summary.json"
+            argv = [
+                str(MODULE_PATH),
+                "--history-jsonl",
+                str(history),
+                "--output-json",
+                str(output),
+                "--repo-root",
+                str(repo_root),
+                "--repo-only",
+            ]
+            with mock.patch.object(sys, "argv", argv):
+                code = provider_onboarding_history_summary.main()
+
+            self.assertEqual(code, 0)
+            parsed = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(parsed["entry_count"], 1)
+            self.assertEqual(parsed["dropped_non_repo_entries"], 1)
+            self.assertEqual(parsed["latest"]["block_reason"], "auth_or_access_policy_block")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -11,6 +11,7 @@
   "exit_code_counts": {
     "2": 2
   },
+  "dropped_non_repo_entries": 0,
   "latest": {
     "timestamp": "2026-03-28T12:26:50",
     "stamp": "20260328",

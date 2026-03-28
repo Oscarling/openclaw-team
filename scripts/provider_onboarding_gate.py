@@ -64,6 +64,19 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Skip refreshing history summary after gate run",
     )
+    parser.add_argument(
+        "--history-summary-repo-only",
+        dest="history_summary_repo_only",
+        action="store_true",
+        default=True,
+        help="Refresh summary using only repo-contained evidence entries (default on)",
+    )
+    parser.add_argument(
+        "--no-history-summary-repo-only",
+        dest="history_summary_repo_only",
+        action="store_false",
+        help="Allow non-repo evidence entries when refreshing history summary",
+    )
     return parser.parse_args()
 
 
@@ -86,7 +99,7 @@ def append_history_entry(path: Path, entry: dict[str, Any]) -> None:
         handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
-def refresh_history_summary(history_path: Path, output_json: Path) -> subprocess.CompletedProcess[str]:
+def refresh_history_summary(history_path: Path, output_json: Path, repo_only: bool) -> subprocess.CompletedProcess[str]:
     cmd = [
         sys.executable,
         str(SUMMARY_SCRIPT),
@@ -94,7 +107,11 @@ def refresh_history_summary(history_path: Path, output_json: Path) -> subprocess
         str(history_path),
         "--output-json",
         str(output_json),
+        "--repo-root",
+        str(REPO_ROOT),
     ]
+    if repo_only:
+        cmd.append("--repo-only")
     return run_command(cmd)
 
 
@@ -143,7 +160,11 @@ def main() -> int:
                 },
             )
             if not args.no_history_summary:
-                summary_proc = refresh_history_summary(history_path, history_summary_path)
+                summary_proc = refresh_history_summary(
+                    history_path,
+                    history_summary_path,
+                    repo_only=args.history_summary_repo_only,
+                )
                 if summary_proc.stdout:
                     print(summary_proc.stdout.strip())
                 if summary_proc.stderr:
@@ -184,7 +205,11 @@ def main() -> int:
             },
         )
         if not args.no_history_summary:
-            summary_proc = refresh_history_summary(history_path, history_summary_path)
+            summary_proc = refresh_history_summary(
+                history_path,
+                history_summary_path,
+                repo_only=args.history_summary_repo_only,
+            )
             if summary_proc.stdout:
                 print(summary_proc.stdout.strip())
             if summary_proc.stderr:
