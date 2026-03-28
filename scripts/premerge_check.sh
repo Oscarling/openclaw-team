@@ -165,6 +165,12 @@ else
   fail "tests/test_execute_approved_previews.py failed."
 fi
 
+if python3 -m unittest -v tests/test_provider_handshake_probe.py; then
+  pass "tests/test_provider_handshake_probe.py passed."
+else
+  fail "tests/test_provider_handshake_probe.py failed."
+fi
+
 echo
 echo "Warnings: $warnings"
 echo "Failures: $failures"

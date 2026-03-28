@@ -1734,11 +1734,11 @@ Allowed enum values:
 - depends_on: BL-20260326-098
 - start_when: BL-098 confirms timeout budget tuning (`120/180/240/300`) cannot bypass the current fast-route gateway ceiling (`http_524` near ~126s)
 - done_when: A newly supplied provider/base route (new key/base topology) passes lightweight ping and real prompt-shape probe, then is promoted into controlled replay validation
-- source: `TIMEOUT_BUDGET_GATEWAY_CEILING_PROBE_REPORT.md` on 2026-03-26 confirms current topology remains blocked after timeout-budget expansion
-- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md
+- source: `PROVIDER_ROUTE_RETEST_20260327_REPORT.md` on 2026-03-27 confirms previous Desktop key/base candidates still fail authenticated handshake
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ROUTE_RETEST_20260327_REPORT.md
 - issue: -
-- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md` and `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv` show Desktop `备用key3` handshake probes return `401 INVALID_API_KEY` on both `aixj.vip` and `fast.vpsairobot.com` responses endpoints, so no authenticated route is currently available for controlled replay
-- last_reviewed_at: 2026-03-26
+- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md`, `PROVIDER_ROUTE_RETEST_20260327_REPORT.md`, `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`, and `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv` show all currently known Desktop key candidates still fail handshake (`aixj=401 INVALID_API_KEY`, `fast=403/1010`) with no `2xx` route available for controlled replay
+- last_reviewed_at: 2026-03-27
 - opened_at: 2026-03-26
 
 ### BL-20260326-100
@@ -1757,3 +1757,20 @@ Allowed enum values:
 - evidence: `scripts/provider_handshake_probe.py` and validation matrices `runtime_archives/bl100/tmp/provider_handshake_probe_missing_key.tsv` + `runtime_archives/bl100/tmp/provider_handshake_probe_key3.tsv` prove the no-key wait-mode handshake probe is now reproducible in-repo with key-tail masking and deterministic TSV output
 - last_reviewed_at: 2026-03-26
 - opened_at: 2026-03-26
+
+### BL-20260327-101
+- title: Add handshake success gate and unit coverage for provider probe script
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-100
+- start_when: BL-100 has landed the repo-tracked probe script and BL-099 remains blocked on provider onboarding
+- done_when: Probe script supports explicit success gating (`--require-success`) and dedicated unit tests cover key extraction, masking, missing-key, and success/failure exit behavior
+- source: `PROVIDER_ROUTE_RETEST_20260327_REPORT.md` confirms provider onboarding remains blocked and requires deterministic fail-fast gating
+- link: /Users/lingguozhong/openclaw-team/PROBE_GATE_REQUIRE_SUCCESS_HARDENING_REPORT.md
+- issue: -
+- evidence: `PROBE_GATE_REQUIRE_SUCCESS_HARDENING_REPORT.md`, `scripts/provider_handshake_probe.py`, `tests/test_provider_handshake_probe.py`, and `runtime_archives/bl100/tmp/provider_handshake_probe_gatecheck_20260327.tsv` verify explicit `--require-success` gating with passing unit coverage and live non-2xx fail-fast behavior (exit code `2`)
+- last_reviewed_at: 2026-03-27
+- opened_at: 2026-03-27

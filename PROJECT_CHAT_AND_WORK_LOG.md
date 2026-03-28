@@ -5639,3 +5639,74 @@ Verification snapshot on 2026-03-26:
 - matrices:
   - `runtime_archives/bl100/tmp/provider_handshake_probe_missing_key.tsv`
   - `runtime_archives/bl100/tmp/provider_handshake_probe_key3.tsv`
+
+### 112. BL-099 Retest Refresh (2026-03-27, Still Blocked)
+
+User objective:
+
+- re-test yesterday/previous key-base routes
+- confirm whether provider onboarding can resume
+
+Main work areas:
+
+- reran all known Desktop key candidates against `aixj` + `fast` responses
+  endpoints using the repo probe script
+- archived 2026-03-27 retest matrix evidence and refreshed blocker source
+
+Primary output:
+
+- [PROVIDER_ROUTE_RETEST_20260327_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ROUTE_RETEST_20260327_REPORT.md)
+
+Key result:
+
+- retest remains blocked: `aixj=401`, `fast=403/1010`, no `2xx` route.
+
+Verification snapshot on 2026-03-27:
+
+- `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv`
+
+### 113. BL-20260327-101 Probe Gate Hardening (Done)
+
+User objective:
+
+- continue local non-key hardening without drift while BL-099 stays blocked
+
+Main work areas:
+
+- enhanced probe script with explicit success gate:
+  - `scripts/provider_handshake_probe.py --require-success`
+- added dedicated unit tests:
+  - `tests/test_provider_handshake_probe.py`
+- wired new tests into merge gate:
+  - `scripts/premerge_check.sh`
+
+Key result:
+
+- provider handshake probe can now fail fast in CI/local gating when no `2xx`
+  route is available, reducing false-ready progression risk.
+
+Verification snapshot on 2026-03-27:
+
+- `python3 -m unittest -v tests/test_provider_handshake_probe.py` (passed)
+
+### 114. BL-20260327-101 Gate-Check Evidence Finalization
+
+User objective:
+
+- keep provider issue recorded while continuing non-key local hardening
+
+Main work areas:
+
+- executed live gate-check with `--require-success` and archived matrix evidence
+- confirmed non-2xx path exits with code `2` (fail-fast)
+- finalized hardening report for BL-20260327-101
+
+Primary output:
+
+- [PROBE_GATE_REQUIRE_SUCCESS_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/PROBE_GATE_REQUIRE_SUCCESS_HARDENING_REPORT.md)
+
+Verification snapshot on 2026-03-27:
+
+- `runtime_archives/bl100/tmp/provider_handshake_probe_gatecheck_20260327.tsv`
+- command outcome: exit code `2` with message
+  `No successful (2xx) probe rows detected.`
