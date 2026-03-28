@@ -6014,3 +6014,40 @@ Verification snapshot on 2026-03-28:
   (passed)
 - `python3 scripts/provider_onboarding_history_validate.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths`
   (passed)
+
+### 124. BL-20260328-111 Onboarding History-Summary Consistency Gate (Done)
+
+User objective:
+
+- continue local-first hardening and prevent silent summary drift while keeping
+  blocker evidence deterministic
+
+Main work areas:
+
+- added dedicated consistency checker:
+  - `scripts/provider_onboarding_history_consistency_check.py`
+- checker recomputes expected summary from history using same repo-only
+  filtering semantics and compares key fields:
+  - `entry_count`, status/reason/exit-code counters, dropped count, `latest`
+- added tests:
+  - `tests/test_provider_onboarding_history_consistency_check.py`
+- integrated consistency check into premerge gate:
+  - `scripts/premerge_check.sh`
+- synced runbook with explicit consistency check command:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_HISTORY_CONSISTENCY_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_CONSISTENCY_HARDENING_REPORT.md)
+
+Key result:
+
+- stale/mismatched summary snapshots now fail closed before merge, eliminating
+  silent divergence from history JSONL.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_history_consistency_check.py`
+  (passed)
+- `python3 scripts/provider_onboarding_history_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
+  (passed)

@@ -195,6 +195,12 @@ else
   fail "tests/test_provider_onboarding_history_validate.py failed."
 fi
 
+if python3 -m unittest -v tests/test_provider_onboarding_history_consistency_check.py; then
+  pass "tests/test_provider_onboarding_history_consistency_check.py passed."
+else
+  fail "tests/test_provider_onboarding_history_consistency_check.py failed."
+fi
+
 if python3 scripts/provider_onboarding_history_validate.py \
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --repo-root "$repo_root" \
@@ -202,6 +208,16 @@ if python3 scripts/provider_onboarding_history_validate.py \
   pass "provider onboarding gate history jsonl passes schema/path validation."
 else
   fail "provider onboarding gate history jsonl validation failed."
+fi
+
+if python3 scripts/provider_onboarding_history_consistency_check.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
+  --repo-root "$repo_root" \
+  --repo-only; then
+  pass "provider onboarding history summary is consistent with history jsonl."
+else
+  fail "provider onboarding history summary consistency check failed."
 fi
 
 echo

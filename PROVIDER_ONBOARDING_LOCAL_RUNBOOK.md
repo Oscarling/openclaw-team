@@ -91,3 +91,13 @@ python3 scripts/provider_onboarding_history_validate.py \
   --repo-root /Users/lingguozhong/openclaw-team \
   --require-repo-paths
 ```
+
+Also verify summary snapshot consistency against history:
+
+```bash
+python3 scripts/provider_onboarding_history_consistency_check.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
+  --repo-root /Users/lingguozhong/openclaw-team \
+  --repo-only
+```
