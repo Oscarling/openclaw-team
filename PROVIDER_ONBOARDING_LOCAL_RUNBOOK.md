@@ -69,6 +69,11 @@ Outputs:
   - includes assess-snapshot coverage metrics:
     `assess_entry_count`, `assess_rows_with_snapshot`,
     `assess_rows_missing_snapshot`, `assess_snapshot_coverage_percent`
+  - includes snapshot-guard integrity metrics:
+    `assess_rows_with_snapshot_guard_match`,
+    `assess_rows_with_snapshot_guard_mismatch`,
+    `assess_rows_with_snapshot_guard_unverified`,
+    `assess_snapshot_guard_match_percent`
 
 Optional control for tests/special runs:
 
@@ -78,6 +83,9 @@ Optional control for tests/special runs:
   non-repo paths
 - under repo-only filtering, `assess` rows must have repo-scoped
   `assessment_snapshot_json`; otherwise they are dropped from summary counts
+- `assess_rows_with_snapshot_guard_mismatch > 0` signals decision-field drift
+  between a history row and its snapshot payload, usually caused by legacy
+  mutable-path overwrite before snapshot hardening
 
 ## 4) Decision Rule
 

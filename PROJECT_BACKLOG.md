@@ -2063,3 +2063,20 @@ Allowed enum values:
 - evidence: `scripts/provider_onboarding_history_summary.py`, `scripts/provider_onboarding_history_consistency_check.py`, `tests/test_provider_onboarding_history_summary.py`, `tests/test_provider_onboarding_history_consistency_check.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm assess-snapshot coverage metrics and consistency-gated snapshot observability
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-119
+- title: Add snapshot-guard integrity metrics to onboarding summary and consistency checks
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-118
+- start_when: Snapshot coverage is measurable, but summary does not yet quantify whether snapshot payload decisions still match their linked history rows
+- done_when: Summary emits snapshot guard match/mismatch metrics, consistency checks include those metrics, and runbook explains interpretation under repo-only workflow
+- source: local hardening continuation to surface legacy snapshot drift while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_INTEGRITY_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_summary.py`, `scripts/provider_onboarding_history_consistency_check.py`, `tests/test_provider_onboarding_history_summary.py`, `tests/test_provider_onboarding_history_consistency_check.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm snapshot-guard integrity metrics are summary-visible and consistency-gated
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

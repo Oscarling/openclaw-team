@@ -64,6 +64,43 @@ def _is_under_root(value: Any, root: Path) -> bool:
         return False
 
 
+def _normalize_http_counts(raw: Any) -> Dict[str, int]:
+    if not isinstance(raw, dict):
+        return {}
+    out: Dict[str, int] = {}
+    for key, value in raw.items():
+        if isinstance(key, str) and key.isdigit() and isinstance(value, int) and value >= 0:
+            out[key] = value
+    return out
+
+
+def _load_json_object(path_raw: Any) -> Dict[str, Any]:
+    if not isinstance(path_raw, str) or not path_raw.strip():
+        return {}
+    path = Path(path_raw)
+    if not path.exists():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _snapshot_guard_matches(entry: Dict[str, Any], snapshot_payload: Dict[str, Any]) -> bool:
+    if not snapshot_payload:
+        return False
+    if str(entry.get("status", "")) != str(snapshot_payload.get("status", "")):
+        return False
+    if str(entry.get("block_reason", "")) != str(snapshot_payload.get("block_reason", "")):
+        return False
+    entry_http = _normalize_http_counts(entry.get("http_code_counts"))
+    snapshot_http = _normalize_http_counts(snapshot_payload.get("http_code_counts"))
+    if entry_http and snapshot_http and entry_http != snapshot_http:
+        return False
+    return True
+
+
 def filter_repo_entries(entries: List[Dict[str, Any]], repo_root: Path, repo_only: bool) -> Tuple[List[Dict[str, Any]], int]:
     if not repo_only:
         return entries, 0
@@ -91,12 +128,22 @@ def build_summary(entries: List[Dict[str, Any]], history_path: Path, dropped_non
     rows_with_note_counts = 0
     assess_rows = 0
     assess_rows_with_snapshot = 0
+    assess_rows_with_snapshot_guard_match = 0
+    assess_rows_with_snapshot_guard_mismatch = 0
+    assess_rows_with_snapshot_guard_unverified = 0
     for entry in entries:
         if str(entry.get("phase", "")) == "assess":
             assess_rows += 1
             snapshot_path = entry.get("assessment_snapshot_json")
             if isinstance(snapshot_path, str) and snapshot_path.strip():
                 assess_rows_with_snapshot += 1
+                snapshot_payload = _load_json_object(snapshot_path)
+                if not snapshot_payload:
+                    assess_rows_with_snapshot_guard_unverified += 1
+                elif _snapshot_guard_matches(entry, snapshot_payload):
+                    assess_rows_with_snapshot_guard_match += 1
+                else:
+                    assess_rows_with_snapshot_guard_mismatch += 1
         note_counts = entry.get("note_class_counts")
         if not isinstance(note_counts, dict):
             continue
@@ -115,6 +162,9 @@ def build_summary(entries: List[Dict[str, Any]], history_path: Path, dropped_non
     assess_snapshot_coverage_percent = 0.0
     if assess_rows > 0:
         assess_snapshot_coverage_percent = round((assess_rows_with_snapshot / assess_rows) * 100.0, 2)
+    assess_snapshot_guard_match_percent = 0.0
+    if assess_rows_with_snapshot > 0:
+        assess_snapshot_guard_match_percent = round((assess_rows_with_snapshot_guard_match / assess_rows_with_snapshot) * 100.0, 2)
 
     return {
         "history_jsonl": str(history_path),
@@ -130,6 +180,10 @@ def build_summary(entries: List[Dict[str, Any]], history_path: Path, dropped_non
         "assess_rows_with_snapshot": assess_rows_with_snapshot,
         "assess_rows_missing_snapshot": assess_rows_missing_snapshot,
         "assess_snapshot_coverage_percent": assess_snapshot_coverage_percent,
+        "assess_rows_with_snapshot_guard_match": assess_rows_with_snapshot_guard_match,
+        "assess_rows_with_snapshot_guard_mismatch": assess_rows_with_snapshot_guard_mismatch,
+        "assess_rows_with_snapshot_guard_unverified": assess_rows_with_snapshot_guard_unverified,
+        "assess_snapshot_guard_match_percent": assess_snapshot_guard_match_percent,
         "dropped_non_repo_entries": dropped_non_repo_entries,
         "latest": {
             "timestamp": latest.get("timestamp"),
