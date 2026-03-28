@@ -6141,3 +6141,46 @@ Verification snapshot on 2026-03-28:
   (passed)
 - `python3 scripts/provider_onboarding_history_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
   (passed)
+
+### 127. BL-20260328-114 Guarded Legacy Note Backfill (Done)
+
+User objective:
+
+- continue local hardening and improve historical note-signal completeness
+  without corrupting prior blocked-decision evidence
+
+Main work areas:
+
+- added conservative backfill tool:
+  - `scripts/provider_onboarding_history_backfill.py`
+- backfill guard requires status/block_reason/http_code_counts alignment between
+  history row and referenced assessment JSON before writing note counts
+- added dry-run mode:
+  - `--dry-run` for no-write safety checks
+- added tests:
+  - `tests/test_provider_onboarding_history_backfill.py`
+- integrated into premerge:
+  - unit test + dry-run check in `scripts/premerge_check.sh`
+- updated runbook:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+- applied live backfill and refreshed summary:
+  - `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`
+  - `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_HISTORY_NOTE_BACKFILL_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_NOTE_BACKFILL_REPORT.md)
+
+Key result:
+
+- note-signal coverage improved from `0.0%` to `50.0%` with guarded semantics:
+  one row backfilled and one row intentionally skipped due to mismatch guard.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 scripts/provider_onboarding_history_backfill.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --backup-jsonl /tmp/provider_onboarding_gate_history_20260328.backup.jsonl`
+  (`backfilled=1`, `skipped_guard_mismatch=1`)
+- `python3 scripts/provider_onboarding_history_validate.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --repo-root /Users/lingguozhong/openclaw-team --require-repo-paths`
+  (passed)
+- `python3 scripts/provider_onboarding_history_consistency_check.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --repo-only`
+  (passed)

@@ -1737,7 +1737,7 @@ Allowed enum values:
 - source: `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md` on 2026-03-28 confirms retest matrix remains blocked and classifies dominant cause as auth/access policy block
 - link: /Users/lingguozhong/openclaw-team/PROVIDER_ROUTE_RETEST_20260327_REPORT.md
 - issue: -
-- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md`, `PROVIDER_ROUTE_RETEST_20260327_REPORT.md`, `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_SUMMARY_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_SUMMARY_REFRESH_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_REPO_FILTER_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_VALIDATION_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_CONSISTENCY_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_NOTE_SIGNAL_HISTORY_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_NOTE_SIGNAL_COVERAGE_METRICS_REPORT.md`, `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`, `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` show all currently known Desktop key candidates still fail handshake (`aixj=401 INVALID_API_KEY`, `fast=403/1010` with occasional transport/TLS `000`) and no `2xx` route is available for controlled replay
+- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md`, `PROVIDER_ROUTE_RETEST_20260327_REPORT.md`, `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_SUMMARY_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_SUMMARY_REFRESH_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_REPO_FILTER_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_VALIDATION_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_CONSISTENCY_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_NOTE_SIGNAL_HISTORY_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_NOTE_SIGNAL_COVERAGE_METRICS_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_NOTE_BACKFILL_REPORT.md`, `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`, `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` show all currently known Desktop key candidates still fail handshake (`aixj=401 INVALID_API_KEY`, `fast=403/1010` with occasional transport/TLS `000`) and no `2xx` route is available for controlled replay
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-26
 
@@ -1976,5 +1976,22 @@ Allowed enum values:
 - link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_NOTE_SIGNAL_COVERAGE_METRICS_REPORT.md
 - issue: -
 - evidence: `scripts/provider_onboarding_history_summary.py`, `scripts/provider_onboarding_history_consistency_check.py`, `tests/test_provider_onboarding_history_summary.py`, `tests/test_provider_onboarding_history_consistency_check.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm coverage metrics (`rows_with_note_class_counts`, `rows_missing_note_class_counts`, `note_signal_coverage_percent`) are generated and consistency-checked
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-114
+- title: Backfill legacy onboarding history rows with guarded note-level signals
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-113
+- start_when: Coverage metrics expose legacy rows missing `note_class_counts`, but no controlled recovery path exists to enrich historical records safely
+- done_when: A conservative backfill tool fills only decision-matching rows from assessment JSON, dry-run is available for safe checks, and repo history/summary are refreshed with measurable coverage uplift
+- source: local hardening continuation to improve historical signal completeness without semantic drift
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_NOTE_BACKFILL_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_backfill.py`, `tests/test_provider_onboarding_history_backfill.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm guarded backfill (`backfilled=1`, `skipped_guard_mismatch=1`) and note coverage uplift to `50.0%`
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28

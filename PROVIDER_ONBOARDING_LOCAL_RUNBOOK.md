@@ -106,3 +106,12 @@ python3 scripts/provider_onboarding_history_consistency_check.py \
   --repo-root /Users/lingguozhong/openclaw-team \
   --repo-only
 ```
+
+If legacy history rows are missing `note_class_counts`, run conservative
+backfill (guarded by status/block/http-count match):
+
+```bash
+python3 scripts/provider_onboarding_history_backfill.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --backup-jsonl /tmp/provider_onboarding_gate_history.backup.jsonl
+```

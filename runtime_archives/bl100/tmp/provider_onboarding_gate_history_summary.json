@@ -11,10 +11,14 @@
   "exit_code_counts": {
     "2": 2
   },
-  "note_class_counts": {},
-  "rows_with_note_class_counts": 0,
-  "rows_missing_note_class_counts": 2,
-  "note_signal_coverage_percent": 0.0,
+  "note_class_counts": {
+    "edge_policy_1010": 3,
+    "invalid_api_key": 4,
+    "tls_eof": 1
+  },
+  "rows_with_note_class_counts": 1,
+  "rows_missing_note_class_counts": 1,
+  "note_signal_coverage_percent": 50.0,
   "dropped_non_repo_entries": 0,
   "latest": {
     "timestamp": "2026-03-28T12:26:50",
@@ -22,7 +26,11 @@
     "status": "blocked",
     "block_reason": "mixed_with_tls_transport_failures",
     "exit_code": 2,
-    "note_class_counts": null,
+    "note_class_counts": {
+      "edge_policy_1010": 3,
+      "invalid_api_key": 4,
+      "tls_eof": 1
+    },
     "probe_tsv": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv",
     "assessment_json": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json"
   }
