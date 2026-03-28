@@ -57,6 +57,7 @@ class ProviderOnboardingHistoryBackfillGapsTests(unittest.TestCase):
             self.assertEqual(report["missing_note_count_rows"], 2)
             self.assertEqual(report["reason_counts"]["guard_mismatch_block_reason"], 1)
             self.assertEqual(report["reason_counts"]["backfillable_now"], 1)
+            self.assertEqual(report["missing_rows"][0]["detail"]["source_field"], "assessment_json")
 
     def test_main_writes_report_json(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-history-gaps-") as tmp_raw:
@@ -105,6 +106,38 @@ class ProviderOnboardingHistoryBackfillGapsTests(unittest.TestCase):
             payload = json.loads(out.read_text(encoding="utf-8"))
             self.assertEqual(payload["missing_note_count_rows"], 1)
             self.assertEqual(payload["reason_counts"]["backfillable_now"], 1)
+
+    def test_gap_report_prefers_snapshot_source_field(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-history-gaps-") as tmp_raw:
+            tmp = Path(tmp_raw)
+            assess = tmp / "assessment_snapshot.json"
+            assess.write_text(
+                json.dumps(
+                    {
+                        "status": "blocked",
+                        "block_reason": "mixed_with_tls_transport_failures",
+                        "http_code_counts": {"000": 1},
+                        "note_class_counts": {"tls_eof": 1},
+                    },
+                    ensure_ascii=False,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            history_rows = [
+                {
+                    "timestamp": "2026-03-28T12:26:50",
+                    "stamp": "20260328",
+                    "status": "blocked",
+                    "block_reason": "mixed_with_tls_transport_failures",
+                    "http_code_counts": {"000": 1},
+                    "assessment_json": str(tmp / "assessment_legacy.json"),
+                    "assessment_snapshot_json": str(assess),
+                }
+            ]
+            report = provider_onboarding_history_backfill_gaps.build_gap_report(history_rows, Path("history.jsonl"))
+            self.assertEqual(report["reason_counts"]["backfillable_now"], 1)
+            self.assertEqual(report["missing_rows"][0]["detail"]["source_field"], "assessment_snapshot_json")
 
 
 if __name__ == "__main__":

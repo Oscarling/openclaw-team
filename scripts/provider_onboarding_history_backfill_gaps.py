@@ -62,38 +62,51 @@ def _normalize_note_counts(raw: Any) -> Dict[str, int]:
 
 
 def classify_gap(entry: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
-    assessment_path_raw = entry.get("assessment_json")
+    source_field = "assessment_snapshot_json" if entry.get("assessment_snapshot_json") else "assessment_json"
+    assessment_path_raw = entry.get(source_field)
     if not assessment_path_raw:
-        return "assessment_missing", {"detail": "assessment_json missing"}
+        return "assessment_missing", {"detail": "assessment path missing", "source_field": source_field}
 
     assess_path = Path(str(assessment_path_raw))
     if not assess_path.exists():
-        return "assessment_missing", {"detail": "assessment_json path not found"}
+        return "assessment_missing", {"detail": "assessment path not found", "source_field": source_field}
 
     assess = load_assessment(assess_path)
     if not assess:
-        return "assessment_parse_error", {"detail": "assessment json unreadable"}
+        return "assessment_parse_error", {"detail": "assessment json unreadable", "source_field": source_field}
 
     entry_status = str(entry.get("status", ""))
     assess_status = str(assess.get("status", ""))
     if entry_status != assess_status:
-        return "guard_mismatch_status", {"entry_status": entry_status, "assessment_status": assess_status}
+        return "guard_mismatch_status", {
+            "entry_status": entry_status,
+            "assessment_status": assess_status,
+            "source_field": source_field,
+        }
 
     entry_reason = str(entry.get("block_reason", ""))
     assess_reason = str(assess.get("block_reason", ""))
     if entry_reason != assess_reason:
-        return "guard_mismatch_block_reason", {"entry_block_reason": entry_reason, "assessment_block_reason": assess_reason}
+        return "guard_mismatch_block_reason", {
+            "entry_block_reason": entry_reason,
+            "assessment_block_reason": assess_reason,
+            "source_field": source_field,
+        }
 
     entry_http = entry.get("http_code_counts")
     assess_http = assess.get("http_code_counts")
     if isinstance(entry_http, dict) and isinstance(assess_http, dict) and entry_http != assess_http:
-        return "guard_mismatch_http_code_counts", {"entry_http_code_counts": entry_http, "assessment_http_code_counts": assess_http}
+        return "guard_mismatch_http_code_counts", {
+            "entry_http_code_counts": entry_http,
+            "assessment_http_code_counts": assess_http,
+            "source_field": source_field,
+        }
 
     note_counts = _normalize_note_counts(assess.get("note_class_counts"))
     if not note_counts:
-        return "assessment_note_counts_missing", {"detail": "assessment note_class_counts missing/invalid"}
+        return "assessment_note_counts_missing", {"detail": "assessment note_class_counts missing/invalid", "source_field": source_field}
 
-    return "backfillable_now", {"assessment_note_class_counts": note_counts}
+    return "backfillable_now", {"assessment_note_class_counts": note_counts, "source_field": source_field}
 
 
 def build_gap_report(history_rows: List[Dict[str, Any]], history_path: Path) -> Dict[str, Any]:

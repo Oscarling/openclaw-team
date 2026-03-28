@@ -114,6 +114,7 @@ class ProviderOnboardingGateTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-gate-") as tmp:
             history = Path(tmp) / "history.jsonl"
+            snapshots = Path(tmp) / "snapshots"
             argv = [
                 str(MODULE_PATH),
                 "--output-dir",
@@ -122,6 +123,8 @@ class ProviderOnboardingGateTests(unittest.TestCase):
                 "20260328",
                 "--history-jsonl",
                 str(history),
+                "--assessment-snapshot-dir",
+                str(snapshots),
             ]
             with mock.patch.object(provider_onboarding_gate, "run_command", side_effect=fake_run):
                 with mock.patch.object(sys, "argv", argv):
@@ -137,6 +140,7 @@ class ProviderOnboardingGateTests(unittest.TestCase):
             self.assertEqual(row["block_reason"], "auth_or_access_policy_block")
             self.assertEqual(row["success_row_count"], 0)
             self.assertEqual(row["note_class_counts"], {"invalid_api_key": 1, "edge_policy_1010": 1})
+            self.assertTrue(Path(row["assessment_snapshot_json"]).exists())
             self.assertIn("provider_onboarding_history_summary.py", calls[2][1])
             self.assertIn("--repo-only", calls[2])
 
@@ -183,6 +187,7 @@ class ProviderOnboardingGateTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-gate-") as tmp:
             history = Path(tmp) / "history.jsonl"
+            snapshots = Path(tmp) / "snapshots"
             argv = [
                 str(MODULE_PATH),
                 "--output-dir",
@@ -192,6 +197,8 @@ class ProviderOnboardingGateTests(unittest.TestCase):
                 "--no-history-summary",
                 "--history-jsonl",
                 str(history),
+                "--assessment-snapshot-dir",
+                str(snapshots),
             ]
             with mock.patch.object(provider_onboarding_gate, "run_command", side_effect=fake_run):
                 with mock.patch.object(sys, "argv", argv):
@@ -221,6 +228,7 @@ class ProviderOnboardingGateTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-gate-") as tmp:
             history = Path(tmp) / "history.jsonl"
+            snapshots = Path(tmp) / "snapshots"
             argv = [
                 str(MODULE_PATH),
                 "--output-dir",
@@ -229,6 +237,8 @@ class ProviderOnboardingGateTests(unittest.TestCase):
                 "20260328",
                 "--history-jsonl",
                 str(history),
+                "--assessment-snapshot-dir",
+                str(snapshots),
                 "--no-history-summary-repo-only",
             ]
             with mock.patch.object(provider_onboarding_gate, "run_command", side_effect=fake_run):

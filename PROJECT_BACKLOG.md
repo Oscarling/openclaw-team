@@ -1737,7 +1737,7 @@ Allowed enum values:
 - source: `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md` on 2026-03-28 confirms retest matrix remains blocked and classifies dominant cause as auth/access policy block
 - link: /Users/lingguozhong/openclaw-team/PROVIDER_ROUTE_RETEST_20260327_REPORT.md
 - issue: -
-- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md`, `PROVIDER_ROUTE_RETEST_20260327_REPORT.md`, `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_SUMMARY_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_SUMMARY_REFRESH_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_REPO_FILTER_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_VALIDATION_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_CONSISTENCY_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_NOTE_SIGNAL_HISTORY_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_NOTE_SIGNAL_COVERAGE_METRICS_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_NOTE_BACKFILL_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_BACKFILL_GAP_REPORTING.md`, `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`, `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`, and `runtime_archives/bl100/tmp/provider_onboarding_history_backfill_gaps.json` show all currently known Desktop key candidates still fail handshake (`aixj=401 INVALID_API_KEY`, `fast=403/1010` with occasional transport/TLS `000`) and no `2xx` route is available for controlled replay
+- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md`, `PROVIDER_ROUTE_RETEST_20260327_REPORT.md`, `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_SUMMARY_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_SUMMARY_REFRESH_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_REPO_FILTER_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_VALIDATION_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_CONSISTENCY_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_NOTE_SIGNAL_HISTORY_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_NOTE_SIGNAL_COVERAGE_METRICS_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_NOTE_BACKFILL_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_BACKFILL_GAP_REPORTING.md`, `PROVIDER_ONBOARDING_ASSESSMENT_SNAPSHOT_IMMUTABILITY_REPORT.md`, `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`, `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`, and `runtime_archives/bl100/tmp/provider_onboarding_history_backfill_gaps.json` show all currently known Desktop key candidates still fail handshake (`aixj=401 INVALID_API_KEY`, `fast=403/1010` with occasional transport/TLS `000`) and no `2xx` route is available for controlled replay
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-26
 
@@ -2010,5 +2010,22 @@ Allowed enum values:
 - link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_BACKFILL_GAP_REPORTING.md
 - issue: -
 - evidence: `scripts/provider_onboarding_history_backfill_gaps.py`, `tests/test_provider_onboarding_history_backfill_gaps.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_history_backfill_gaps.json` confirm deterministic unresolved-gap classification (`guard_mismatch_block_reason`) and merge-time checkability
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-116
+- title: Persist immutable assessment snapshots in onboarding history and align consumers
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-115
+- start_when: Current history rows reference mutable assessment paths that can be overwritten by repeated same-stamp runs, increasing drift risk for backfill and diagnostics
+- done_when: Gate writes immutable `assessment_snapshot_json` pointers for new history rows, validator enforces snapshot path scope, and backfill/gap tools prefer snapshot source when present
+- source: local hardening continuation to reduce pointer drift and preserve forensic stability
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_ASSESSMENT_SNAPSHOT_IMMUTABILITY_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_gate.py`, `scripts/provider_onboarding_history_validate.py`, `scripts/provider_onboarding_history_backfill.py`, `scripts/provider_onboarding_history_backfill_gaps.py`, `tests/test_provider_onboarding_gate.py`, `tests/test_provider_onboarding_history_validate.py`, `tests/test_provider_onboarding_history_backfill.py`, and `tests/test_provider_onboarding_history_backfill_gaps.py` confirm immutable snapshot support and snapshot-first consumer behavior
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28

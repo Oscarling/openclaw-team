@@ -59,6 +59,26 @@ class ProviderOnboardingHistoryValidateTests(unittest.TestCase):
         self.assertTrue(any("probe_tsv must be absolute repo path" in err for err in errors))
         self.assertTrue(any("assessment_json must be absolute repo path" in err for err in errors))
 
+    def test_validate_entry_rejects_non_repo_snapshot_path_when_required(self) -> None:
+        row = {
+            "timestamp": "2026-03-28T12:26:50",
+            "stamp": "20260328",
+            "phase": "assess",
+            "status": "blocked",
+            "block_reason": "mixed_with_tls_transport_failures",
+            "exit_code": 2,
+            "probe_tsv": "/Users/demo/repo/runtime_archives/bl100/tmp/probe.tsv",
+            "assessment_json": "/Users/demo/repo/runtime_archives/bl100/tmp/assessment.json",
+            "assessment_snapshot_json": "/var/folders/nonrepo_snapshot.json",
+        }
+        errors = provider_onboarding_history_validate.validate_entry(
+            row,
+            line_no=4,
+            repo_root=Path("/Users/demo/repo"),
+            require_repo_paths=True,
+        )
+        self.assertTrue(any("assessment_snapshot_json must be absolute repo path" in err for err in errors))
+
     def test_validate_history_reports_invalid_json_and_schema_errors(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-onboarding-history-validate-") as tmp_raw:
             tmp = Path(tmp_raw)

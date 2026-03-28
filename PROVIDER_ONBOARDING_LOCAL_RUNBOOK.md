@@ -59,6 +59,7 @@ Outputs:
 - probe TSV: `runtime_archives/bl100/tmp/provider_handshake_probe_gate_<stamp>.tsv`
 - assessment JSON: `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_<stamp>.json`
 - history JSONL: `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`
+- immutable assessment snapshots (new runs): `runtime_archives/bl100/tmp/provider_handshake_assessment_snapshots/`
 - history summary JSON: `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`
   - includes aggregated `note_class_counts` (e.g. `invalid_api_key`,
     `edge_policy_1010`, `tls_eof`) for signal-level trend tracking

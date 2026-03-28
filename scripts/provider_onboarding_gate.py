@@ -5,11 +5,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROBE_SCRIPT = REPO_ROOT / "scripts" / "provider_handshake_probe.py"
@@ -77,6 +78,11 @@ def parse_args() -> argparse.Namespace:
         action="store_false",
         help="Allow non-repo evidence entries when refreshing history summary",
     )
+    parser.add_argument(
+        "--assessment-snapshot-dir",
+        default="runtime_archives/bl100/tmp/provider_handshake_assessment_snapshots",
+        help="Directory for immutable per-run assessment snapshots referenced by history rows",
+    )
     return parser.parse_args()
 
 
@@ -97,6 +103,19 @@ def append_history_entry(path: Path, entry: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
+def write_assessment_snapshot(source: Path, snapshot_dir: Path, stamp: str, run_timestamp: str) -> Optional[Path]:
+    if not source.exists():
+        return None
+    snapshot_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        suffix = datetime.fromisoformat(run_timestamp).strftime("%Y%m%dT%H%M%S")
+    except ValueError:
+        suffix = run_timestamp.replace(":", "").replace("-", "").replace(" ", "_")
+    target = snapshot_dir / f"provider_handshake_assessment_gate_{stamp}_{suffix}.json"
+    shutil.copy2(source, target)
+    return target
 
 
 def refresh_history_summary(history_path: Path, output_json: Path, repo_only: bool) -> subprocess.CompletedProcess[str]:
@@ -127,6 +146,9 @@ def main() -> int:
     history_summary_path = Path(args.history_summary_json)
     if not history_summary_path.is_absolute():
         history_summary_path = REPO_ROOT / history_summary_path
+    snapshot_dir = Path(args.assessment_snapshot_dir)
+    if not snapshot_dir.is_absolute():
+        snapshot_dir = REPO_ROOT / snapshot_dir
 
     probe_tsv = out_dir / f"provider_handshake_probe_gate_{args.stamp}.tsv"
     assess_json = out_dir / f"provider_handshake_assessment_gate_{args.stamp}.json"
@@ -146,10 +168,11 @@ def main() -> int:
         print(probe_proc.stderr.strip(), file=sys.stderr)
     if probe_proc.returncode != 0:
         if not args.no_history:
+            run_timestamp = datetime.now().isoformat(timespec="seconds")
             append_history_entry(
                 history_path,
                 {
-                    "timestamp": datetime.now().isoformat(timespec="seconds"),
+                    "timestamp": run_timestamp,
                     "stamp": args.stamp,
                     "probe_tsv": str(probe_tsv),
                     "assessment_json": str(assess_json),
@@ -188,14 +211,17 @@ def main() -> int:
     if assess_proc.stderr:
         print(assess_proc.stderr.strip(), file=sys.stderr)
     if not args.no_history:
+        run_timestamp = datetime.now().isoformat(timespec="seconds")
+        snapshot_path = write_assessment_snapshot(assess_json, snapshot_dir, args.stamp, run_timestamp)
         summary = load_assessment_summary(assess_json)
         append_history_entry(
             history_path,
             {
-                "timestamp": datetime.now().isoformat(timespec="seconds"),
+                "timestamp": run_timestamp,
                 "stamp": args.stamp,
                 "probe_tsv": str(probe_tsv),
                 "assessment_json": str(assess_json),
+                "assessment_snapshot_json": str(snapshot_path) if snapshot_path else None,
                 "exit_code": assess_proc.returncode,
                 "phase": "assess",
                 "status": summary.get("status", "unknown"),

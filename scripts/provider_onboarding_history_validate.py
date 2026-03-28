@@ -85,6 +85,8 @@ def validate_entry(entry: Dict[str, Any], line_no: int, repo_root: Path, require
         for key in ("probe_tsv", "assessment_json"):
             if not _is_repo_path(entry.get(key), repo_root):
                 errors.append(f"line {line_no}: {key} must be absolute repo path under {repo_root}")
+        if entry.get("assessment_snapshot_json") is not None and not _is_repo_path(entry.get("assessment_snapshot_json"), repo_root):
+            errors.append(f"line {line_no}: assessment_snapshot_json must be absolute repo path under {repo_root}")
 
     success_row_count = entry.get("success_row_count")
     if success_row_count is not None and (not isinstance(success_row_count, int) or success_row_count < 0):

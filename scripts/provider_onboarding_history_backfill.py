@@ -102,7 +102,7 @@ def backfill_entries(entries: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]
             updated.append(next_row)
             continue
 
-        assessment_path_raw = next_row.get("assessment_json")
+        assessment_path_raw = next_row.get("assessment_snapshot_json") or next_row.get("assessment_json")
         assessment_path = Path(str(assessment_path_raw)) if assessment_path_raw else Path("")
         if not assessment_path_raw or not assessment_path.exists():
             stats["skipped_no_assessment"] += 1

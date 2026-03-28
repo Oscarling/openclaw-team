@@ -16,7 +16,8 @@
       "reason": "guard_mismatch_block_reason",
       "detail": {
         "entry_block_reason": "auth_or_access_policy_block",
-        "assessment_block_reason": "mixed_with_tls_transport_failures"
+        "assessment_block_reason": "mixed_with_tls_transport_failures",
+        "source_field": "assessment_json"
       }
     }
   ]

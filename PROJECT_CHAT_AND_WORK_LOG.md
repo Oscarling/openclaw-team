@@ -6230,3 +6230,48 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/provider_onboarding_history_backfill_gaps.py --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl --output-json runtime_archives/bl100/tmp/provider_onboarding_history_backfill_gaps.json`
   (passed)
 - `bash scripts/premerge_check.sh` (passed)
+
+### 129. BL-20260328-116 Assessment Snapshot Immutability (Done)
+
+User objective:
+
+- continue local hardening while reducing pointer drift risk in onboarding
+  history evidence
+
+Main work areas:
+
+- enhanced gate history writes:
+  - `scripts/provider_onboarding_gate.py`
+  - new optional field: `assessment_snapshot_json`
+  - immutable snapshot file copied per run under configurable
+    `--assessment-snapshot-dir`
+- validation hardening:
+  - `scripts/provider_onboarding_history_validate.py` now validates
+    `assessment_snapshot_json` path scope when repo-path checks are enforced
+- consumer hardening:
+  - `scripts/provider_onboarding_history_backfill.py` now prefers
+    `assessment_snapshot_json` over mutable `assessment_json`
+  - `scripts/provider_onboarding_history_backfill_gaps.py` uses the same
+    source preference and reports `source_field`
+- test updates:
+  - `tests/test_provider_onboarding_gate.py`
+  - `tests/test_provider_onboarding_history_validate.py`
+  - `tests/test_provider_onboarding_history_backfill.py`
+  - `tests/test_provider_onboarding_history_backfill_gaps.py`
+- runbook update:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+
+Primary output:
+
+- [PROVIDER_ONBOARDING_ASSESSMENT_SNAPSHOT_IMMUTABILITY_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_ASSESSMENT_SNAPSHOT_IMMUTABILITY_REPORT.md)
+
+Key result:
+
+- future history rows can bind to immutable assessment snapshots, and all
+  downstream tooling is snapshot-aware.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_onboarding_gate.py tests/test_provider_onboarding_history_backfill.py tests/test_provider_onboarding_history_backfill_gaps.py tests/test_provider_onboarding_history_validate.py`
+  (passed)
+- `bash scripts/premerge_check.sh` (passed)
