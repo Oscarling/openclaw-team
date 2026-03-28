@@ -255,6 +255,15 @@ else
   fail "tests/test_project_delivery_status.py failed."
 fi
 
+if python3 scripts/project_delivery_status.py \
+  --repo-root "$repo_root" \
+  --output-json /tmp/project_delivery_status_premerge.json \
+  --output-md /tmp/project_delivery_status_premerge.md >/tmp/project_delivery_status_premerge.stdout.json; then
+  pass "project delivery status board smoke check passed."
+else
+  fail "project delivery status board smoke check failed."
+fi
+
 if python3 scripts/provider_onboarding_history_backfill.py \
   --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
   --dry-run; then

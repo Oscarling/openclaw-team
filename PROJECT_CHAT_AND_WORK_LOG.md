@@ -7230,6 +7230,57 @@ Verification snapshot on 2026-03-28:
 - `python3 scripts/backlog_sync.py` (passed)
 - `bash scripts/premerge_check.sh` (passed)
 
+### 160. BL-20260328-147 Retryable Handshake Probe Bounded Retry Hardening (Done)
+
+User objective:
+
+- adapt to current provider/base market instability with minimal change so
+  transient transport/gateway jitter does not over-trigger blocked conclusions
+
+Main work areas:
+
+- expert-guided minimal hardening:
+  - consulted `gstack_min_change_review`
+  - accepted recommendation: bounded retry, fail-closed unchanged
+- probe hardening:
+  - `scripts/provider_handshake_probe.py`
+  - adds `--retry-attempts` (default `2`, minimum `1`)
+  - retries only retryable classes:
+    - `000` transport failures
+    - `5xx` responses
+    - timeout/TLS EOF/DNS-like transport signals
+  - does not retry auth-policy `4xx` such as `401/403`
+- tests enhancement:
+  - `tests/test_provider_handshake_probe.py`
+  - adds coverage for:
+    - retry on transient transport failure then success
+    - no retry on `401`
+    - `--retry-attempts=1` disables retry
+    - invalid retry value returns exit code `2`
+- runbook hardening:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+  - documents default retry behavior and strict single-shot override
+
+Primary output:
+
+- [PROVIDER_HANDSHAKE_RETRYABLE_RETRY_HARDENING_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_RETRYABLE_RETRY_HARDENING_REPORT.md)
+
+Key result:
+
+- handshake probing is now less sensitive to transient network jitter while
+  preserving the existing fail-closed `2xx + api_like` readiness rule.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_handshake_probe.py` (passed)
+- `python3 -m unittest -v tests/test_provider_handshake_assess.py` (passed)
+- `python3 -m unittest -v tests/test_project_delivery_status.py` (passed)
+- `python3 -m unittest -v tests/test_execute_approved_previews.py` (passed)
+- `python3 -m unittest -v tests/test_argus_hardening.py` (passed)
+- `python3 scripts/backlog_lint.py` (passed)
+- `python3 scripts/backlog_sync.py` (passed)
+- `bash scripts/premerge_check.sh` (passed)
+
 ### 154. BL-20260328-141 Bounded Auto-Replay For Retryable Rejections (Done)
 
 User objective:
@@ -7398,6 +7449,107 @@ Verification snapshot on 2026-03-28:
 
 - `python3 -m unittest -v tests/test_project_delivery_status.py` (passed)
 - `python3 scripts/project_delivery_status.py --repo-root /Users/lingguozhong/openclaw-team --output-json /tmp/project_delivery_status.json --output-md /tmp/project_delivery_status.md` (passed)
+- `python3 -m unittest -v tests/test_execute_approved_previews.py` (passed)
+- `python3 -m unittest -v tests/test_argus_hardening.py` (passed)
+- `python3 scripts/backlog_lint.py` (passed)
+- `python3 scripts/backlog_sync.py` (passed)
+- `bash scripts/premerge_check.sh` (passed)
+
+### 158. BL-20260328-145 Delivery Status Require-Ready Fail-Fast Gate (Done)
+
+User objective:
+
+- continue execution without drift and make project closure checks fail-fast
+  when readiness is not met under blocked provider/base conditions
+
+Main work areas:
+
+- script hardening:
+  - `scripts/project_delivery_status.py`
+  - adds `--require-ready`:
+    - returns exit code `2` unless `delivery_state=ready_for_replay`
+- test enhancement:
+  - `tests/test_project_delivery_status.py`
+  - adds coverage for:
+    - non-ready returns `2`
+    - ready returns `0`
+- merge gate hardening:
+  - `scripts/premerge_check.sh`
+  - adds delivery-status smoke command that writes JSON/Markdown outputs
+- runbook hardening:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+  - documents fail-fast `--require-ready` usage and semantics
+
+Primary output:
+
+- [PROJECT_DELIVERY_STATUS_REQUIRE_READY_GATE_REPORT.md](/Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_STATUS_REQUIRE_READY_GATE_REPORT.md)
+
+Key result:
+
+- delivery status board now doubles as an automation gate, preventing premature
+  replay/canary closure actions when readiness criteria are not satisfied.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_project_delivery_status.py` (passed)
+- `python3 scripts/project_delivery_status.py --repo-root /Users/lingguozhong/openclaw-team --output-json /tmp/project_delivery_status_now.json --output-md /tmp/project_delivery_status_now.md` (passed)
+- `python3 scripts/project_delivery_status.py --repo-root /Users/lingguozhong/openclaw-team --require-ready` (exit code `2`, expected under blocked state)
+- `python3 -m unittest -v tests/test_execute_approved_previews.py` (passed)
+- `python3 -m unittest -v tests/test_argus_hardening.py` (passed)
+- `python3 scripts/backlog_lint.py` (passed)
+- `python3 scripts/backlog_sync.py` (passed)
+- `bash scripts/premerge_check.sh` (passed)
+
+### 159. BL-20260328-146 Handshake Non-API 2xx False-Positive Guard (Done)
+
+User objective:
+
+- adapt to current provider/base market constraints and continue optimization so
+  fake `200` responses (HTML/gateway pages) do not get mistaken as usable routes
+
+Main work areas:
+
+- expert-aligned minimal hardening:
+  - consulted `gstack_min_change_review` for low-risk patch direction
+  - adopted minimal fail-closed strategy:
+    - structured `api_like` signal
+    - success requires `2xx + api_like`
+- probe hardening:
+  - `scripts/provider_handshake_probe.py`
+  - appends `api_like` column in TSV output
+  - marks `200` HTML as `api_like=0`
+  - keeps backward-compatible note markers
+- assess hardening:
+  - `scripts/provider_handshake_assess.py`
+  - success counting now row-level (`2xx + api_like`)
+  - adds/uses `non_api_success_payload` blocked reason when only non-API `200`
+    rows are present
+  - remains backward-compatible with legacy TSV rows lacking `api_like` column
+- tests enhancement:
+  - `tests/test_provider_handshake_probe.py`
+  - `tests/test_provider_handshake_assess.py`
+  - adds coverage for HTML-200 false-positive suppression and `api_like` column
+    behavior
+- runbook hardening:
+  - `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`
+  - updates readiness definition to `2xx + api_like=1`
+
+Primary output:
+
+- [PROVIDER_HANDSHAKE_NON_API_SUCCESS_GUARD_REPORT.md](/Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_NON_API_SUCCESS_GUARD_REPORT.md)
+
+Key result:
+
+- Desktop backup key/base retest no longer misclassifies gateway HTML `200` as
+  ready; readiness now correctly remains blocked under current route quality.
+
+Verification snapshot on 2026-03-28:
+
+- `python3 -m unittest -v tests/test_provider_handshake_probe.py` (passed)
+- `python3 -m unittest -v tests/test_provider_handshake_assess.py` (passed)
+- `python3 scripts/provider_handshake_probe.py --key-file "$HOME/Desktop/备用key.rtf" --key-file "$HOME/Desktop/备用key 2.rtf" --key-file "$HOME/Desktop/备用key3.rtf" --endpoint https://aixj.vip/v1/responses --endpoint https://aixj.vip/responses --endpoint https://fast.vpsairobot.com/v1/responses --endpoint https://fast.vpsairobot.com/responses --endpoint http://1.95.142.151:3000/v1/responses --endpoint http://1.95.142.151:3000/responses --probe-all-keys --model gpt-5-codex --timeout 45 --output /tmp/provider_handshake_probe_desktop_keys_20260328_v4.tsv` (passed)
+- `python3 scripts/provider_handshake_assess.py --probe-tsv /tmp/provider_handshake_probe_desktop_keys_20260328_v4.tsv --output-json /tmp/provider_handshake_assessment_desktop_keys_20260328_v4.json` (passed; `status=blocked`, `block_reason=non_api_success_payload`)
+- `python3 -m unittest -v tests/test_project_delivery_status.py` (passed)
 - `python3 -m unittest -v tests/test_execute_approved_previews.py` (passed)
 - `python3 -m unittest -v tests/test_argus_hardening.py` (passed)
 - `python3 scripts/backlog_lint.py` (passed)

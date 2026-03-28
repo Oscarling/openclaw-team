@@ -66,16 +66,36 @@ def extract_key_tails(rows: List[Dict[str, str]]) -> List[str]:
     return tails
 
 
-def count_success(code_counter: Counter[str]) -> int:
+def is_api_like_row_success(row: Dict[str, str]) -> bool:
+    code = (row.get("http_code", "") or "").strip()
+    if not code.isdigit() or not (200 <= int(code) < 300):
+        return False
+    api_like_flag = (row.get("api_like", "") or "").strip().lower()
+    if api_like_flag in {"1", "true", "yes"}:
+        return True
+    if api_like_flag in {"0", "false", "no"}:
+        return False
+    note = (row.get("note", "") or "").lower()
+    if "api_like=" in note:
+        return "api_like=true" in note
+    return True
+
+
+def count_success(rows: List[Dict[str, str]]) -> int:
     total = 0
-    for code, count in code_counter.items():
-        if code.isdigit() and 200 <= int(code) < 300:
-            total += count
+    for row in rows:
+        if is_api_like_row_success(row):
+            total += 1
     return total
 
 
-def classify_note_signal(note: str) -> str:
+def classify_note_signal(row: Dict[str, str]) -> str:
+    note = row.get("note", "") or ""
+    http_code = row.get("http_code", "") or ""
     lowered = (note or "").lower()
+    code = (http_code or "").strip()
+    if code.isdigit() and 200 <= int(code) < 300 and not is_api_like_row_success(row):
+        return "non_api_success_payload"
     if "invalid_api_key" in lowered:
         return "invalid_api_key"
     if "error code: 1010" in lowered:
@@ -94,6 +114,8 @@ def decide_block_reason(code_counter: Counter[str], note_class_counter: Counter[
         return "none"
     if not code_counter:
         return "empty_probe_matrix"
+    if note_class_counter.get("non_api_success_payload", 0) > 0:
+        return "non_api_success_payload"
     codes = set(code_counter.keys())
     if codes <= {"401"}:
         return "invalid_api_key"
@@ -115,8 +137,8 @@ def decide_block_reason(code_counter: Counter[str], note_class_counter: Counter[
 def build_summary(rows: List[Dict[str, str]], probe_tsv: Path) -> Dict[str, Any]:
     code_counter = Counter((row.get("http_code", "") or "").strip() for row in rows)
     endpoint_counter = Counter((row.get("endpoint", "") or "").strip() for row in rows)
-    note_class_counter = Counter(classify_note_signal((row.get("note", "") or "").strip()) for row in rows)
-    success_count = count_success(code_counter)
+    note_class_counter = Counter(classify_note_signal(row) for row in rows)
+    success_count = count_success(rows)
     status = "ready" if success_count > 0 else "blocked"
     block_reason = decide_block_reason(code_counter, note_class_counter, success_count)
 

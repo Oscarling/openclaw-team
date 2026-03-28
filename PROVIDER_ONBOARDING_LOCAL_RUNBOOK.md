@@ -15,6 +15,9 @@ python3 scripts/provider_handshake_probe.py \
   --output runtime_archives/bl100/tmp/provider_handshake_probe_manual.tsv
 ```
 
+Probe command now defaults to `--retry-attempts 2` for retryable transport/5xx
+failures. Use `--retry-attempts 1` to disable retries in strict single-shot mode.
+
 Fail fast when no `2xx` exists:
 
 ```bash
@@ -92,10 +95,10 @@ Optional control for tests/special runs:
 
 ## 4) Decision Rule
 
-- `ready`: at least one `2xx` handshake row exists; proceed to real prompt-shape
-  probe and controlled replay.
-- `blocked`: no `2xx` handshake row; keep `BL-20260326-099` blocked and archive
-  evidence/report updates.
+- `ready`: at least one handshake row is both `2xx` and `api_like=1` (real API
+  payload), then proceed to real prompt-shape probe and controlled replay.
+- `blocked`: no `2xx + api_like=1` row; keep `BL-20260326-099` blocked and
+  archive evidence/report updates.
 
 ## 5) Safety Notes
 
@@ -230,3 +233,14 @@ python3 scripts/project_delivery_status.py \
 
 Use this output for operator-facing progress updates when BL-099 remains
 blocked and external provider/base readiness is still pending.
+
+For fail-fast readiness gating (automation use), add `--require-ready`; command
+returns exit code `2` unless `delivery_state=ready_for_replay`:
+
+```bash
+python3 scripts/project_delivery_status.py \
+  --backlog PROJECT_BACKLOG.md \
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
+  --repo-root /Users/lingguozhong/openclaw-team \
+  --require-ready
+```

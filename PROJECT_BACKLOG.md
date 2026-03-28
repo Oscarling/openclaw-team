@@ -2505,3 +2505,54 @@ Allowed enum values:
 - evidence: `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` provide deterministic one-command delivery status output and merge-gated coverage
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260328-145
+- title: Add fail-fast readiness gate mode for project delivery status board
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-144
+- start_when: Delivery status board exists, but automation cannot fail-fast on non-ready state when deciding whether replay/canary closure should proceed
+- done_when: `project_delivery_status.py` supports `--require-ready` (exit code `2` unless `delivery_state=ready_for_replay`), tests cover ready/non-ready exit behavior, premerge runs status-board smoke generation, and runbook documents fail-fast command
+- source: minimal-change completion hardening to keep closure decisions deterministic while external provider/base chain remains unstable
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_STATUS_REQUIRE_READY_GATE_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm fail-fast readiness gating and merge-gated smoke execution
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-146
+- title: Guard provider handshake success counting against non-API 2xx HTML false positives
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-145
+- start_when: Current provider landscape may return `200` with HTML gateway pages, and handshake readiness can be falsely classified as ready despite no usable API response
+- done_when: Probe output records structured `api_like` signal, success counting requires `2xx + api_like`, assess classifies non-API `2xx` as `non_api_success_payload`, tests cover false-positive suppression, and retest evidence confirms blocked status under HTML-only `200` responses
+- source: minimal-change environment adaptation to keep onboarding readiness fail-closed under unstable proxy/gateway topologies
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_NON_API_SUCCESS_GUARD_REPORT.md
+- issue: -
+- evidence: `scripts/provider_handshake_probe.py`, `scripts/provider_handshake_assess.py`, `tests/test_provider_handshake_probe.py`, and `tests/test_provider_handshake_assess.py` confirm `200` HTML payloads no longer count as handshake success
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-147
+- title: Add bounded retry for retryable provider handshake probe failures
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-146
+- start_when: Current provider/base market conditions include intermittent transport and gateway instability, and single-shot probe attempts can falsely classify usable routes as blocked
+- done_when: `provider_handshake_probe.py` supports bounded `--retry-attempts` (default `2`), retries only retryable transport/`5xx` failures, never retries auth-policy `4xx`, probe tests cover retry/non-retry boundaries, and runbook documents retry control semantics
+- source: minimal-change environment adaptation to reduce false blocked outcomes under unstable provider/base networks while preserving fail-closed readiness rules
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_RETRYABLE_RETRY_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_handshake_probe.py`, `tests/test_provider_handshake_probe.py`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm bounded retry behavior with explicit non-retry auth handling
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28

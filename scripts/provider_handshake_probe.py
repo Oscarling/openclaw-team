@@ -32,6 +32,15 @@ DEFAULT_KEY_FILES = [
     "~/Desktop/备用key",
     "~/Desktop/备用key.rtf",
 ]
+RETRYABLE_TEXT_MARKERS = (
+    "timed out",
+    "timeout",
+    "eof occurred in violation of protocol",
+    "unexpected_eof_while_reading",
+    "nodename nor servname provided",
+    "name or service not known",
+    "temporary failure in name resolution",
+)
 
 
 def load_text(path: Path) -> str:
@@ -70,7 +79,7 @@ def load_keys(paths: Iterable[str]) -> List[str]:
     return extract_keys(text)
 
 
-def probe_once(endpoint: str, key: str, model: str, input_text: str, timeout: int) -> tuple[str, str]:
+def probe_once(endpoint: str, key: str, model: str, input_text: str, timeout: int) -> tuple[str, str, str]:
     payload = json.dumps({"model": model, "input": input_text}).encode("utf-8")
     req = urllib.request.Request(
         endpoint,
@@ -84,18 +93,78 @@ def probe_once(endpoint: str, key: str, model: str, input_text: str, timeout: in
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             body = resp.read().decode("utf-8", errors="replace")
-            return str(resp.getcode()), body
+            return str(resp.getcode()), body, str(resp.headers.get("Content-Type", ""))
     except urllib.error.HTTPError as exc:
         raw = exc.read()
         body = (raw or b"").decode("utf-8", errors="replace")
-        return str(exc.code), body
+        return str(exc.code), body, str(exc.headers.get("Content-Type", ""))
     except Exception as exc:  # network/DNS/TLS etc.
-        return "000", str(exc)
+        return "000", str(exc), ""
 
 
 def body_snippet(text: str, limit: int = 180) -> str:
     cleaned = (text or "").replace("\n", " ").replace("\t", " ").strip()
     return cleaned[:limit]
+
+
+def note_api_like_flag(note: str) -> str:
+    lowered = (note or "").lower()
+    if "api_like=true" in lowered:
+        return "1"
+    if "api_like=false" in lowered:
+        return "0"
+    return "0"
+
+
+def is_api_like_success(http_code: str, content_type: str, body: str) -> bool:
+    code = (http_code or "").strip()
+    if not code.isdigit() or not (200 <= int(code) < 300):
+        return False
+    lowered_ct = (content_type or "").lower()
+    if "application/json" in lowered_ct:
+        return True
+    payload = (body or "").strip()
+    if not payload:
+        return False
+    if payload[0] not in "{[":
+        return False
+    try:
+        parsed = json.loads(payload)
+    except Exception:
+        return False
+    return isinstance(parsed, (dict, list))
+
+
+def is_retryable_probe_failure(http_code: str, body: str) -> bool:
+    code = (http_code or "").strip()
+    lowered = (body or "").lower()
+    if code == "000":
+        return True
+    if code.isdigit():
+        value = int(code)
+        if 400 <= value < 500:
+            return False
+        if 500 <= value < 600:
+            return True
+    return any(marker in lowered for marker in RETRYABLE_TEXT_MARKERS)
+
+
+def probe_with_retry(
+    endpoint: str,
+    key: str,
+    model: str,
+    input_text: str,
+    timeout: int,
+    retry_attempts: int,
+    probe_func: Callable[[str, str, str, str, int], Tuple[str, str, str]],
+) -> Tuple[str, str, str]:
+    attempts = max(1, retry_attempts)
+    code, body, content_type = probe_func(endpoint, key, model, input_text, timeout)
+    for _ in range(1, attempts):
+        if not is_retryable_probe_failure(code, body):
+            break
+        code, body, content_type = probe_func(endpoint, key, model, input_text, timeout)
+    return code, body, content_type
 
 
 def build_probe_rows(
@@ -104,7 +173,8 @@ def build_probe_rows(
     model: str,
     input_text: str,
     timeout: int,
-    probe_func: Callable[[str, str, str, str, int], Tuple[str, str]] | None = None,
+    retry_attempts: int = 1,
+    probe_func: Callable[[str, str, str, str, int], Tuple[str, str, str]] | None = None,
 ) -> List[Tuple[str, str, str, str, str]]:
     if probe_func is None:
         probe_func = probe_once
@@ -117,16 +187,40 @@ def build_probe_rows(
     for key in keys:
         masked = f"***{key[-6:]}"
         for endpoint in endpoints:
-            code, body = probe_func(endpoint, key, model, input_text, timeout)
-            rows.append((endpoint, model, input_text, code, f"key={masked}; {body_snippet(body)}"))
+            code, body, content_type = probe_with_retry(
+                endpoint=endpoint,
+                key=key,
+                model=model,
+                input_text=input_text,
+                timeout=timeout,
+                retry_attempts=retry_attempts,
+                probe_func=probe_func,
+            )
+            api_like = is_api_like_success(code, content_type, body)
+            rows.append(
+                (
+                    endpoint,
+                    model,
+                    input_text,
+                    code,
+                    "key="
+                    + masked
+                    + f"; api_like={'true' if api_like else 'false'}; content_type={(content_type or '').strip()}; "
+                    + body_snippet(body),
+                )
+            )
     return rows
 
 
 def count_success_codes(rows: Sequence[Tuple[str, str, str, str, str]]) -> int:
     total = 0
-    for _endpoint, _model, _probe, code, _note in rows:
-        if code.isdigit() and 200 <= int(code) < 300:
-            total += 1
+    for _endpoint, _model, _probe, code, note in rows:
+        if not (code.isdigit() and 200 <= int(code) < 300):
+            continue
+        lowered_note = (note or "").lower()
+        if "api_like=" in lowered_note and "api_like=true" not in lowered_note:
+            continue
+        total += 1
     return total
 
 
@@ -137,6 +231,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model", default="gpt-5-codex")
     parser.add_argument("--input", default="ping")
     parser.add_argument("--timeout", type=int, default=45)
+    parser.add_argument(
+        "--retry-attempts",
+        type=int,
+        default=2,
+        help="Max attempts per endpoint/key for retryable failures (min 1).",
+    )
     parser.add_argument(
         "--output",
         default="runtime_archives/bl100/tmp/provider_handshake_probe.tsv",
@@ -157,6 +257,9 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    if args.retry_attempts < 1:
+        print("--retry-attempts must be >= 1", file=sys.stderr)
+        return 2
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -171,12 +274,13 @@ def main() -> int:
         model=args.model,
         input_text=args.input,
         timeout=args.timeout,
+        retry_attempts=args.retry_attempts,
     )
 
     with output_path.open("w", encoding="utf-8") as handle:
-        handle.write("endpoint\tmodel\tprobe\thttp_code\tnote\n")
+        handle.write("endpoint\tmodel\tprobe\thttp_code\tnote\tapi_like\n")
         for endpoint, model, probe, code, note in rows:
-            handle.write(f"{endpoint}\t{model}\t{probe}\t{code}\t{note}\n")
+            handle.write(f"{endpoint}\t{model}\t{probe}\t{code}\t{note}\t{note_api_like_flag(note)}\n")
 
     print(output_path)
     if args.require_success and count_success_codes(rows) == 0:

@@ -236,6 +236,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--current-branch", default="", help="Optional current branch override.")
     parser.add_argument("--output-json", default="", help="Optional output json path.")
     parser.add_argument("--output-md", default="", help="Optional markdown report path.")
+    parser.add_argument(
+        "--require-ready",
+        action="store_true",
+        help="Exit with code 2 unless delivery_state is ready_for_replay.",
+    )
     return parser.parse_args()
 
 
@@ -253,6 +258,8 @@ def main() -> int:
         Path(args.output_json).write_text(rendered + "\n", encoding="utf-8")
     if args.output_md:
         Path(args.output_md).write_text(_to_markdown(payload), encoding="utf-8")
+    if args.require_ready and payload.get("delivery_state") != "ready_for_replay":
+        return 2
     return 0
 
 

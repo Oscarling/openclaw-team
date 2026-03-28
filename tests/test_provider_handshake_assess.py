@@ -63,6 +63,38 @@ class ProviderHandshakeAssessTests(unittest.TestCase):
         self.assertEqual(summary["block_reason"], "none")
         self.assertEqual(summary["success_row_count"], 1)
 
+    def test_build_summary_blocks_non_api_success_payload(self) -> None:
+        rows = [
+            {
+                "endpoint": "http://example.invalid/responses",
+                "model": "gpt-5-codex",
+                "probe": "ping",
+                "http_code": "200",
+                "note": "key=***tailok; api_like=false; content_type=text/html; <!doctype html>",
+            }
+        ]
+        summary = provider_handshake_assess.build_summary(rows, Path("dummy.tsv"))
+        self.assertEqual(summary["status"], "blocked")
+        self.assertEqual(summary["block_reason"], "non_api_success_payload")
+        self.assertEqual(summary["success_row_count"], 0)
+        self.assertEqual(summary["note_class_counts"]["non_api_success_payload"], 1)
+
+    def test_build_summary_blocks_non_api_success_payload_from_column(self) -> None:
+        rows = [
+            {
+                "endpoint": "http://example.invalid/responses",
+                "model": "gpt-5-codex",
+                "probe": "ping",
+                "http_code": "200",
+                "note": "key=***tailok; ok",
+                "api_like": "0",
+            }
+        ]
+        summary = provider_handshake_assess.build_summary(rows, Path("dummy.tsv"))
+        self.assertEqual(summary["status"], "blocked")
+        self.assertEqual(summary["block_reason"], "non_api_success_payload")
+        self.assertEqual(summary["success_row_count"], 0)
+
     def test_build_summary_mixed_with_tls_transport_failures(self) -> None:
         rows = [
             {

@@ -4,6 +4,8 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from unittest import mock
 
 from scripts import project_delivery_status as status
 
@@ -128,6 +130,62 @@ class ProjectDeliveryStatusTests(unittest.TestCase):
             self.assertEqual(payload["onboarding_latest"], {})
             md = status._to_markdown(payload)
             self.assertIn("no latest onboarding summary found", md)
+
+    def test_main_require_ready_returns_2_when_not_ready(self) -> None:
+        args = SimpleNamespace(
+            backlog="PROJECT_BACKLOG.md",
+            summary_json="runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json",
+            repo_root=".",
+            current_branch="",
+            output_json="",
+            output_md="",
+            require_ready=True,
+        )
+        with (
+            mock.patch.object(status, "parse_args", return_value=args),
+            mock.patch.object(
+                status,
+                "build_status_payload",
+                return_value={
+                    "delivery_state": "blocked_external_provider",
+                    "backlog": {"done": 1, "total": 2, "completion_percent": 50},
+                    "critical_provider_chain": {"items": []},
+                    "onboarding_latest": {},
+                    "next_steps": [],
+                },
+            ),
+            mock.patch("builtins.print"),
+        ):
+            code = status.main()
+        self.assertEqual(code, 2)
+
+    def test_main_require_ready_returns_0_when_ready(self) -> None:
+        args = SimpleNamespace(
+            backlog="PROJECT_BACKLOG.md",
+            summary_json="runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json",
+            repo_root=".",
+            current_branch="",
+            output_json="",
+            output_md="",
+            require_ready=True,
+        )
+        with (
+            mock.patch.object(status, "parse_args", return_value=args),
+            mock.patch.object(
+                status,
+                "build_status_payload",
+                return_value={
+                    "delivery_state": "ready_for_replay",
+                    "backlog": {"done": 2, "total": 2, "completion_percent": 100},
+                    "critical_provider_chain": {"items": []},
+                    "onboarding_latest": {},
+                    "next_steps": [],
+                },
+            ),
+            mock.patch("builtins.print"),
+        ):
+            code = status.main()
+        self.assertEqual(code, 0)
 
 
 if __name__ == "__main__":

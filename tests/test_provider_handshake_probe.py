@@ -41,7 +41,7 @@ class ProviderHandshakeProbeTests(unittest.TestCase):
 
         def fake_probe(endpoint: str, key: str, model: str, input_text: str, timeout: int):
             seen.append((endpoint, key, model, input_text, timeout))
-            return "401", '{"code":"INVALID_API_KEY"}'
+            return "401", '{"code":"INVALID_API_KEY"}', "application/json"
 
         rows = provider_handshake_probe.build_probe_rows(
             keys=["sk-1234567890abcdefghijklmnopqrstuvwxyzABCDEF"],
@@ -65,6 +65,88 @@ class ProviderHandshakeProbeTests(unittest.TestCase):
         ]
         self.assertEqual(provider_handshake_probe.count_success_codes(rows), 2)
 
+    def test_count_success_codes_requires_api_like_when_marker_present(self) -> None:
+        rows = [
+            ("a", "m", "p", "200", "key=***abc123; api_like=false; content_type=text/html; <!doctype html>"),
+            ("b", "m", "p", "200", "key=***abc123; api_like=true; content_type=application/json; {\"id\":\"r\"}"),
+        ]
+        self.assertEqual(provider_handshake_probe.count_success_codes(rows), 1)
+
+    def test_build_probe_rows_marks_html_200_as_non_api_like(self) -> None:
+        def fake_probe(endpoint: str, key: str, model: str, input_text: str, timeout: int):
+            return "200", "<!doctype html><html><body>ok</body></html>", "text/html; charset=utf-8"
+
+        rows = provider_handshake_probe.build_probe_rows(
+            keys=["sk-1234567890abcdefghijklmnopqrstuvwxyzABCDEF"],
+            endpoints=["http://example.invalid/responses"],
+            model="gpt-5-codex",
+            input_text="ping",
+            timeout=12,
+            probe_func=fake_probe,
+        )
+
+        self.assertEqual(len(rows), 1)
+        self.assertIn("api_like=false", rows[0][4])
+
+    def test_build_probe_rows_retries_on_transport_then_succeeds(self) -> None:
+        calls = {"count": 0}
+
+        def fake_probe(endpoint: str, key: str, model: str, input_text: str, timeout: int):
+            calls["count"] += 1
+            if calls["count"] == 1:
+                return "000", "<urlopen error timed out>", ""
+            return "200", '{"id":"resp_123"}', "application/json"
+
+        rows = provider_handshake_probe.build_probe_rows(
+            keys=["sk-1234567890abcdefghijklmnopqrstuvwxyzABCDEF"],
+            endpoints=["https://example.invalid/v1/responses"],
+            model="gpt-5-codex",
+            input_text="ping",
+            timeout=12,
+            retry_attempts=2,
+            probe_func=fake_probe,
+        )
+        self.assertEqual(calls["count"], 2)
+        self.assertEqual(rows[0][3], "200")
+
+    def test_build_probe_rows_does_not_retry_on_401(self) -> None:
+        calls = {"count": 0}
+
+        def fake_probe(endpoint: str, key: str, model: str, input_text: str, timeout: int):
+            calls["count"] += 1
+            return "401", '{"code":"INVALID_API_KEY"}', "application/json"
+
+        rows = provider_handshake_probe.build_probe_rows(
+            keys=["sk-1234567890abcdefghijklmnopqrstuvwxyzABCDEF"],
+            endpoints=["https://example.invalid/v1/responses"],
+            model="gpt-5-codex",
+            input_text="ping",
+            timeout=12,
+            retry_attempts=3,
+            probe_func=fake_probe,
+        )
+        self.assertEqual(calls["count"], 1)
+        self.assertEqual(rows[0][3], "401")
+
+    def test_build_probe_rows_retry_attempts_one_disables_retry(self) -> None:
+        calls = {"count": 0}
+
+        def fake_probe(endpoint: str, key: str, model: str, input_text: str, timeout: int):
+            calls["count"] += 1
+            return "000", "<urlopen error timed out>", ""
+
+        rows = provider_handshake_probe.build_probe_rows(
+            keys=["sk-1234567890abcdefghijklmnopqrstuvwxyzABCDEF"],
+            endpoints=["https://example.invalid/v1/responses"],
+            model="gpt-5-codex",
+            input_text="ping",
+            timeout=12,
+            retry_attempts=1,
+            probe_func=fake_probe,
+        )
+        self.assertEqual(calls["count"], 1)
+        self.assertEqual(rows[0][3], "000")
+
     def test_main_require_success_returns_nonzero_when_no_2xx(self) -> None:
         with tempfile.TemporaryDirectory(prefix="provider-handshake-probe-") as tmp:
             output = Path(tmp) / "probe.tsv"
@@ -75,6 +157,8 @@ class ProviderHandshakeProbeTests(unittest.TestCase):
                 str(missing),
                 "--output",
                 str(output),
+                "--retry-attempts",
+                "1",
                 "--require-success",
             ]
             with mock.patch.object(sys, "argv", argv):
@@ -84,6 +168,7 @@ class ProviderHandshakeProbeTests(unittest.TestCase):
             self.assertTrue(output.exists())
             lines = output.read_text(encoding="utf-8").splitlines()
             self.assertGreaterEqual(len(lines), 2)
+            self.assertIn("\tapi_like", lines[0])
             self.assertIn("missing_key", lines[1])
 
     def test_main_require_success_passes_when_probe_has_2xx(self) -> None:
@@ -93,7 +178,7 @@ class ProviderHandshakeProbeTests(unittest.TestCase):
             key_file.write_text("sk-aaaaaaaaaabbbbbbbbbbccccccccccdddddddddd", encoding="utf-8")
 
             def fake_probe(endpoint: str, key: str, model: str, input_text: str, timeout: int):
-                return "200", "ok"
+                return "200", '{"id":"resp_123"}', "application/json"
 
             argv = [
                 str(MODULE_PATH),
@@ -103,6 +188,8 @@ class ProviderHandshakeProbeTests(unittest.TestCase):
                 "https://example.invalid/v1/responses",
                 "--output",
                 str(output),
+                "--retry-attempts",
+                "1",
                 "--require-success",
             ]
             with mock.patch.object(provider_handshake_probe, "probe_once", side_effect=fake_probe):
@@ -112,7 +199,22 @@ class ProviderHandshakeProbeTests(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertTrue(output.exists())
             content = output.read_text(encoding="utf-8")
+            self.assertIn("\tapi_like", content.splitlines()[0])
             self.assertIn("\t200\t", content)
+
+    def test_main_rejects_invalid_retry_attempts(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="provider-handshake-probe-") as tmp:
+            output = Path(tmp) / "probe.tsv"
+            argv = [
+                str(MODULE_PATH),
+                "--output",
+                str(output),
+                "--retry-attempts",
+                "0",
+            ]
+            with mock.patch.object(sys, "argv", argv):
+                code = provider_handshake_probe.main()
+            self.assertEqual(code, 2)
 
 
 if __name__ == "__main__":
