@@ -13,6 +13,7 @@ CRITICAL_PROVIDER_CHAIN_IDS = [
     "BL-20260326-099",
 ]
 REPLAY_CANARY_CLOSEOUT_ID = "BL-20260329-160"
+FINALIZATION_CLOSEOUT_ID = "BL-20260329-162"
 BLOCKING_ACTIONS_BY_REASON = {
     "provider_account_arrearage": (
         "暂停 replay 重试，先恢复 provider account 账务状态（Arrearage/overdue-payment）后再重跑 onboarding gate。"
@@ -184,7 +185,12 @@ def _build_delivery_state(
 
     if onboarding_status == "ready":
         canary_closeout = chain_index.get(REPLAY_CANARY_CLOSEOUT_ID)
-        if canary_closeout and canary_closeout.get("status", "") == "done":
+        finalization_closeout = chain_index.get(FINALIZATION_CLOSEOUT_ID)
+        if finalization_closeout and finalization_closeout.get("status", "") == "done":
+            next_steps.append(
+                "formal finalization 已完成（git push + Trello Done 已闭环）；当前主线进入稳定维护阶段。"
+            )
+        elif canary_closeout and canary_closeout.get("status", "") == "done":
             next_steps.append(
                 "controlled replay 与 canary 已完成，进入 finalization preflight（配置 GIT_PUSH_REMOTE/GIT_PUSH_BRANCH/TRELLO_* 并清理工作区）。"
             )

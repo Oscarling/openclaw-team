@@ -2845,3 +2845,20 @@ Allowed enum values:
 - evidence: `PR_MAINLINE_DEEPSEEK_CLOSEOUT_HANDOFF.md` captures scope (`BL-099` through `BL-164`), finalization result, verification gates (`premerge/preflight`), and rollback guidance
 - last_reviewed_at: 2026-03-29
 - opened_at: 2026-03-29
+
+### BL-20260329-165
+- title: Align delivery-status next step for post-finalization stable-maintenance stage
+- type: debt
+- status: done
+- phase: next
+- priority: p2
+- owner: Oscarling
+- depends_on: BL-20260329-164
+- start_when: `BL-162` formal finalization is complete but delivery-status ready-path guidance still points to finalization preflight, producing stale operator instructions
+- done_when: `project_delivery_status.py` detects `BL-20260329-162=done` and emits a stable-maintenance next step while preserving ready-state enum compatibility, with regression tests covering the post-finalization branch
+- source: mainline continuation to keep delivery-stage guidance accurate after end-to-end closure
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_STATUS_POST_FINALIZATION_STAGE_ALIGNMENT_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, and `runtime_archives/bl100/tmp/project_delivery_status_post_finalization_alignment.json` confirm post-finalization next-step alignment
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
