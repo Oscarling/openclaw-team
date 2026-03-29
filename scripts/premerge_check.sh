@@ -255,6 +255,24 @@ else
   fail "tests/test_project_delivery_status.py failed."
 fi
 
+if python3 -m unittest -v tests/test_project_delivery_signal.py; then
+  pass "tests/test_project_delivery_signal.py passed."
+else
+  fail "tests/test_project_delivery_signal.py failed."
+fi
+
+if python3 -m unittest -v tests/test_project_delivery_signal_consistency_check.py; then
+  pass "tests/test_project_delivery_signal_consistency_check.py passed."
+else
+  fail "tests/test_project_delivery_signal_consistency_check.py failed."
+fi
+
+if python3 -m unittest -v tests/test_project_delivery_signal_bundle.py; then
+  pass "tests/test_project_delivery_signal_bundle.py passed."
+else
+  fail "tests/test_project_delivery_signal_bundle.py failed."
+fi
+
 if python3 scripts/project_delivery_status.py \
   --repo-root "$repo_root" \
   --output-json /tmp/project_delivery_status_premerge.json \
@@ -262,6 +280,29 @@ if python3 scripts/project_delivery_status.py \
   pass "project delivery status board smoke check passed."
 else
   fail "project delivery status board smoke check failed."
+fi
+
+if python3 scripts/project_delivery_signal_bundle.py \
+  --status-json /tmp/project_delivery_status_premerge.json \
+  --output-prefix /tmp/project_delivery_status_premerge.signal \
+  --require-delivery-state \
+  --require-blocking-context \
+  --output-summary-json /tmp/project_delivery_status_premerge.signal.bundle.summary.json >/tmp/project_delivery_status_premerge.signal.bundle.stdout.json
+then
+  read -r delivery_state signal_stage signal_reason signal_action onboarding_block_reason onboarding_timestamp < /tmp/project_delivery_status_premerge.signal.tsv
+  if [[ "$delivery_state" == "ready_for_replay" ]]; then
+    pass "project delivery signal: ready_for_replay."
+  else
+    warn "project delivery signal: state=${delivery_state:-unknown}, stage=${signal_stage:-unknown}, reason=${signal_reason:-unknown}"
+    if [[ -n "${signal_action:-}" ]]; then
+      warn "project delivery recommended action: ${signal_action}"
+    elif [[ "${signal_reason:-}" == "provider_account_arrearage" ]]; then
+      warn "provider account arrearage detected; pause replay retries and restore provider account standing before rerun."
+    fi
+  fi
+  pass "project delivery signal bundle generated json/tsv artifacts with embedded consistency check."
+else
+  fail "project delivery signal bundle generation failed."
 fi
 
 if python3 scripts/provider_onboarding_history_backfill.py \

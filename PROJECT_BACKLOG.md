@@ -1727,18 +1727,18 @@ Allowed enum values:
 ### BL-20260326-099
 - title: Onboard a new provider/base topology and clear route handshake gate before replay
 - type: blocker
-- status: blocked
+- status: done
 - phase: next
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-098
 - start_when: BL-098 confirms timeout budget tuning (`120/180/240/300`) cannot bypass the current fast-route gateway ceiling (`http_524` near ~126s)
 - done_when: A newly supplied provider/base route (new key/base topology) passes lightweight ping and real prompt-shape probe, then is promoted into controlled replay validation
-- source: `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md` on 2026-03-28 confirms retest matrix remains blocked and classifies dominant cause as auth/access policy block
-- link: /Users/lingguozhong/openclaw-team/PROVIDER_ROUTE_RETEST_20260327_REPORT.md
+- source: `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md` on 2026-03-29 confirms DeepSeek desktop key route passed gate handshake (`ready`) and the governed replay preview advanced to `processed` with `critic_verdict=pass`
+- link: /Users/lingguozhong/openclaw-team/DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md
 - issue: -
-- evidence: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md`, `PROVIDER_ROUTE_RETEST_20260327_REPORT.md`, `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_SUMMARY_AUTOMATION_REPORT.md`, `PROVIDER_ONBOARDING_GATE_SUMMARY_REFRESH_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_REPO_FILTER_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_VALIDATION_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_CONSISTENCY_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_NOTE_SIGNAL_HISTORY_HARDENING_REPORT.md`, `PROVIDER_ONBOARDING_NOTE_SIGNAL_COVERAGE_METRICS_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_NOTE_BACKFILL_REPORT.md`, `PROVIDER_ONBOARDING_HISTORY_BACKFILL_GAP_REPORTING.md`, `PROVIDER_ONBOARDING_ASSESSMENT_SNAPSHOT_IMMUTABILITY_REPORT.md`, `runtime_archives/bl099/tmp/bl099_key3_probe_matrix.tsv`, `runtime_archives/bl100/tmp/provider_handshake_probe_retest_allkeys_20260327b.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`, and `runtime_archives/bl100/tmp/provider_onboarding_history_backfill_gaps.json` show all currently known Desktop key candidates still fail handshake (`aixj=401 INVALID_API_KEY`, `fast=403/1010` with occasional transport/TLS `000`) and no `2xx` route is available for controlled replay
-- last_reviewed_at: 2026-03-28
+- evidence: `scripts/provider_profiles.sh`, `scripts/provider_onboarding_gate.py`, `skills/execute_approved_previews.py`, `runtime_archives/bl100/tmp/deepseek_desktop/provider_handshake_probe_gate_20260329.tsv`, `runtime_archives/bl100/tmp/deepseek_desktop/provider_handshake_assessment_gate_20260329.json`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`, `preview/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.json`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.result.json` confirm DeepSeek route gate `ready` plus governed replay `processed` (`critic_verdict=pass`).
+- last_reviewed_at: 2026-03-29
 - opened_at: 2026-03-26
 
 ### BL-20260326-100
@@ -2590,3 +2590,207 @@ Allowed enum values:
 - evidence: `scripts/provider_handshake_probe.py`, `tests/test_provider_handshake_probe.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, `/tmp/provider_handshake_probe_gemini_key4_20260328.tsv`, and `/tmp/provider_handshake_assessment_gemini_key4_20260328.json` confirm Gemini-compatible handshake readiness detection
 - last_reviewed_at: 2026-03-28
 - opened_at: 2026-03-28
+
+### BL-20260329-150
+- title: Enforce provider onboarding gate stamp schema guard to prevent history drift
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-149
+- start_when: Onboarding history validation is fail-closed on `stamp` format, but gate CLI still accepts non-date custom stamp strings that can write invalid rows
+- done_when: `provider_onboarding_gate.py` rejects invalid `--stamp` inputs before probe/assess execution, tests cover format/date fail-fast behavior with zero downstream command calls, and runbook documents strict `YYYYMMDD` usage for same-day reruns
+- source: local hardening continuation to keep BL-099 blocked-phase evidence schema-safe without relying on manual history repair
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_STAMP_SCHEMA_GUARD_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_gate.py`, `tests/test_provider_onboarding_gate.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `PROVIDER_ONBOARDING_STAMP_SCHEMA_GUARD_REPORT.md` confirm fail-fast stamp validation and updated operator guidance
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-151
+- title: Add delivery-status blocking signal contract and premerge visibility output
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-150
+- start_when: Delivery status board exists, but blocked-provider triage still requires manual interpretation to identify handshake-stage vs post-handshake promotion-stage blockers
+- done_when: `project_delivery_status.py` emits deterministic `blocking_signal` (`stage` + `reason`), tests cover blocked/ready/unknown paths, premerge prints concise state/stage/reason visibility, and runbook documents interpretation
+- source: local hardening continuation to keep BL-099 blocked-phase operator triage deterministic without changing merge gates
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_STATUS_BLOCKING_SIGNAL_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_status.py`, `scripts/project_delivery_signal.py`, `tests/test_project_delivery_status.py`, `tests/test_project_delivery_signal.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `PROJECT_DELIVERY_STATUS_BLOCKING_SIGNAL_REPORT.md` confirm deterministic blocking-signal output and premerge/operator visibility
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-152
+- title: Enforce strict blocking-context guard for project delivery signal extraction
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-151
+- start_when: Delivery signal extraction exists, but blocked states can still surface without mandatory blocker stage/reason context under permissive invocation
+- done_when: `project_delivery_signal.py` supports strict `--require-blocking-context`, tests cover blocked-missing-context fail path and ready pass path, premerge uses strict flags, and runbook documents strict command semantics
+- source: local hardening continuation to keep blocked-provider triage fail-closed and machine-consumable without changing merge policy
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_SIGNAL_STRICT_CONTEXT_GUARD_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_signal.py`, `tests/test_project_delivery_signal.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `PROJECT_DELIVERY_SIGNAL_STRICT_CONTEXT_GUARD_REPORT.md` confirm strict blocked-context enforcement and premerge integration
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-153
+- title: Add delivery signal artifact consistency check between status JSON and extracted signal outputs
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-152
+- start_when: Strict signal extraction exists, but no explicit parity check ensures generated `signal.json/tsv` remain consistent with source status payload fields
+- done_when: A dedicated consistency checker validates status payload vs signal artifacts, tests cover json/tsv drift fail paths, premerge runs extraction for both formats plus consistency check, and runbook documents command usage
+- source: local hardening continuation to prevent silent signal artifact drift in blocked-provider observability flow
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_SIGNAL_CONSISTENCY_GUARD_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_signal_consistency_check.py`, `tests/test_project_delivery_signal_consistency_check.py`, `scripts/project_delivery_signal.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `PROJECT_DELIVERY_SIGNAL_CONSISTENCY_GUARD_REPORT.md` confirm deterministic status-vs-signal parity checks with premerge integration
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-154
+- title: Productize one-shot delivery signal bundle generation for premerge and operator workflows
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-153
+- start_when: Signal extraction + consistency checks exist, but still require multi-command orchestration that can drift across premerge/manual invocations
+- done_when: A one-shot bundle command emits signal json/tsv with embedded consistency checks, tests cover strict and skip-consistency modes, premerge adopts bundle entrypoint, and runbook documents recommended command
+- source: local hardening continuation to reduce observability command drift while BL-099 remains externally blocked
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_SIGNAL_BUNDLE_PRODUCTIZATION_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_signal_bundle.py`, `tests/test_project_delivery_signal_bundle.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `PROJECT_DELIVERY_SIGNAL_BUNDLE_PRODUCTIZATION_REPORT.md` confirm one-shot bundle productization with premerge/operator adoption
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-155
+- title: Classify provider account Arrearage as non-retryable in runtime and approval replay paths
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-154
+- start_when: Controlled replay currently surfaces provider-side Arrearage (`http_400`) but runtime compatibility fallback/retry paths can still spend extra attempts before converging on the same blocked conclusion
+- done_when: `worker_runtime.py` classifies Arrearage/overdue-payment as explicit `provider_account_arrearage` (non-retryable), `call_llm` skips compatibility fallback/retry for that class, `execute_approved_previews.py` extracts the same class from automation errors, and tests cover both runtime and preview execution non-retry behavior
+- source: mainline continuation to reduce wasted replay attempts while keeping external provider block semantics explicit and fail-closed
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ARREARAGE_NON_RETRYABLE_RUNTIME_REPORT.md
+- issue: -
+- evidence: `dispatcher/worker_runtime.py`, `skills/execute_approved_previews.py`, `tests/test_argus_hardening.py`, and `tests/test_execute_approved_previews.py` confirm Arrearage classification and non-retry behavior across runtime + approval execution paths
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-156
+- title: Canonicalize delivery-status arrearage blocking reason naming to provider_account_arrearage
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-155
+- start_when: Runtime/assessment paths already emit `provider_account_arrearage`, but delivery-status post-handshake inference still used a divergent reason token (`provider_billing_arrearage`), which can fragment downstream signal consumers
+- done_when: `project_delivery_status.py` maps arrearage/overdue-payment aliases to canonical `provider_account_arrearage` for promotion-stage blockers, tests cover both `Arrearage` and `overdue-payment` source strings, and status/signal snapshots show unified reason token
+- source: mainline continuation to keep blocking signal taxonomy consistent across runtime, assessment, status, and signal extraction surfaces
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_BLOCK_REASON_CANONICALIZATION_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, `/tmp/project_delivery_status_after_bl155_canonical.json`, and `/tmp/project_delivery_signal_after_bl156.json` confirm canonical arrearage reason alignment
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-157
+- title: Add premerge actionable advisory for provider_account_arrearage blocking signal
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-156
+- start_when: Delivery signal output is already canonicalized, but premerge still emits only a generic blocked warning, leaving operators likely to keep replaying despite deterministic provider arrearage
+- done_when: `premerge_check.sh` emits a targeted warning when `signal_reason=provider_account_arrearage`, explicitly advising to pause replay retries and restore account standing, while preserving existing pass/fail gate semantics
+- source: mainline continuation to reduce blocked-phase retry churn through deterministic operator guidance at premerge triage point
+- link: /Users/lingguozhong/openclaw-team/PREMERGE_PROVIDER_ARREARAGE_ADVISORY_REPORT.md
+- issue: -
+- evidence: `scripts/premerge_check.sh` and `PREMERGE_PROVIDER_ARREARAGE_ADVISORY_REPORT.md` confirm targeted arrearage advisory behavior without gate policy changes
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-158
+- title: Clarify critic static-evidence policy for artifact-generation replay stage
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-157
+- start_when: DeepSeek route can reach automation+critic execution, but critic verdict may remain `needs_revision` solely due missing live runtime artifacts even when this stage contract is artifact-generation review
+- done_when: `execute_approved_previews.py` injects explicit static-evidence policy into critic task params/constraints, regression tests cover policy injection, and governed replay can pass critic without requiring out-of-band live execution proof
+- source: mainline continuation to align critic gate behavior with artifact-generation stage contract and reduce false-negative replay rejections
+- link: /Users/lingguozhong/openclaw-team/DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md
+- issue: -
+- evidence: `skills/execute_approved_previews.py`, `tests/test_execute_approved_previews.py`, `preview/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.json`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.result.json` confirm policy injection and replay promotion to `processed` with `critic_verdict=pass`
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-159
+- title: Recenter delivery critical provider chain on active BL-099 gate and close BL-099 via DeepSeek route
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-158
+- start_when: Historical route blockers remain in backlog for traceability, but delivery status gating should reflect the current active provider onboarding gate and latest governed replay outcome
+- done_when: `project_delivery_status.py` tracks the active chain with BL-099, BL-099 backlog entry is updated to done with DeepSeek onboarding+replay evidence, signal/status tests pass, and latest delivery status reports `ready_for_replay`
+- source: mainline continuation to align project delivery board with current gate truth after DeepSeek promotion
+- link: /Users/lingguozhong/openclaw-team/DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md
+- issue: -
+- evidence: `PROJECT_BACKLOG.md` (BL-20260326-099), `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, `runtime_archives/bl100/tmp/deepseek_desktop/provider_handshake_assessment_gate_20260329.json`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`, and `runtime_archives/bl100/tmp/project_delivery_status_after_bl099_done.json` confirm active-gate recenter and ready-for-replay status
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-160
+- title: Complete DeepSeek governed 4-sample controlled replay canary window after ready_for_replay
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-159
+- start_when: Delivery board is recentered and reports `ready_for_replay`, but canary closeout still needs governed multi-sample replay evidence rather than single-run promotion proof
+- done_when: A governed 4-sample DeepSeek controlled replay window completes with `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75`, and per-run state snapshots are archived under runtime artifacts
+- source: mainline continuation to complete replay-stage canary closeout with explicit threshold evidence after BL-099 promotion
+- link: /Users/lingguozhong/openclaw-team/DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md
+- issue: -
+- evidence: `runtime_archives/bl100/tmp/deepseek_canary_20260329/deepseek_canary_matrix.tsv`, `runtime_archives/bl100/tmp/deepseek_canary_20260329/deepseek_canary_metrics.json`, and `runtime_archives/bl100/tmp/deepseek_canary_20260329/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.result.s01.json` ... `.result.s04.json` confirm 4/4 `processed` and 4/4 `critic_verdict=pass`
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-161
+- title: Align delivery-status next step to finalization preflight after canary closeout
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-160
+- start_when: Delivery status keeps enum compatibility at `ready_for_replay`, but when canary closeout is already done it still instructs users to "enter replay/canary closeout", causing stale guidance for operators
+- done_when: `project_delivery_status.py` detects `BL-20260329-160=done` and emits finalization preflight-oriented next step while preserving `delivery_state=ready_for_replay`, with regression tests covering the post-canary guidance branch
+- source: mainline continuation to keep delivery-board action guidance consistent with canary-closeout reality without breaking existing ready-state consumers
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_STATUS_CANARY_CLOSEOUT_NEXT_STEP_ALIGNMENT_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, and `runtime_archives/bl100/tmp/project_delivery_status_after_bl160_done.json` confirm post-canary next-step alignment to finalization preflight with enum compatibility preserved
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29

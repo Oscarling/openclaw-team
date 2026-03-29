@@ -1,0 +1,23 @@
+{
+  "probe_tsv": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260329.tsv",
+  "status": "ready",
+  "block_reason": "none",
+  "row_count": 2,
+  "success_row_count": 2,
+  "http_code_counts": {
+    "200": 2
+  },
+  "note_class_counts": {
+    "other": 2
+  },
+  "endpoint_counts": {
+    "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions": 1,
+    "https://dashscope.aliyuncs.com/compatible-mode/v1/responses": 1
+  },
+  "key_tails": [
+    "f9890e"
+  ],
+  "retry_attempt_total": 0,
+  "rows_with_retry": 0,
+  "retry_reason_counts": {}
+}

@@ -1,0 +1,472 @@
+{
+  "measured_at": "2026-03-26T11:26:59Z",
+  "has_key": true,
+  "public_results": {
+    "https://api.github.com/rate_limit": [
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 1.426,
+        "preview": "{\"resources\":{\"code_search\":{\"limit\":60,\"remaining\":57,\"reset\":1774525955,\"used\""
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 0.95,
+        "preview": "{\"resources\":{\"code_search\":{\"limit\":60,\"remaining\":57,\"reset\":1774525955,\"used\""
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 1.74,
+        "preview": "{\"resources\":{\"code_search\":{\"limit\":60,\"remaining\":57,\"reset\":1774525955,\"used\""
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 1.1,
+        "preview": "{\"resources\":{\"code_search\":{\"limit\":60,\"remaining\":57,\"reset\":1774525955,\"used\""
+      }
+    ],
+    "https://www.cloudflare.com/cdn-cgi/trace": [
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 1.775,
+        "preview": "fl=1232f30 h=www.cloudflare.com ip=23.247.137.159 ts=1774524324.000 visit_scheme"
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 1.481,
+        "preview": "fl=1232f78 h=www.cloudflare.com ip=23.247.137.159 ts=1774524325.000 visit_scheme"
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 0.84,
+        "preview": "fl=1231f111 h=www.cloudflare.com ip=23.247.137.159 ts=1774524326.000 visit_schem"
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 1.406,
+        "preview": "fl=1231f66 h=www.cloudflare.com ip=23.247.137.159 ts=1774524327.000 visit_scheme"
+      }
+    ],
+    "https://www.apple.com": [
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 1.272,
+        "preview": "   \t   \t  \t   \t   \t  \t \t\t \t  \t  \t\t \t\t  \t   \t   \t\t\t\t  \t\t\t\t\t \t\t\t\t\t\t    <!DOCTYPE h"
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 1.514,
+        "preview": "   \t   \t  \t   \t   \t  \t \t\t \t  \t  \t\t \t\t  \t   \t   \t\t\t\t  \t\t\t\t\t \t\t\t\t\t\t    <!DOCTYPE h"
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 1.66,
+        "preview": "   \t   \t  \t   \t   \t  \t \t\t \t  \t  \t\t \t\t  \t   \t   \t\t\t\t  \t\t\t\t\t \t\t\t\t\t\t    <!DOCTYPE h"
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 1.312,
+        "preview": "   \t   \t  \t   \t   \t  \t \t\t \t  \t  \t\t \t\t  \t   \t   \t\t\t\t  \t\t\t\t\t \t\t\t\t\t\t    <!DOCTYPE h"
+      }
+    ]
+  },
+  "dns_results": {
+    "aixj.vip": [
+      {
+        "ok": true,
+        "ms": 2.21,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 1.07,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.81,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.7,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.7,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.6,
+        "ip_count": 2
+      }
+    ],
+    "fast.vpsairobot.com": [
+      {
+        "ok": true,
+        "ms": 1.48,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 1.22,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.81,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 1.8,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 1.5,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.91,
+        "ip_count": 2
+      }
+    ],
+    "api.github.com": [
+      {
+        "ok": true,
+        "ms": 1.43,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.73,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.53,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.48,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.54,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.54,
+        "ip_count": 2
+      }
+    ],
+    "www.apple.com": [
+      {
+        "ok": true,
+        "ms": 0.73,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.66,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.55,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.52,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.54,
+        "ip_count": 2
+      },
+      {
+        "ok": true,
+        "ms": 0.57,
+        "ip_count": 2
+      }
+    ]
+  },
+  "provider_results": {
+    "https://aixj.vip/responses|gpt-5.4": [
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 1.332
+      },
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 1.877
+      },
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 1.294
+      },
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 1.311
+      },
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 1.054
+      },
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 1.068
+      },
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 1.514
+      },
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 1.522
+      }
+    ],
+    "https://aixj.vip/v1/responses|gpt-5.4": [
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 1.513
+      },
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 2.748
+      },
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 1.066
+      },
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 1.489
+      },
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 2.455
+      },
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 3.181
+      },
+      {
+        "ok": false,
+        "http": 401,
+        "sec": 1.544
+      },
+      {
+        "ok": false,
+        "err": "URLError",
+        "sec": 0.524,
+        "msg": "<urlopen error EOF occurred in violation of protocol (_ssl.c:1129)>"
+      }
+    ],
+    "https://fast.vpsairobot.com/responses|gpt-5.4": [
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 3.207
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 3.081
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 3.886
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 4.25
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 8.322
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 2.668
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 2.455
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 2.535
+      }
+    ],
+    "https://fast.vpsairobot.com/v1/responses|gpt-5.4": [
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 5.547
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 3.62
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 4.222
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 2.612
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 3.366
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 3.865
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 2.644
+      },
+      {
+        "ok": true,
+        "http": 200,
+        "sec": 3.972
+      }
+    ]
+  },
+  "summary": {
+    "public": {
+      "https://api.github.com/rate_limit": {
+        "ok_rate": 1.0,
+        "avg_sec": 1.304,
+        "codes": {
+          "200": 4
+        },
+        "errors": {}
+      },
+      "https://www.cloudflare.com/cdn-cgi/trace": {
+        "ok_rate": 1.0,
+        "avg_sec": 1.375,
+        "codes": {
+          "200": 4
+        },
+        "errors": {}
+      },
+      "https://www.apple.com": {
+        "ok_rate": 1.0,
+        "avg_sec": 1.44,
+        "codes": {
+          "200": 4
+        },
+        "errors": {}
+      }
+    },
+    "dns": {
+      "aixj.vip": {
+        "ok_rate": 1.0,
+        "avg_ms": 1.01,
+        "max_ms": 2.21
+      },
+      "fast.vpsairobot.com": {
+        "ok_rate": 1.0,
+        "avg_ms": 1.29,
+        "max_ms": 1.8
+      },
+      "api.github.com": {
+        "ok_rate": 1.0,
+        "avg_ms": 0.71,
+        "max_ms": 1.43
+      },
+      "www.apple.com": {
+        "ok_rate": 1.0,
+        "avg_ms": 0.59,
+        "max_ms": 0.73
+      }
+    },
+    "provider": {
+      "https://aixj.vip/responses|gpt-5.4": {
+        "ok_rate": 0.0,
+        "avg_sec": 1.371,
+        "codes": {
+          "401": 8
+        },
+        "errors": {}
+      },
+      "https://aixj.vip/v1/responses|gpt-5.4": {
+        "ok_rate": 0.0,
+        "avg_sec": 1.815,
+        "codes": {
+          "401": 7,
+          "ERR": 1
+        },
+        "errors": {
+          "URLError": 1
+        }
+      },
+      "https://fast.vpsairobot.com/responses|gpt-5.4": {
+        "ok_rate": 1.0,
+        "avg_sec": 3.8,
+        "codes": {
+          "200": 8
+        },
+        "errors": {}
+      },
+      "https://fast.vpsairobot.com/v1/responses|gpt-5.4": {
+        "ok_rate": 1.0,
+        "avg_sec": 3.731,
+        "codes": {
+          "200": 8
+        },
+        "errors": {}
+      }
+    }
+  }
+}

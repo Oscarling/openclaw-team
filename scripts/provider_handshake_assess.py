@@ -135,6 +135,8 @@ def classify_note_signal(row: Dict[str, str]) -> str:
     code = (http_code or "").strip()
     if code.isdigit() and 200 <= int(code) < 300 and not is_api_like_row_success(row):
         return "non_api_success_payload"
+    if "reported as leaked" in lowered or "api key was reported as leaked" in lowered:
+        return "leaked_api_key"
     if "invalid_api_key" in lowered:
         return "invalid_api_key"
     if "error code: 1010" in lowered:
@@ -145,6 +147,8 @@ def classify_note_signal(row: Dict[str, str]) -> str:
         return "dns_resolution"
     if "timed out" in lowered:
         return "timeout"
+    if "arrearage" in lowered or "overdue-payment" in lowered:
+        return "provider_account_arrearage"
     return "other"
 
 
@@ -155,6 +159,10 @@ def decide_block_reason(code_counter: Counter[str], note_class_counter: Counter[
         return "empty_probe_matrix"
     if note_class_counter.get("non_api_success_payload", 0) > 0:
         return "non_api_success_payload"
+    if note_class_counter.get("provider_account_arrearage", 0) > 0:
+        return "provider_account_arrearage"
+    if note_class_counter.get("leaked_api_key", 0) > 0:
+        return "leaked_api_key"
     codes = set(code_counter.keys())
     if codes <= {"401"}:
         return "invalid_api_key"

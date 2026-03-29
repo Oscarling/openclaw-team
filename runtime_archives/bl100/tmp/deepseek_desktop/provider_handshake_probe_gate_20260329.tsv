@@ -1,0 +1,3 @@
+endpoint	model	probe	http_code	note	api_like	retry_count	retry_reasons
+https://api.deepseek.com/v1/chat/completions	deepseek-chat	ping	200	key=***69bd04; api_like=true; content_type=application/json; {"id":"16a760c1-0bee-4e09-9aab-463c416942a0","object":"chat.completion","created":1774771534,"model":"deepseek-chat","choices":[{"index":0,"message":{"role":"assistant","content":"	1	0	
+https://api.deepseek.com/v1/responses	deepseek-chat	ping	404	key=***69bd04; api_like=false; content_type=; 	0	0	

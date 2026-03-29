@@ -1,0 +1,2 @@
+endpoint	model	probe	http_code	note	api_like	retry_count	retry_reasons
+https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions	qwen-plus	ping	000	key=***f9890e; api_like=false; content_type=; <urlopen error [Errno 8] nodename nor servname provided, or not known>	0	1	dns_resolution

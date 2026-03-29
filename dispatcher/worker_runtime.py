@@ -106,6 +106,11 @@ RETRYABLE_HTTP_STATUS_CODES = {
     523,
     524,
 }
+PROVIDER_ACCOUNT_ARREARAGE_SNIPPETS = (
+    "arrearage",
+    "overdue-payment",
+    "overdue payment",
+)
 ALLOWED_STATUSES = {"success", "failed", "partial"}
 ARTIFACT_TYPE_BY_PREFIX = {
     "artifacts/architecture/": "architecture",
@@ -625,6 +630,19 @@ def classify_llm_call_error(error):
         error_text = f"{error_text} | reason={error.reason}"
     if isinstance(error, urllib.error.HTTPError):
         status_code = int(error.code)
+        try:
+            response_body = error.read()
+        except Exception:
+            response_body = b""
+        if isinstance(response_body, bytes):
+            decoded_body = response_body.decode("utf-8", errors="ignore")
+        else:
+            decoded_body = str(response_body or "")
+        decoded_body = decoded_body.strip()
+        if decoded_body:
+            if len(decoded_body) > 4000:
+                decoded_body = decoded_body[:4000]
+            error_text = f"{error_text} | body={decoded_body}"
 
     lowered = error_text.lower()
     if "unexpected_eof_while_reading" in lowered or "eof occurred in violation of protocol" in lowered:
@@ -644,6 +662,8 @@ def classify_llm_call_error(error):
         return "connection_refused", True
     if "remote end closed connection" in lowered:
         return "remote_closed", True
+    if any(snippet in lowered for snippet in PROVIDER_ACCOUNT_ARREARAGE_SNIPPETS):
+        return "provider_account_arrearage", False
     if status_code is not None:
         return f"http_{status_code}", status_code in RETRYABLE_HTTP_STATUS_CODES
     if isinstance(error, TimeoutError):

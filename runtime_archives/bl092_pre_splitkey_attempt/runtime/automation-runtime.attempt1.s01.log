@@ -1,0 +1,22 @@
+task_id: AUTO-20260325-874
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-874
+worker_image: argus-worker:latest
+started_at: 2026-03-26T05:10:02.682041Z
+finished_at: 2026-03-26T05:10:06.852176Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-26T05:10:02.934694Z] [automation] [INFO] Worker started using endpoint https://aixj.vip/v1/chat/completions (wire_api=chat_completions, timeout=120s, attempts=3, timeout_recovery_retries=1, json_repair_attempts=1)
+[2026-03-26T05:10:03.355257Z] [automation] [WARN] LLM call failed attempt 1/3 (endpoint=https://aixj.vip/v1/chat/completions, class=http_401, retryable=True): HTTP Error 401: Unauthorized
+[2026-03-26T05:10:03.355323Z] [automation] [INFO] Authorization failure detected; retrying once on fallback endpoint.
+[2026-03-26T05:10:03.355336Z] [automation] [INFO] Quarantined endpoint for current call due to authorization failure: https://aixj.vip/v1/chat/completions
+[2026-03-26T05:10:03.355382Z] [automation] [INFO] Retrying LLM call in 1s (next_endpoint=https://fast.vpsairobot.com/v1/chat/completions)
+[2026-03-26T05:10:06.712918Z] [automation] [INFO] Task completed AUTO-20260325-874 with status failed
+[2026-03-26T05:10:06.713743Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-874
+
+=== stderr ===
+

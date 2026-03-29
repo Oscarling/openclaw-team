@@ -1,0 +1,3 @@
+endpoint	http_code
+https://aixj.vip/v1/chat/completions	401
+https://fast.vpsairobot.com/v1/chat/completions	200

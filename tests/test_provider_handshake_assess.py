@@ -126,6 +126,36 @@ class ProviderHandshakeAssessTests(unittest.TestCase):
         self.assertEqual(summary["block_reason"], "non_api_success_payload")
         self.assertEqual(summary["success_row_count"], 0)
 
+    def test_build_summary_classifies_leaked_api_key(self) -> None:
+        rows = [
+            {
+                "endpoint": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+                "model": "gemini-3-flash-preview",
+                "probe": "ping",
+                "http_code": "403",
+                "note": "key=***ixwyRk; {\"error\":{\"code\":403,\"message\":\"Your API key was reported as leaked. Please use another API key.\",\"status\":\"PERMISSION_DENIED\"}}",
+            }
+        ]
+        summary = provider_handshake_assess.build_summary(rows, Path("dummy.tsv"))
+        self.assertEqual(summary["status"], "blocked")
+        self.assertEqual(summary["block_reason"], "leaked_api_key")
+        self.assertEqual(summary["note_class_counts"]["leaked_api_key"], 1)
+
+    def test_build_summary_classifies_provider_account_arrearage(self) -> None:
+        rows = [
+            {
+                "endpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1/responses",
+                "model": "qwen-plus",
+                "probe": "ping",
+                "http_code": "400",
+                "note": 'key=***f9890e; {"code":"Arrearage","message":".../error-code#overdue-payment"}',
+            }
+        ]
+        summary = provider_handshake_assess.build_summary(rows, Path("dummy.tsv"))
+        self.assertEqual(summary["status"], "blocked")
+        self.assertEqual(summary["block_reason"], "provider_account_arrearage")
+        self.assertEqual(summary["note_class_counts"]["provider_account_arrearage"], 1)
+
     def test_build_summary_mixed_with_tls_transport_failures(self) -> None:
         rows = [
             {

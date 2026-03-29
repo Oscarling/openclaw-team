@@ -39,11 +39,22 @@ DNS_TEXT_MARKERS = (
     "name or service not known",
     "temporary failure in name resolution",
 )
+KEY_TEXT_FILE_SUFFIXES = {".rtf", ".txt", ".md", ".env", ".json", ""}
 
 
 def load_text(path: Path) -> str:
     if not path.exists():
         return ""
+    if path.is_dir():
+        chunks: List[str] = []
+        for child in sorted(path.iterdir(), key=lambda item: item.name):
+            if child.is_dir():
+                chunks.append(load_text(child))
+                continue
+            if child.suffix.lower() not in KEY_TEXT_FILE_SUFFIXES:
+                continue
+            chunks.append(load_text(child))
+        return "\n".join(part for part in chunks if part)
     if path.suffix.lower() == ".rtf":
         try:
             return subprocess.check_output(
@@ -75,6 +86,16 @@ def load_keys(paths: Iterable[str]) -> List[str]:
     for raw in paths:
         text += load_text(Path(raw).expanduser())
     return extract_keys(text)
+
+
+def select_keys_for_endpoints(keys: Sequence[str], endpoints: Sequence[str], probe_all_keys: bool) -> List[str]:
+    if probe_all_keys:
+        return list(keys)
+    if any("generativelanguage.googleapis.com" in (endpoint or "") for endpoint in endpoints):
+        gemini_keys = [key for key in keys if key.startswith("AIza")]
+        if gemini_keys:
+            return gemini_keys[:1]
+    return list(keys[:1])
 
 
 def infer_wire_api(endpoint: str) -> str:
@@ -306,7 +327,7 @@ def main() -> int:
     endpoints = args.endpoint or DEFAULT_ENDPOINTS
     keys = load_keys(key_files)
 
-    selected_keys = keys if args.probe_all_keys else keys[:1]
+    selected_keys = select_keys_for_endpoints(keys=keys, endpoints=endpoints, probe_all_keys=args.probe_all_keys)
     rows = build_probe_rows(
         keys=selected_keys,
         endpoints=endpoints,

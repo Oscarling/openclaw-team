@@ -52,6 +52,11 @@ WORKSPACE_PRESENCE_FAILURE_SNIPPETS = (
     "lacks an accessible repository layout",
     "did not provide repository access",
 )
+PROVIDER_ACCOUNT_ARREARAGE_SNIPPETS = (
+    "arrearage",
+    "overdue-payment",
+    "overdue payment",
+)
 
 
 def _resolve_max_snapshot_chars() -> int:
@@ -331,6 +336,10 @@ def build_critic_from_automation(critic_task: dict[str, Any], auto_result: dict[
         "sections": ["Scope", "Findings", "Verdict", "Rationale"],
         "verdict_required": True,
     }
+    params["runtime_evidence_policy"] = (
+        "This pipeline stage reviews generated artifacts. Static artifact analysis is valid evidence; "
+        "lack of live execution proof alone must not force needs_revision."
+    )
     updated["inputs"]["params"] = params
 
     # Tighten critic behavior with explicit deterministic contract reminders.
@@ -341,6 +350,8 @@ def build_critic_from_automation(critic_task: dict[str, Any], auto_result: dict[
         [
             "Use artifact_snapshots when provided; avoid claiming access problems if snapshot content exists.",
             "When both the generated wrapper and reviewed delegate snapshots are provided, review them together rather than silently narrowing scope to one file.",
+            "Treat static artifact evidence as sufficient for this review stage; do not require live runtime execution proof by default.",
+            "Do not set verdict=needs_revision solely because runtime execution artifacts are absent when code-level evidence is complete.",
             "Return metadata.verdict with one of: pass, fail, needs_revision.",
             "Always generate review artifact content for expected_outputs[0].path.",
             "If evidence is insufficient, use partial + errors + verdict=needs_revision, but still output review artifact.",
@@ -370,6 +381,8 @@ def _extract_llm_error_class(auto_result: dict[str, Any]) -> str | None:
         if not isinstance(item, str):
             continue
         lowered = item.lower()
+        if any(snippet in lowered for snippet in PROVIDER_ACCOUNT_ARREARAGE_SNIPPETS):
+            return "provider_account_arrearage"
         match = re.search(r"class=([a-z0-9_]+)", item)
         if match:
             return match.group(1).strip().lower()

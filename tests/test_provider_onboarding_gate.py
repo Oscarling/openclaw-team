@@ -48,6 +48,52 @@ class ProviderOnboardingGateTests(unittest.TestCase):
         self.assertEqual(len(calls), 1)
         self.assertIn("provider_handshake_probe.py", calls[0][1])
 
+    def test_main_rejects_invalid_stamp_format(self) -> None:
+        calls: list[list[str]] = []
+
+        def fake_run(cmd: list[str]):
+            calls.append(cmd)
+            return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-gate-") as tmp:
+            argv = [
+                str(MODULE_PATH),
+                "--output-dir",
+                tmp,
+                "--stamp",
+                "20260329_retest",
+                "--no-history",
+            ]
+            with mock.patch.object(provider_onboarding_gate, "run_command", side_effect=fake_run):
+                with mock.patch.object(sys, "argv", argv):
+                    code = provider_onboarding_gate.main()
+
+        self.assertEqual(code, 2)
+        self.assertEqual(calls, [])
+
+    def test_main_rejects_invalid_stamp_date(self) -> None:
+        calls: list[list[str]] = []
+
+        def fake_run(cmd: list[str]):
+            calls.append(cmd)
+            return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-gate-") as tmp:
+            argv = [
+                str(MODULE_PATH),
+                "--output-dir",
+                tmp,
+                "--stamp",
+                "20260230",
+                "--no-history",
+            ]
+            with mock.patch.object(provider_onboarding_gate, "run_command", side_effect=fake_run):
+                with mock.patch.object(sys, "argv", argv):
+                    code = provider_onboarding_gate.main()
+
+        self.assertEqual(code, 2)
+        self.assertEqual(calls, [])
+
     def test_main_returns_assessment_code(self) -> None:
         calls: list[list[str]] = []
 
@@ -249,6 +295,107 @@ class ProviderOnboardingGateTests(unittest.TestCase):
             self.assertEqual(len(calls), 3)
             self.assertIn("provider_onboarding_history_summary.py", calls[2][1])
             self.assertNotIn("--repo-only", calls[2])
+
+    def test_main_applies_gemini_preset_defaults(self) -> None:
+        calls: list[list[str]] = []
+
+        def fake_run(cmd: list[str]):
+            calls.append(cmd)
+            if "provider_handshake_probe.py" in cmd[1]:
+                return subprocess.CompletedProcess(cmd, 0, stdout="probe.tsv", stderr="")
+            return subprocess.CompletedProcess(cmd, 0, stdout="summary.json", stderr="")
+
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-gate-") as tmp:
+            argv = [
+                str(MODULE_PATH),
+                "--output-dir",
+                tmp,
+                "--stamp",
+                "20260328",
+                "--provider-preset",
+                "gemini_openai",
+                "--no-history",
+            ]
+            with mock.patch.object(provider_onboarding_gate, "run_command", side_effect=fake_run):
+                with mock.patch.object(sys, "argv", argv):
+                    code = provider_onboarding_gate.main()
+
+        self.assertEqual(code, 0)
+        self.assertEqual(len(calls), 2)
+        probe_cmd = calls[0]
+        self.assertIn("--model", probe_cmd)
+        self.assertEqual(self._arg_value(probe_cmd, "--model"), "gemini-3-flash-preview")
+        self.assertIn("--endpoint", probe_cmd)
+        self.assertEqual(
+            self._arg_value(probe_cmd, "--endpoint"),
+            "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+        )
+
+    def test_main_keeps_explicit_model_and_endpoint_over_preset(self) -> None:
+        calls: list[list[str]] = []
+
+        def fake_run(cmd: list[str]):
+            calls.append(cmd)
+            if "provider_handshake_probe.py" in cmd[1]:
+                return subprocess.CompletedProcess(cmd, 0, stdout="probe.tsv", stderr="")
+            return subprocess.CompletedProcess(cmd, 0, stdout="summary.json", stderr="")
+
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-gate-") as tmp:
+            argv = [
+                str(MODULE_PATH),
+                "--output-dir",
+                tmp,
+                "--stamp",
+                "20260328",
+                "--provider-preset",
+                "gemini_openai",
+                "--model",
+                "custom-model",
+                "--endpoint",
+                "https://example.invalid/v1/responses",
+                "--no-history",
+            ]
+            with mock.patch.object(provider_onboarding_gate, "run_command", side_effect=fake_run):
+                with mock.patch.object(sys, "argv", argv):
+                    code = provider_onboarding_gate.main()
+
+        self.assertEqual(code, 0)
+        probe_cmd = calls[0]
+        self.assertEqual(self._arg_value(probe_cmd, "--model"), "custom-model")
+        self.assertEqual(self._arg_value(probe_cmd, "--endpoint"), "https://example.invalid/v1/responses")
+
+    def test_main_applies_qwen_preset_defaults(self) -> None:
+        calls: list[list[str]] = []
+
+        def fake_run(cmd: list[str]):
+            calls.append(cmd)
+            if "provider_handshake_probe.py" in cmd[1]:
+                return subprocess.CompletedProcess(cmd, 0, stdout="probe.tsv", stderr="")
+            return subprocess.CompletedProcess(cmd, 0, stdout="summary.json", stderr="")
+
+        with tempfile.TemporaryDirectory(prefix="provider-onboarding-gate-") as tmp:
+            argv = [
+                str(MODULE_PATH),
+                "--output-dir",
+                tmp,
+                "--stamp",
+                "20260329",
+                "--provider-preset",
+                "qwen_openai",
+                "--no-history",
+            ]
+            with mock.patch.object(provider_onboarding_gate, "run_command", side_effect=fake_run):
+                with mock.patch.object(sys, "argv", argv):
+                    code = provider_onboarding_gate.main()
+
+        self.assertEqual(code, 0)
+        self.assertEqual(len(calls), 2)
+        probe_cmd = calls[0]
+        self.assertEqual(self._arg_value(probe_cmd, "--model"), "qwen-plus")
+        endpoint_indices = [i for i, token in enumerate(probe_cmd) if token == "--endpoint"]
+        self.assertEqual(len(endpoint_indices), 2)
+        self.assertEqual(probe_cmd[endpoint_indices[0] + 1], "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions")
+        self.assertEqual(probe_cmd[endpoint_indices[1] + 1], "https://dashscope.aliyuncs.com/compatible-mode/v1/responses")
 
 
 if __name__ == "__main__":

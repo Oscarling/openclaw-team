@@ -1,0 +1,24 @@
+{
+  "probe_tsv": "runtime_archives/bl100/tmp/provider_handshake_probe_qwen_key6_20260329.tsv",
+  "status": "blocked",
+  "block_reason": "transport_or_dns_failure",
+  "row_count": 1,
+  "success_row_count": 0,
+  "http_code_counts": {
+    "000": 1
+  },
+  "note_class_counts": {
+    "dns_resolution": 1
+  },
+  "endpoint_counts": {
+    "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions": 1
+  },
+  "key_tails": [
+    "f9890e"
+  ],
+  "retry_attempt_total": 1,
+  "rows_with_retry": 1,
+  "retry_reason_counts": {
+    "dns_resolution": 1
+  }
+}

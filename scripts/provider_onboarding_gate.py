@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -16,10 +17,32 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 PROBE_SCRIPT = REPO_ROOT / "scripts" / "provider_handshake_probe.py"
 ASSESS_SCRIPT = REPO_ROOT / "scripts" / "provider_handshake_assess.py"
 SUMMARY_SCRIPT = REPO_ROOT / "scripts" / "provider_onboarding_history_summary.py"
+STAMP_RE = re.compile(r"^\d{8}$")
+PROVIDER_PRESETS: dict[str, dict[str, Any]] = {
+    "gemini_openai": {
+        "default_model": "gemini-3-flash-preview",
+        "endpoints": [
+            "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+        ],
+    },
+    "qwen_openai": {
+        "default_model": "qwen-plus",
+        "endpoints": [
+            "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+            "https://dashscope.aliyuncs.com/compatible-mode/v1/responses",
+        ],
+    }
+}
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run provider onboarding gate (probe + assess)")
+    parser.add_argument(
+        "--provider-preset",
+        choices=sorted(PROVIDER_PRESETS.keys()),
+        default="",
+        help="Optional provider preset that supplies default model/endpoints.",
+    )
     parser.add_argument(
         "--output-dir",
         default="runtime_archives/bl100/tmp",
@@ -86,8 +109,32 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def apply_provider_preset(args: argparse.Namespace) -> argparse.Namespace:
+    preset_name = (args.provider_preset or "").strip()
+    if not preset_name:
+        return args
+    preset = PROVIDER_PRESETS[preset_name]
+    default_model = str(preset.get("default_model", "")).strip()
+    if not args.endpoint:
+        args.endpoint = [str(item).strip() for item in preset.get("endpoints", []) if str(item).strip()]
+    if args.model == "gpt-5-codex" and default_model:
+        args.model = default_model
+    return args
+
+
 def run_command(cmd: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(cmd, cwd=REPO_ROOT, text=True, capture_output=True, check=False)
+
+
+def validate_stamp(value: str) -> str:
+    stamp = (value or "").strip()
+    if not STAMP_RE.fullmatch(stamp):
+        raise ValueError("stamp must be YYYYMMDD string")
+    try:
+        datetime.strptime(stamp, "%Y%m%d")
+    except ValueError as exc:
+        raise ValueError("stamp must be a valid YYYYMMDD date") from exc
+    return stamp
 
 
 def load_assessment_summary(path: Path) -> dict[str, Any]:
@@ -135,7 +182,12 @@ def refresh_history_summary(history_path: Path, output_json: Path, repo_only: bo
 
 
 def main() -> int:
-    args = parse_args()
+    args = apply_provider_preset(parse_args())
+    try:
+        args.stamp = validate_stamp(args.stamp)
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
     out_dir = Path(args.output_dir)
     if not out_dir.is_absolute():
         out_dir = REPO_ROOT / out_dir

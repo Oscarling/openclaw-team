@@ -31,6 +31,38 @@ class ProviderHandshakeProbeTests(unittest.TestCase):
             ["AIzaSyDzMEeTKYGpU1gvoBQJ1XRMmEePUixwyRk"],
         )
 
+    def test_load_keys_supports_directory_bundle(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="provider-handshake-probe-keys-") as tmp:
+            key_dir = Path(tmp) / "bundle"
+            key_dir.mkdir(parents=True, exist_ok=True)
+            (key_dir / "gemini.txt").write_text("AIzaSyDzMEeTKYGpU1gvoBQJ1XRMmEePUixwyRk\n", encoding="utf-8")
+            keys = provider_handshake_probe.load_keys([str(key_dir)])
+            self.assertEqual(keys, ["AIzaSyDzMEeTKYGpU1gvoBQJ1XRMmEePUixwyRk"])
+
+    def test_select_keys_prefers_gemini_key_for_google_endpoint(self) -> None:
+        keys = [
+            "sk-aaaaabbbbbcccccdddddeeeee11111",
+            "AIzaSyDzMEeTKYGpU1gvoBQJ1XRMmEePUixwyRk",
+        ]
+        selected = provider_handshake_probe.select_keys_for_endpoints(
+            keys=keys,
+            endpoints=["https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"],
+            probe_all_keys=False,
+        )
+        self.assertEqual(selected, ["AIzaSyDzMEeTKYGpU1gvoBQJ1XRMmEePUixwyRk"])
+
+    def test_select_keys_uses_first_key_for_non_google_endpoint(self) -> None:
+        keys = [
+            "sk-aaaaabbbbbcccccdddddeeeee11111",
+            "AIzaSyDzMEeTKYGpU1gvoBQJ1XRMmEePUixwyRk",
+        ]
+        selected = provider_handshake_probe.select_keys_for_endpoints(
+            keys=keys,
+            endpoints=["https://example.invalid/v1/responses"],
+            probe_all_keys=False,
+        )
+        self.assertEqual(selected, ["sk-aaaaabbbbbcccccdddddeeeee11111"])
+
     def test_build_probe_payload_uses_chat_for_chat_completions_endpoint(self) -> None:
         payload = provider_handshake_probe.build_probe_payload(
             model="gemini-3-flash-preview",

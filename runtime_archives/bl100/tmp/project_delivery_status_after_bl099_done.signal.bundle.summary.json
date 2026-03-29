@@ -1,0 +1,10 @@
+{
+  "status_json": "runtime_archives/bl100/tmp/project_delivery_status_after_bl099_done.json",
+  "signal_json": "runtime_archives/bl100/tmp/project_delivery_status_after_bl099_done.signal.json",
+  "signal_tsv": "runtime_archives/bl100/tmp/project_delivery_status_after_bl099_done.signal.tsv",
+  "delivery_state": "ready_for_replay",
+  "blocking_stage": "",
+  "blocking_reason": "",
+  "blocking_action": "",
+  "consistency_check": "passed"
+}

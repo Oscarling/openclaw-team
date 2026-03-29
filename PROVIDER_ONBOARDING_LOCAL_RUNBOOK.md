@@ -33,10 +33,25 @@ Gemini (OpenAI compatibility) example:
 
 ```bash
 python3 scripts/provider_handshake_probe.py \
-  --key-file "$HOME/Desktop/备用key4.rtf" \
+  --key-file "$HOME/Desktop/备用key/备用key4-gemini.rtf" \
   --endpoint "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" \
   --model "gemini-3-flash-preview" \
   --output runtime_archives/bl100/tmp/provider_handshake_probe_gemini.tsv
+```
+
+`--key-file` also supports passing a directory path (for example
+`$HOME/Desktop/备用key/`); probe will scan text/rtf files inside and extract
+candidate keys.
+
+Qwen (DashScope OpenAI compatibility) example:
+
+```bash
+python3 scripts/provider_handshake_probe.py \
+  --key-file "$HOME/Desktop/备用key/备用key6-千问.rtf" \
+  --endpoint "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions" \
+  --endpoint "https://dashscope.aliyuncs.com/compatible-mode/v1/responses" \
+  --model "qwen-plus" \
+  --output runtime_archives/bl100/tmp/provider_handshake_probe_qwen.tsv
 ```
 
 ## 2) Assessment Only
@@ -68,6 +83,31 @@ python3 scripts/provider_onboarding_gate.py \
   --require-ready \
   --stamp 20260328
 ```
+
+Gemini preset shortcut (uses preset default endpoint/model):
+
+```bash
+python3 scripts/provider_onboarding_gate.py \
+  --provider-preset gemini_openai \
+  --key-file "$HOME/Desktop/备用key/备用key4-gemini.rtf" \
+  --require-ready \
+  --stamp 20260328
+```
+
+Qwen preset shortcut (uses DashScope compatible endpoints):
+
+```bash
+python3 scripts/provider_onboarding_gate.py \
+  --provider-preset qwen_openai \
+  --key-file "$HOME/Desktop/备用key/备用key6-千问.rtf" \
+  --require-ready \
+  --stamp 20260329
+```
+
+`--stamp` must be a valid `YYYYMMDD` date (for example `20260329`). Do not add
+suffixes like `_retest`; repeated same-day runs should reuse the same stamp and
+be distinguished by per-run `timestamp` and immutable assessment snapshots in
+history.
 
 Outputs:
 
@@ -246,6 +286,61 @@ python3 scripts/project_delivery_status.py \
 Use this output for operator-facing progress updates when BL-099 remains
 blocked and external provider/base readiness is still pending.
 
+Status JSON also includes `blocking_signal` for quick machine/operator triage:
+
+- `stage`:
+  - `handshake_gate` when onboarding latest itself is blocked
+  - `controlled_replay_promotion` when handshake is ready but BL-099 promotion
+    is still blocked by downstream external conditions
+  - `provider_chain`/`unknown` for residual chain-level blocking
+- `reason`:
+  - mirrors the most actionable blocker reason (for example
+    `provider_account_arrearage`, `auth_or_access_policy_block`,
+    `provider_billing_arrearage`)
+
+For one-shot artifact generation (recommended), produce both signal outputs
+and run embedded consistency checks in a single command:
+
+```bash
+python3 scripts/project_delivery_signal_bundle.py \
+  --status-json runtime_archives/bl100/tmp/project_delivery_status.json \
+  --output-prefix /tmp/project_delivery_status.signal \
+  --require-delivery-state \
+  --require-blocking-context \
+  --output-summary-json /tmp/project_delivery_status.signal.bundle.summary.json
+```
+
+This writes:
+
+- `/tmp/project_delivery_status.signal.json`
+- `/tmp/project_delivery_status.signal.tsv`
+- `/tmp/project_delivery_status.signal.bundle.summary.json`
+
+For compact extraction only (no bundling), use:
+
+```bash
+python3 scripts/project_delivery_signal.py \
+  --status-json runtime_archives/bl100/tmp/project_delivery_status.json \
+  --output-format tsv
+```
+
+Strict extraction mode requires:
+
+- `--require-delivery-state`
+- `--require-blocking-context`
+
+In strict mode, non-ready `delivery_state` must include both
+`blocking_stage` and `blocking_reason`.
+
+To verify signal artifacts remain consistent with source status JSON:
+
+```bash
+python3 scripts/project_delivery_signal_consistency_check.py \
+  --status-json runtime_archives/bl100/tmp/project_delivery_status.json \
+  --signal-json /tmp/project_delivery_status.signal.json \
+  --signal-tsv /tmp/project_delivery_status.signal.tsv
+```
+
 For fail-fast readiness gating (automation use), add `--require-ready`; command
 returns exit code `2` unless `delivery_state=ready_for_replay`:
 
@@ -255,4 +350,46 @@ python3 scripts/project_delivery_status.py \
   --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
   --repo-root /Users/lingguozhong/openclaw-team \
   --require-ready
+```
+
+## 8) Provider Environment Profile Shortcuts
+
+When switching between provider baselines during local debugging, use the
+repo-tracked helper instead of ad-hoc `/tmp` snippets:
+
+```bash
+source scripts/provider_profiles.sh
+```
+
+DeepSeek profile (OpenAI-compatible chat wire):
+
+```bash
+use_deepseek_profile
+```
+
+Gemini profile (OpenAI compatibility route):
+
+```bash
+use_gemini_profile
+```
+
+Qwen profile (DashScope OpenAI compatibility route):
+
+```bash
+use_qwen_profile
+```
+
+Both helpers export:
+
+- `OPENAI_API_BASE`
+- `OPENAI_MODEL_NAME`
+- `ARGUS_LLM_WIRE_API=chat_completions`
+- `OPENAI_API_KEY` (extracted from Desktop key file, never printed in full)
+
+Optional overrides:
+
+```bash
+use_deepseek_profile "$HOME/Desktop/备用key/custom-deepseek.rtf" "deepseek-chat"
+use_gemini_profile "$HOME/Desktop/备用key/custom-gemini.rtf" "gemini-2.5-flash"
+use_qwen_profile "$HOME/Desktop/备用key/custom-qwen.rtf" "qwen-plus"
 ```

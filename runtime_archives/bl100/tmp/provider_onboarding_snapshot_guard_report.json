@@ -1,15 +1,15 @@
 {
   "history_jsonl": "runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl",
   "repo_only": true,
-  "assess_entry_count": 2,
-  "evaluated_assess_rows": 2,
-  "guard_match_rows": 1,
+  "assess_entry_count": 10,
+  "evaluated_assess_rows": 10,
+  "guard_match_rows": 9,
   "guard_mismatch_rows": 1,
   "guard_unverified_rows": 0,
   "guard_skipped_rows": 0,
-  "guard_match_percent": 50.0,
+  "guard_match_percent": 90.0,
   "reason_counts": {
-    "guard_match": 1,
+    "guard_match": 9,
     "guard_mismatch_block_reason": 1
   },
   "non_match_rows": [

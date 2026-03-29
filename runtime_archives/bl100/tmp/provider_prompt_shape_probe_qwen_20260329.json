@@ -1,0 +1,16 @@
+{
+  "status": "ready",
+  "probe_tsv": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_prompt_shape_probe_qwen_20260329.tsv",
+  "row_count": 4,
+  "success_row_count": 4,
+  "failure_row_count": 0,
+  "endpoint_success_counts": {
+    "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions": 2,
+    "https://dashscope.aliyuncs.com/compatible-mode/v1/responses": 2
+  },
+  "error_class_counts": {
+    "ok": 4
+  },
+  "model": "qwen-plus",
+  "prompt_chars": 6505
+}

@@ -213,6 +213,24 @@ class CriticVerdictExtractionTests(unittest.TestCase):
             self.assertTrue(runner_snapshot["truncated"])
             self.assertEqual(runner_snapshot["content"], "abcdefgh")
 
+    def test_build_critic_from_automation_includes_static_evidence_policy(self) -> None:
+        critic_task = {
+            "inputs": {"artifacts": [], "params": {}},
+            "expected_outputs": [
+                {"path": "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md", "type": "review"}
+            ],
+            "constraints": [],
+        }
+        auto_result = {"artifacts": []}
+        updated = executor.build_critic_from_automation(critic_task, auto_result)
+
+        params = updated["inputs"]["params"]
+        self.assertIn("runtime_evidence_policy", params)
+        self.assertIn("static artifact analysis is valid evidence", params["runtime_evidence_policy"].lower())
+        constraints_blob = "\n".join(updated["constraints"]).lower()
+        self.assertIn("static artifact evidence as sufficient", constraints_blob)
+        self.assertIn("do not set verdict=needs_revision solely", constraints_blob)
+
 
 class ExecuteApprovedPreviewsTransientRetryTests(unittest.TestCase):
     def _valid_automation_task(self) -> dict:
@@ -236,6 +254,17 @@ class ExecuteApprovedPreviewsTransientRetryTests(unittest.TestCase):
             "expected_outputs": [{"path": "artifacts/reviews/demo_review.md", "type": "review"}],
             "constraints": ["must include verdict"],
         }
+
+    def test_extract_llm_error_class_detects_provider_account_arrearage(self) -> None:
+        error_class = executor._extract_llm_error_class(
+            {
+                "status": "failed",
+                "errors": [
+                    "HTTP Error 400: Bad Request body={\"error\":{\"message\":\"Account Arrearage: overdue-payment required\"}}"
+                ],
+            }
+        )
+        self.assertEqual(error_class, "provider_account_arrearage")
 
     def test_process_approval_retries_once_for_http_524_then_succeeds(self) -> None:
         with tempfile.TemporaryDirectory(prefix="execute-approved-previews-") as tmp:
@@ -930,6 +959,72 @@ class ExecuteApprovedPreviewsTransientRetryTests(unittest.TestCase):
                     "artifacts": [],
                     "errors": [
                         "LLM call exhausted (attempts=1/1, class=http_403, endpoint=https://fast.vpsairobot.com/v1/chat/completions, retryable=False): HTTP Error 403: Forbidden"
+                    ],
+                    "metadata": {},
+                }
+
+            original_repo_root = executor.REPO_ROOT
+            original_preview_dir = executor.PREVIEW_DIR
+            original_approvals_dir = executor.APPROVALS_DIR
+            try:
+                executor.REPO_ROOT = repo_root
+                executor.PREVIEW_DIR = preview_dir
+                executor.APPROVALS_DIR = approvals_dir
+                with mock.patch.object(executor, "delegate_task", side_effect=fake_delegate):
+                    result = executor.process_approval(
+                        approval_path,
+                        approval_payload,
+                        SimpleNamespace(test_mode="off", allow_replay=True),
+                    )
+            finally:
+                executor.REPO_ROOT = original_repo_root
+                executor.PREVIEW_DIR = original_preview_dir
+                executor.APPROVALS_DIR = original_approvals_dir
+
+            self.assertEqual(result["status"], "rejected")
+            self.assertEqual(result["automation_transient_retries_used"], 0)
+            self.assertEqual(calls, ["automation"])
+
+    def test_process_approval_does_not_retry_provider_account_arrearage_failure(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="execute-approved-previews-") as tmp:
+            repo_root = Path(tmp)
+            preview_dir = repo_root / "preview"
+            approvals_dir = repo_root / "approvals"
+            preview_dir.mkdir(parents=True, exist_ok=True)
+            approvals_dir.mkdir(parents=True, exist_ok=True)
+
+            preview_id = "preview-test-002-arrearage"
+            preview_payload = {
+                "preview_id": preview_id,
+                "internal_tasks": {
+                    "automation": self._valid_automation_task(),
+                    "critic": self._valid_critic_task(),
+                },
+                "execution": {"status": "pending"},
+            }
+            approval_payload = {
+                "preview_id": preview_id,
+                "approved": True,
+                "approved_by": "tester",
+                "approved_at": "2026-03-26T00:00:00Z",
+            }
+            preview_path = preview_dir / f"{preview_id}.json"
+            approval_path = approvals_dir / f"{preview_id}.json"
+            preview_path.write_text(json.dumps(preview_payload), encoding="utf-8")
+            approval_path.write_text(json.dumps(approval_payload), encoding="utf-8")
+
+            calls: list[str] = []
+
+            def fake_delegate(worker: str, task: dict, **kwargs: object) -> dict:  # noqa: ARG001
+                calls.append(worker)
+                return {
+                    "task_id": task["task_id"],
+                    "worker": worker,
+                    "status": "failed",
+                    "summary": "Worker execution failed",
+                    "artifacts": [],
+                    "errors": [
+                        "LLM call exhausted (attempts=1/3, class=provider_account_arrearage, endpoint=https://provider.invalid/v1/chat/completions, retryable=False): HTTP Error 400: Bad Request | body={\"error\":{\"message\":\"Account Arrearage: overdue-payment required\"}}"
                     ],
                     "metadata": {},
                 }
