@@ -615,3 +615,20 @@ fallback timeout），执行口径如下：
 4. 结论用语要求：
    - “路径可观测但 endpoint 链路不可推广”
    - 并显式记录下一步恢复策略（例如 provider/model/profile 受控对比）  
+
+### Local-First 阶段上传协作口径
+
+当网络慢或 GitHub 交互成本过高时，采用“本地优先 + 阶段上传”模式：
+
+1. 本地阶段内允许连续推进，但必须保持小步提交（单一目的）。  
+2. 每个阶段结束前必须本地执行：
+   - `python3 scripts/backlog_lint.py`
+   - `python3 scripts/backlog_sync.py`
+   - `bash scripts/premerge_check.sh`
+3. 阶段上传节奏：
+   - 每完成一个 blocker，或每 `2-3` 小时，至少 push 一次。
+4. 每次 push 前必须先对齐远端：
+   - `git fetch origin`
+   - 检查 `main` 与 `origin/main` 差异，避免积累大冲突。  
+5. 结果汇报口径：
+   - 明确标注“当前处于本地阶段”或“当前进入上传阶段”。  

@@ -1,0 +1,2 @@
+endpoint	model	probe	http_code	note	api_like	retry_count	retry_reasons
+https://generativelanguage.googleapis.com/v1beta/openai/chat/completions	gemini-3-flash-preview	ping	403	key=***ixwyRk; api_like=false; content_type=application/json; charset=UTF-8; [{   "error": {     "code": 403,     "message": "Your API key was reported as leaked. Please use another API key.",     "status": "PERMISSION_DENIED"   } } ]	0	1	timeout

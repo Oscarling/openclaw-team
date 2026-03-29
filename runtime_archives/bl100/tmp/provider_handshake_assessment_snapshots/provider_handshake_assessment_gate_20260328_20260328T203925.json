@@ -1,0 +1,22 @@
+{
+  "probe_tsv": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv",
+  "status": "blocked",
+  "block_reason": "no_success_route",
+  "row_count": 1,
+  "success_row_count": 0,
+  "http_code_counts": {
+    "400": 1
+  },
+  "note_class_counts": {
+    "other": 1
+  },
+  "endpoint_counts": {
+    "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions": 1
+  },
+  "key_tails": [
+    "545845"
+  ],
+  "retry_attempt_total": 0,
+  "rows_with_retry": 0,
+  "retry_reason_counts": {}
+}

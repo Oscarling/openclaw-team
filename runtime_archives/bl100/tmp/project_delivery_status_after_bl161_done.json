@@ -1,0 +1,57 @@
+{
+  "status": "ok",
+  "delivery_state": "ready_for_replay",
+  "repo_root": "/Users/lingguozhong/openclaw-team",
+  "current_branch": "feat/provider-onboarding-resilience-hardening",
+  "backlog": {
+    "path": "PROJECT_BACKLOG.md",
+    "total": 161,
+    "done": 153,
+    "completion_percent": 95.03,
+    "status_counts": {
+      "done": 153,
+      "planned": 1,
+      "blocked": 7
+    },
+    "phase_counts": {
+      "now": 93,
+      "later": 1,
+      "next": 67
+    }
+  },
+  "critical_provider_chain": {
+    "ids": [
+      "BL-20260326-099"
+    ],
+    "items": [
+      {
+        "id": "BL-20260326-099",
+        "status": "done",
+        "phase": "next",
+        "priority": "p1",
+        "title": "Onboard a new provider/base topology and clear route handshake gate before replay"
+      }
+    ],
+    "is_clear": true,
+    "blockers": []
+  },
+  "onboarding_latest": {
+    "timestamp": "2026-03-29T16:05:39",
+    "stamp": "20260329",
+    "status": "ready",
+    "block_reason": "none",
+    "exit_code": 0,
+    "note_class_counts": {
+      "other": 2
+    },
+    "probe_tsv": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/deepseek_desktop/provider_handshake_probe_gate_20260329.tsv",
+    "assessment_json": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/deepseek_desktop/provider_handshake_assessment_gate_20260329.json",
+    "assessment_snapshot_json": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_assessment_snapshots/provider_handshake_assessment_gate_20260329_20260329T160539.json"
+  },
+  "onboarding_summary_path": "runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json",
+  "blocking_signal": {},
+  "blocking_action": "",
+  "next_steps": [
+    "controlled replay 与 canary 已完成，进入 finalization preflight（配置 GIT_PUSH_REMOTE/GIT_PUSH_BRANCH/TRELLO_* 并清理工作区）。"
+  ]
+}

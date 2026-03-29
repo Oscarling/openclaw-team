@@ -1,0 +1,24 @@
+{
+  "status": "done",
+  "processed": 1,
+  "rejected": 0,
+  "skipped": 0,
+  "auto_replay_retryable_rejection_used": 0,
+  "auto_replay_retryable_rejection_reason_counts": {},
+  "test_mode": "off",
+  "allow_replay": true,
+  "results": [
+    {
+      "status": "processed",
+      "decision_reason": "critic_verdict=pass",
+      "preview_id": "preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a",
+      "approval_file": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.json",
+      "result_sidecar": "/Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.result.json",
+      "critic_verdict": "pass",
+      "automation_transient_retries_used": 0,
+      "automation_workspace_retries_used": 0,
+      "auto_replay_retryable_rejection_used": false,
+      "auto_replay_retryable_rejection_reason": ""
+    }
+  ]
+}

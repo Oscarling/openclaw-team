@@ -1,0 +1,57 @@
+{
+  "history_jsonl": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl",
+  "entry_count": 10,
+  "status_counts": {
+    "blocked": 8,
+    "ready": 2
+  },
+  "block_reason_counts": {
+    "auth_or_access_policy_block": 1,
+    "forbidden_or_gateway_policy": 1,
+    "mixed_with_tls_transport_failures": 1,
+    "no_success_route": 2,
+    "none": 2,
+    "provider_account_arrearage": 1,
+    "transport_or_dns_failure": 2
+  },
+  "exit_code_counts": {
+    "0": 2,
+    "2": 8
+  },
+  "note_class_counts": {
+    "dns_resolution": 2,
+    "edge_policy_1010": 3,
+    "invalid_api_key": 4,
+    "other": 9,
+    "provider_account_arrearage": 2,
+    "tls_eof": 1
+  },
+  "rows_with_note_class_counts": 9,
+  "rows_missing_note_class_counts": 1,
+  "note_signal_coverage_percent": 90.0,
+  "assess_entry_count": 10,
+  "assess_rows_with_snapshot": 10,
+  "assess_rows_missing_snapshot": 0,
+  "assess_snapshot_coverage_percent": 100.0,
+  "assess_rows_with_snapshot_guard_match": 9,
+  "assess_rows_with_snapshot_guard_mismatch": 1,
+  "assess_rows_with_snapshot_guard_unverified": 0,
+  "assess_snapshot_guard_match_percent": 90.0,
+  "assess_snapshot_guard_mismatch_reason_counts": {
+    "block_reason": 1
+  },
+  "dropped_non_repo_entries": 0,
+  "latest": {
+    "timestamp": "2026-03-29T16:05:39",
+    "stamp": "20260329",
+    "status": "ready",
+    "block_reason": "none",
+    "exit_code": 0,
+    "note_class_counts": {
+      "other": 2
+    },
+    "probe_tsv": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/deepseek_desktop/provider_handshake_probe_gate_20260329.tsv",
+    "assessment_json": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/deepseek_desktop/provider_handshake_assessment_gate_20260329.json",
+    "assessment_snapshot_json": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_assessment_snapshots/provider_handshake_assessment_gate_20260329_20260329T160539.json"
+  }
+}

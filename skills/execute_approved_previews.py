@@ -23,16 +23,39 @@ VERDICT_VALUES = {"pass", "fail", "needs_revision"}
 DEFAULT_MAX_SNAPSHOT_CHARS = 120000
 MIN_MAX_SNAPSHOT_CHARS = 4096
 MAX_ALLOWED_SNAPSHOT_CHARS = 500000
-TRANSIENT_AUTOMATION_ERROR_CLASSES = {"http_524", "http_502", "timeout"}
+TRANSIENT_AUTOMATION_ERROR_CLASSES = {
+    "http_500",
+    "http_502",
+    "http_503",
+    "http_504",
+    "http_520",
+    "http_521",
+    "http_522",
+    "http_523",
+    "http_524",
+    "timeout",
+    "tls_eof",
+    "dns_resolution",
+    "connection_reset",
+    "connection_refused",
+    "remote_closed",
+}
 DEFAULT_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS = 1
 MAX_AUTOMATION_TRANSIENT_RETRY_ATTEMPTS = 3
 DEFAULT_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS = 1
 MAX_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS = 2
+DEFAULT_AUTO_REPLAY_RETRYABLE_REJECTION_ATTEMPTS = 1
+MAX_AUTO_REPLAY_RETRYABLE_REJECTION_ATTEMPTS = 3
 WORKSPACE_PRESENCE_FAILURE_SNIPPETS = (
     "repository not present in execution environment",
     "workspace directory was empty",
     "lacks an accessible repository layout",
     "did not provide repository access",
+)
+PROVIDER_ACCOUNT_ARREARAGE_SNIPPETS = (
+    "arrearage",
+    "overdue-payment",
+    "overdue payment",
 )
 
 
@@ -70,6 +93,17 @@ def _resolve_automation_workspace_retry_attempts() -> int:
     except Exception:
         return DEFAULT_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS
     return max(0, min(parsed, MAX_AUTOMATION_WORKSPACE_RETRY_ATTEMPTS))
+
+
+def _resolve_auto_replay_retryable_rejection_attempts() -> int:
+    raw = os.environ.get("ARGUS_AUTO_REPLAY_RETRYABLE_REJECTION_ATTEMPTS", "").strip()
+    if not raw:
+        return DEFAULT_AUTO_REPLAY_RETRYABLE_REJECTION_ATTEMPTS
+    try:
+        parsed = int(raw)
+    except Exception:
+        return DEFAULT_AUTO_REPLAY_RETRYABLE_REJECTION_ATTEMPTS
+    return max(0, min(parsed, MAX_AUTO_REPLAY_RETRYABLE_REJECTION_ATTEMPTS))
 
 
 def utc_now() -> str:
@@ -302,6 +336,10 @@ def build_critic_from_automation(critic_task: dict[str, Any], auto_result: dict[
         "sections": ["Scope", "Findings", "Verdict", "Rationale"],
         "verdict_required": True,
     }
+    params["runtime_evidence_policy"] = (
+        "This pipeline stage reviews generated artifacts. Static artifact analysis is valid evidence; "
+        "lack of live execution proof alone must not force needs_revision."
+    )
     updated["inputs"]["params"] = params
 
     # Tighten critic behavior with explicit deterministic contract reminders.
@@ -312,6 +350,8 @@ def build_critic_from_automation(critic_task: dict[str, Any], auto_result: dict[
         [
             "Use artifact_snapshots when provided; avoid claiming access problems if snapshot content exists.",
             "When both the generated wrapper and reviewed delegate snapshots are provided, review them together rather than silently narrowing scope to one file.",
+            "Treat static artifact evidence as sufficient for this review stage; do not require live runtime execution proof by default.",
+            "Do not set verdict=needs_revision solely because runtime execution artifacts are absent when code-level evidence is complete.",
             "Return metadata.verdict with one of: pass, fail, needs_revision.",
             "Always generate review artifact content for expected_outputs[0].path.",
             "If evidence is insufficient, use partial + errors + verdict=needs_revision, but still output review artifact.",
@@ -340,9 +380,32 @@ def _extract_llm_error_class(auto_result: dict[str, Any]) -> str | None:
     for item in errors:
         if not isinstance(item, str):
             continue
+        lowered = item.lower()
+        if any(snippet in lowered for snippet in PROVIDER_ACCOUNT_ARREARAGE_SNIPPETS):
+            return "provider_account_arrearage"
         match = re.search(r"class=([a-z0-9_]+)", item)
         if match:
             return match.group(1).strip().lower()
+        http_match = re.search(r"http error\s+(\d{3})", lowered)
+        if http_match:
+            return f"http_{http_match.group(1)}"
+        if "unexpected_eof_while_reading" in lowered or "eof occurred in violation of protocol" in lowered:
+            return "tls_eof"
+        if "timed out" in lowered:
+            return "timeout"
+        if (
+            "name or service not known" in lowered
+            or "name resolution" in lowered
+            or "temporary failure in name resolution" in lowered
+            or "nodename nor servname provided" in lowered
+        ):
+            return "dns_resolution"
+        if "connection reset" in lowered:
+            return "connection_reset"
+        if "connection refused" in lowered:
+            return "connection_refused"
+        if "remote end closed connection" in lowered:
+            return "remote_closed"
     return None
 
 
@@ -390,6 +453,58 @@ def _can_retry_automation_after_workspace_presence_failure(
     if retries_used >= retry_budget:
         return False
     return _is_workspace_presence_failure(auto_result)
+
+
+def _execution_attempts(preview_payload: dict[str, Any]) -> int:
+    execution = preview_payload.get("execution")
+    if not isinstance(execution, dict):
+        return 0
+    raw = execution.get("attempts", 0)
+    if isinstance(raw, int):
+        return max(0, raw)
+    if isinstance(raw, str) and raw.isdigit():
+        return int(raw)
+    return 0
+
+
+def _retryable_rejected_reason(preview_payload: dict[str, Any]) -> str | None:
+    last_execution = preview_payload.get("last_execution")
+    if not isinstance(last_execution, dict):
+        return None
+    if str(last_execution.get("decision", "")).strip().lower() != "rejected":
+        return None
+
+    auto_result = last_execution.get("automation_result")
+    if isinstance(auto_result, dict):
+        error_class = _extract_llm_error_class(auto_result)
+        if error_class and error_class in TRANSIENT_AUTOMATION_ERROR_CLASSES:
+            return f"transient_error_class={error_class}"
+        if _is_workspace_presence_failure(auto_result):
+            return "workspace_presence_failure"
+
+    reason = str(last_execution.get("decision_reason", "")).strip()
+    if reason:
+        error_class = _extract_llm_error_class({"errors": [reason]})
+        if error_class and error_class in TRANSIENT_AUTOMATION_ERROR_CLASSES:
+            return f"decision_reason_error_class={error_class}"
+    return None
+
+
+def _is_retryable_rejected_preview(preview_payload: dict[str, Any]) -> bool:
+    return bool(_retryable_rejected_reason(preview_payload))
+
+
+def _can_auto_replay_rejected_preview(preview_payload: dict[str, Any]) -> tuple[bool, str]:
+    budget = _resolve_auto_replay_retryable_rejection_attempts()
+    if budget <= 0:
+        return False, "auto_replay_budget_disabled"
+    attempts = _execution_attempts(preview_payload)
+    if attempts <= 0 or attempts > budget:
+        return False, f"auto_replay_budget_exhausted_attempts={attempts}/budget={budget}"
+    reason = _retryable_rejected_reason(preview_payload)
+    if not reason:
+        return False, "non_retryable_rejected_preview"
+    return True, reason
 
 
 def load_approvals(preview_id: str | None) -> list[tuple[Path, dict[str, Any]]]:
@@ -478,13 +593,30 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
     preview_payload = load_json(preview_path)
     execution = preview_payload.get("execution", {})
     execution_status = str(execution.get("status", "")).strip().lower() if isinstance(execution, dict) else ""
-    if execution_status in {"processed", "rejected"} and not args.allow_replay:
+    auto_replay_retryable_rejection_used = False
+    auto_replay_retryable_rejection_reason = ""
+    if execution_status == "processed" and not args.allow_replay:
         return {
             "status": "skipped",
             "decision_reason": "already_executed_use_allow_replay",
             "preview_id": preview_id,
             "approval_file": str(approval_path),
+            "auto_replay_retryable_rejection_used": auto_replay_retryable_rejection_used,
+            "auto_replay_retryable_rejection_reason": auto_replay_retryable_rejection_reason,
         }
+    if execution_status == "rejected" and not args.allow_replay:
+        can_auto_replay, replay_reason = _can_auto_replay_rejected_preview(preview_payload)
+        if not can_auto_replay:
+            return {
+                "status": "skipped",
+                "decision_reason": "already_executed_use_allow_replay",
+                "preview_id": preview_id,
+                "approval_file": str(approval_path),
+                "auto_replay_retryable_rejection_used": auto_replay_retryable_rejection_used,
+                "auto_replay_retryable_rejection_reason": auto_replay_retryable_rejection_reason,
+            }
+        auto_replay_retryable_rejection_used = True
+        auto_replay_retryable_rejection_reason = replay_reason
 
     tasks = preview_payload.get("internal_tasks")
     if not isinstance(tasks, dict):
@@ -604,6 +736,8 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
         "critic_verdict": verdict,
         "automation_transient_retries_used": auto_transient_retries_used,
         "automation_workspace_retries_used": auto_workspace_retries_used,
+        "auto_replay_retryable_rejection_used": auto_replay_retryable_rejection_used,
+        "auto_replay_retryable_rejection_reason": auto_replay_retryable_rejection_reason,
         "test_mode": args.test_mode,
     }
     sidecar_path = APPROVALS_DIR / f"{preview_id}.result.json"
@@ -618,7 +752,23 @@ def process_approval(approval_path: Path, approval: dict[str, Any], args: argpar
         "critic_verdict": verdict,
         "automation_transient_retries_used": auto_transient_retries_used,
         "automation_workspace_retries_used": auto_workspace_retries_used,
+        "auto_replay_retryable_rejection_used": auto_replay_retryable_rejection_used,
+        "auto_replay_retryable_rejection_reason": auto_replay_retryable_rejection_reason,
     }
+
+
+def _collect_auto_replay_reason_counts(results: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for item in results:
+        if not isinstance(item, dict):
+            continue
+        if not bool(item.get("auto_replay_retryable_rejection_used", False)):
+            continue
+        reason = str(item.get("auto_replay_retryable_rejection_reason", "")).strip()
+        if not reason:
+            continue
+        counts[reason] = counts.get(reason, 0) + 1
+    return counts
 
 
 def main() -> int:
@@ -633,12 +783,18 @@ def main() -> int:
     results = []
     for approval_path, approval in approvals:
         results.append(process_approval(approval_path, approval, args))
+    auto_replay_retryable_rejection_used = len(
+        [r for r in results if isinstance(r, dict) and bool(r.get("auto_replay_retryable_rejection_used", False))]
+    )
+    auto_replay_retryable_rejection_reason_counts = _collect_auto_replay_reason_counts(results)
 
     payload = {
         "status": "done",
         "processed": len([r for r in results if r["status"] == "processed"]),
         "rejected": len([r for r in results if r["status"] == "rejected"]),
         "skipped": len([r for r in results if r["status"] == "skipped"]),
+        "auto_replay_retryable_rejection_used": auto_replay_retryable_rejection_used,
+        "auto_replay_retryable_rejection_reason_counts": auto_replay_retryable_rejection_reason_counts,
         "test_mode": args.test_mode,
         "allow_replay": args.allow_replay,
         "results": results,

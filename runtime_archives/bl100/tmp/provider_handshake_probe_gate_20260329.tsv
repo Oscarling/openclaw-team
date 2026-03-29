@@ -1,0 +1,3 @@
+endpoint	model	probe	http_code	note	api_like	retry_count	retry_reasons
+https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions	qwen-plus	ping	200	key=***f9890e; api_like=true; content_type=application/json; {"model":"qwen-plus","id":"chatcmpl-23bf7584-5d58-999b-8749-2a0304131bf7","choices":[{"message":{"content":"Pong! 🏓  \nLet me know if you'd like help with anything—whether it's ans	1	0	
+https://dashscope.aliyuncs.com/compatible-mode/v1/responses	qwen-plus	ping	200	key=***f9890e; api_like=true; content_type=application/json; {"created_at":1774764997,"id":"resp_27753247-ea17-47dc-981b-69374178c997","model":"qwen-plus","object":"response","output":[{"content":[{"annotations":[],"text":"Pong! 🏓  \nIt’s Su	1	0	

@@ -1608,50 +1608,1240 @@ Allowed enum values:
 ### BL-20260326-092
 - title: Restore fallback credential/profile availability and rerun canary failover window to clear rollback trigger
 - type: blocker
-- status: blocked
+- status: done
 - phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-091
 - start_when: BL-091 canary against real endpoint topology triggers rollback due fallback authorization unavailability and zero processed/pass rates
-- done_when: Fallback credential/profile alignment is verified by preflight probe (`200`) and a rerun canary observation window reaches at least `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` without violating rollback guardrails
-- source: `CANARY_REAL_ENDPOINT_FAILOVER_OBSERVATION_REPORT.md` on 2026-03-26 records fallback path `http_401` and mandatory rollback; next blocker is alignment/remediation plus governed rerun
-- link: /Users/lingguozhong/openclaw-team/CANARY_FALLBACK_CREDENTIAL_ALIGNMENT_RERUN_REPORT.md
+- done_when: Historical fallback-credential blocker is explicitly superseded and closed after the new provider route closure chain (`BL-099` onboarding+replay promotion, `BL-160` canary 4x pass, `BL-162` formal finalization) is completed with governed evidence
+- source: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` on 2026-03-29 reclassifies BL-092 as resolved-by-superseding-route instead of an active delivery blocker
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
 - issue: https://github.com/Oscarling/openclaw-team/issues/177
-- evidence: `CANARY_FALLBACK_CREDENTIAL_ALIGNMENT_RERUN_REPORT.md` plus `runtime_archives/bl092/tmp/bl092_probe_matrix.tsv` confirm fallback credential/profile preflight availability (`200`) while canary rerun matrix/metrics (`bl092_canary_rerun_matrix.tsv`, `bl092_canary_rerun_metrics.json`) record `processed=1/4`, `pass_verdict_rate=0.25`, mixed `workspace_missing_repo/http_502`, and rollback guardrail triggers
-- last_reviewed_at: 2026-03-26
+- evidence: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`, `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md`, `DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` establish superseding closure of legacy fallback-credential route blockers
+- last_reviewed_at: 2026-03-29
 - opened_at: 2026-03-26
 
 ### BL-20260326-093
 - title: Stabilize real-endpoint canary rerun by eliminating workspace-mount drift and recovering failover success rate
 - type: blocker
-- status: blocked
+- status: done
 - phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-092
 - start_when: BL-092 rerun confirms fallback credential/profile availability but still fails rollout thresholds due mixed `workspace_missing_repo` and primary `http_502` terminal failures
-- done_when: Root cause and mitigation for workspace-mount/runtime inconsistency are evidenced, and a governed 4-sample real-endpoint rerun reaches `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` without rollback trigger
-- source: `CANARY_FALLBACK_CREDENTIAL_ALIGNMENT_RERUN_REPORT.md` on 2026-03-26 shows fallback auth recovery but canary promotion remains blocked by residual runtime instability
-- link: /Users/lingguozhong/openclaw-team/CANARY_WORKSPACE_RETRY_STABILIZATION_REPORT.md
+- done_when: Historical workspace-drift rerun blocker is explicitly superseded and closed after the new provider route closure chain (`BL-099`, `BL-160`, `BL-162`) is completed with governed evidence
+- source: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` on 2026-03-29 reclassifies BL-093 as resolved-by-superseding-route instead of an active delivery blocker
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
 - issue: https://github.com/Oscarling/openclaw-team/issues/178
-- evidence: `CANARY_WORKSPACE_RETRY_STABILIZATION_REPORT.md` and `runtime_archives/bl093/tmp/bl093_canary_window_metrics.json` capture BL-093 guarded rerun (`processed=0/4`, `pass_verdict_rate=0.0`) with complete failover markers but terminal endpoint-chain failure class `http_502`; workspace-presence retry hardening landed with unit coverage, yet rollback guardrails remain triggered
-- last_reviewed_at: 2026-03-26
+- evidence: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`, `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md`, `DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` establish superseding closure of legacy workspace-drift route blockers
+- last_reviewed_at: 2026-03-29
 - opened_at: 2026-03-26
 
 ### BL-20260326-094
 - title: Recover real-endpoint canary success under persistent primary 502 and fallback timeout chain
 - type: blocker
-- status: planned
+- status: done
 - phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-093
 - start_when: BL-093 confirms workspace-retry hardening but rerun window still fails threshold entirely on endpoint-chain instability (`http_502` + fallback timeout)
-- done_when: A governed 4-sample real-endpoint window reaches `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` with rollback guardrails not triggered, and evidence clearly attributes residual failures by endpoint class
-- source: `CANARY_WORKSPACE_RETRY_STABILIZATION_REPORT.md` on 2026-03-26 shows workspace drift not reproduced but canary still fully blocked by endpoint-chain failures
-- link: -
+- done_when: Historical endpoint-chain blocker is explicitly superseded and closed after the new provider route closure chain (`BL-099`, `BL-160`, `BL-162`) is completed with governed evidence
+- source: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` on 2026-03-29 reclassifies BL-094 as resolved-by-superseding-route instead of an active delivery blocker
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
 - issue: https://github.com/Oscarling/openclaw-team/issues/180
-- evidence: -
+- evidence: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`, `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md`, `DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` establish superseding closure of legacy endpoint-chain blockers
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-26
+
+### BL-20260326-095
+- title: Recover fallback endpoint stability after BL-094 by isolating remote-closed path under governed canary guardrails
+- type: blocker
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-094
+- start_when: BL-094 confirms prompt compaction is active but 4-sample rerun still fails entirely on endpoint-chain instability (`http_502` + fallback `remote_closed/timeout`)
+- done_when: Historical fallback-stability blocker is explicitly superseded and closed after the new provider route closure chain (`BL-099`, `BL-160`, `BL-162`) is completed with governed evidence
+- source: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` on 2026-03-29 reclassifies BL-095 as resolved-by-superseding-route instead of an active delivery blocker
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
+- issue: -
+- evidence: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`, `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md`, `DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` establish superseding closure of legacy fallback-stability blockers
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-26
+
+### BL-20260326-096
+- title: Establish a stable provider/endpoint route for real automation prompt execution before canary clearance
+- type: blocker
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-095
+- start_when: BL-095 confirms current provider topology has no stable route for real automation prompt shape despite endpoint/model/compaction probes
+- done_when: Historical stable-route discovery blocker is explicitly superseded and closed after the new provider route closure chain (`BL-099`, `BL-160`, `BL-162`) is completed with governed evidence
+- source: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` on 2026-03-29 reclassifies BL-096 as resolved-by-superseding-route instead of an active delivery blocker
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
+- issue: -
+- evidence: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`, `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md`, `DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` establish superseding closure of legacy stable-route blockers
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-26
+
+### BL-20260326-097
+- title: Recover canary promotion by introducing an alternative provider route after BL-096 fallback-only rejection
+- type: blocker
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-096
+- start_when: BL-096 confirms both mixed-route and fallback-only route still fail governed replay on endpoint-chain instability
+- done_when: Historical alternative-route recovery blocker is explicitly superseded and closed after the new provider route closure chain (`BL-099`, `BL-160`, `BL-162`) is completed with governed evidence
+- source: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` on 2026-03-29 reclassifies BL-097 as resolved-by-superseding-route instead of an active delivery blocker
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
+- issue: -
+- evidence: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`, `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md`, `DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` establish superseding closure of legacy alternative-route blockers
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-26
+
+### BL-20260326-098
+- title: Provision a new provider/base route for governed replay after BL-097 model-switch failure
+- type: blocker
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-097
+- start_when: BL-097 confirms alternative model switch (`gpt-5.4`) does not recover real prompt-shape stability on existing fast endpoints
+- done_when: Historical provider-provisioning blocker is explicitly superseded and closed after the new provider route closure chain (`BL-099`, `BL-160`, `BL-162`) is completed with governed evidence
+- source: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` on 2026-03-29 reclassifies BL-098 as resolved-by-superseding-route instead of an active delivery blocker
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
+- issue: -
+- evidence: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`, `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md`, `DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` establish superseding closure of legacy provider-provisioning blockers
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-26
+
+### BL-20260326-099
+- title: Onboard a new provider/base topology and clear route handshake gate before replay
+- type: blocker
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-098
+- start_when: BL-098 confirms timeout budget tuning (`120/180/240/300`) cannot bypass the current fast-route gateway ceiling (`http_524` near ~126s)
+- done_when: A newly supplied provider/base route (new key/base topology) passes lightweight ping and real prompt-shape probe, then is promoted into controlled replay validation
+- source: `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md` on 2026-03-29 confirms DeepSeek desktop key route passed gate handshake (`ready`) and the governed replay preview advanced to `processed` with `critic_verdict=pass`
+- link: /Users/lingguozhong/openclaw-team/DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_profiles.sh`, `scripts/provider_onboarding_gate.py`, `skills/execute_approved_previews.py`, `runtime_archives/bl100/tmp/deepseek_desktop/provider_handshake_probe_gate_20260329.tsv`, `runtime_archives/bl100/tmp/deepseek_desktop/provider_handshake_assessment_gate_20260329.json`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`, `preview/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.json`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.result.json` confirm DeepSeek route gate `ready` plus governed replay `processed` (`critic_verdict=pass`).
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-26
+
+### BL-20260326-100
+- title: Productize local probe script and no-key wait-mode hardening while BL-099 is blocked
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-099
+- start_when: BL-099 is blocked due unavailable authenticated provider/base+key route
+- done_when: A repo-tracked probe script/runbook replaces ad-hoc `/tmp` probing and produces reproducible handshake evidence without exposing secrets
+- source: `PROVIDER_ONBOARDING_INPUT_BLOCK_REPORT.md` on 2026-03-26 records current input-side block
+- link: /Users/lingguozhong/openclaw-team/WAIT_MODE_PROBE_SCRIPT_PRODUCTIZATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_handshake_probe.py` and validation matrices `runtime_archives/bl100/tmp/provider_handshake_probe_missing_key.tsv` + `runtime_archives/bl100/tmp/provider_handshake_probe_key3.tsv` prove the no-key wait-mode handshake probe is now reproducible in-repo with key-tail masking and deterministic TSV output
 - last_reviewed_at: 2026-03-26
 - opened_at: 2026-03-26
+
+### BL-20260327-101
+- title: Add handshake success gate and unit coverage for provider probe script
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260326-100
+- start_when: BL-100 has landed the repo-tracked probe script and BL-099 remains blocked on provider onboarding
+- done_when: Probe script supports explicit success gating (`--require-success`) and dedicated unit tests cover key extraction, masking, missing-key, and success/failure exit behavior
+- source: `PROVIDER_ROUTE_RETEST_20260327_REPORT.md` confirms provider onboarding remains blocked and requires deterministic fail-fast gating
+- link: /Users/lingguozhong/openclaw-team/PROBE_GATE_REQUIRE_SUCCESS_HARDENING_REPORT.md
+- issue: -
+- evidence: `PROBE_GATE_REQUIRE_SUCCESS_HARDENING_REPORT.md`, `scripts/provider_handshake_probe.py`, `tests/test_provider_handshake_probe.py`, and `runtime_archives/bl100/tmp/provider_handshake_probe_gatecheck_20260327.tsv` verify explicit `--require-success` gating with passing unit coverage and live non-2xx fail-fast behavior (exit code `2`)
+- last_reviewed_at: 2026-03-27
+- opened_at: 2026-03-27
+
+### BL-20260328-102
+- title: Automate handshake probe assessment and blocked-cause classification
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260327-101
+- start_when: Probe execution and success-gating are in place but matrix interpretation is still manual
+- done_when: A repo script consumes handshake TSV, emits structured readiness summary, supports fail-fast `--require-ready`, and is covered by dedicated unit tests integrated in premerge checks
+- source: `PROVIDER_ROUTE_RETEST_20260327_REPORT.md` on 2026-03-27 leaves BL-099 blocked and motivates deterministic post-probe classification
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_handshake_assess.py`, `tests/test_provider_handshake_assess.py`, `scripts/premerge_check.sh`, and `runtime_archives/bl100/tmp/provider_handshake_assessment_20260328.json` provide automated `ready/blocked` assessment with explicit `block_reason` and fail-fast exit semantics
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-103
+- title: Add one-shot provider onboarding gate wrapper for local fail-fast execution
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-102
+- start_when: Probe and assessment scripts are available but still run as separate manual commands
+- done_when: A single wrapper command executes `probe -> assess`, preserves `--require-ready` exit semantics, and is covered by tests integrated into premerge checks
+- source: `PROVIDER_HANDSHAKE_ASSESSMENT_AUTOMATION_REPORT.md` on 2026-03-28 motivates reducing manual command orchestration while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_gate.py`, `tests/test_provider_onboarding_gate.py`, `scripts/premerge_check.sh`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, and `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json` provide one-shot gating with expected blocked fail-fast behavior (exit code `2`)
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-104
+- title: Persist onboarding gate run history and keep test runs noise-free
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-103
+- start_when: One-shot gate wrapper is available but outcome history is not yet persisted for cross-session auditing
+- done_when: Gate wrapper appends run metadata to JSONL history, tests avoid writing noise via `--no-history`, and one real run history entry is archived
+- source: `PROVIDER_ONBOARDING_GATE_WRAPPER_REPORT.md` on 2026-03-28 establishes wrapper baseline and motivates persistent run tracking
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_GATE_HISTORY_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_gate.py`, `tests/test_provider_onboarding_gate.py`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, `runtime_archives/bl100/tmp/provider_handshake_probe_gate_20260328.tsv`, and `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json` confirm history persistence with blocked status metadata and noise-free test behavior
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-105
+- title: Publish local provider onboarding runbook for probe/assess/gate operations
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-104
+- start_when: Probe/assessment/gate scripts are available but command usage is still memory-dependent
+- done_when: A repo-tracked runbook documents command paths, fail-fast options, outputs, and decision rules for local-first onboarding
+- source: local hardening continuation after gate tooling productization
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md
+- issue: -
+- evidence: `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` documents handshake probe, assessment, and one-shot gate commands with fail-fast semantics and output conventions
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-106
+- title: Refine handshake assessment with note-level signal classification
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-105
+- start_when: Assessment script provides code-level readiness but lacks structured note-level signal breakdown
+- done_when: Assessment script emits note-class counts and distinguishes mixed transport causes (TLS/DNS) with dedicated tests and refreshed assessment output
+- source: local hardening continuation to improve blocked-cause precision under BL-099
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_NOTE_CLASSIFICATION_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_handshake_assess.py`, `tests/test_provider_handshake_assess.py`, and `runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json` provide note-level signal classification (`note_class_counts`) and refined block reason selection
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-107
+- title: Automate onboarding history trend summary generation
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-106
+- start_when: Gate history JSONL exists but trend interpretation still requires manual reading
+- done_when: A repo script generates summary JSON with counts and latest snapshot, with dedicated tests integrated into premerge checks
+- source: local hardening continuation after onboarding gate history persistence
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_SUMMARY_AUTOMATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_summary.py`, `tests/test_provider_onboarding_history_summary.py`, `scripts/premerge_check.sh`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary_20260328.json` provide automated trend summary generation from onboarding gate history
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-108
+- title: Auto-refresh onboarding history summary in one-shot gate
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-107
+- start_when: Gate writes history JSONL but summary refresh still depends on manual command execution
+- done_when: Gate refreshes history summary JSON automatically after each persisted run and exposes an explicit opt-out switch for controlled tests
+- source: local hardening continuation to keep onboarding status snapshots synchronized by default
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_GATE_SUMMARY_REFRESH_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_gate.py`, `tests/test_provider_onboarding_gate.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm automatic summary refresh and opt-out behavior (`--no-history-summary`)
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-109
+- title: Harden onboarding history summary with repo-path filtering
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-108
+- start_when: Gate summary can be polluted by non-repo temporary history entries from ad-hoc/test runs
+- done_when: Summary supports repo-only filtering with explicit dropped counter, gate defaults to repo-only refresh, and tests cover default + opt-out behavior
+- source: local hardening continuation to keep blocker trend metrics stable and noise-resistant
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_REPO_FILTER_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_summary.py`, `scripts/provider_onboarding_gate.py`, `tests/test_provider_onboarding_history_summary.py`, `tests/test_provider_onboarding_gate.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm repo-only summary filtering and explicit opt-out (`--no-history-summary-repo-only`)
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-110
+- title: Enforce onboarding history JSONL schema/path integrity in premerge
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-109
+- start_when: History aggregation is hardened, but no dedicated fail-closed schema/path validator guards JSONL integrity before merge
+- done_when: Dedicated history validation script and tests exist, premerge gate runs both tests and real-history validation with repo-path enforcement
+- source: local hardening continuation to keep blocker evidence deterministic and merge-safe
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_VALIDATION_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_validate.py`, `tests/test_provider_onboarding_history_validate.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl` confirm fail-closed validation for history schema and repo-path integrity
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-111
+- title: Enforce onboarding history-summary consistency in premerge
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-110
+- start_when: History schema/path checks exist, but stale summary JSON can still diverge from history without explicit consistency gate
+- done_when: Dedicated consistency checker and tests exist, and premerge fails when summary JSON mismatches recomputed history summary under repo-only rules
+- source: local hardening continuation to prevent stale summary snapshots from entering blocker evidence
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_CONSISTENCY_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_consistency_check.py`, `tests/test_provider_onboarding_history_consistency_check.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm fail-closed history-summary consistency checks
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-112
+- title: Persist and summarize note-level handshake signals in onboarding history
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-111
+- start_when: Summary/governance pipeline is stable but note-level diagnostics are not consistently carried through history snapshots
+- done_when: Gate writes `note_class_counts` into history entries, summary aggregates note-level counters, validators enforce shape, and consistency checks include note-level field
+- source: local hardening continuation to improve signal-level trend visibility while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_NOTE_SIGNAL_HISTORY_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_gate.py`, `scripts/provider_onboarding_history_summary.py`, `scripts/provider_onboarding_history_validate.py`, `scripts/provider_onboarding_history_consistency_check.py`, `tests/test_provider_onboarding_gate.py`, `tests/test_provider_onboarding_history_summary.py`, `tests/test_provider_onboarding_history_validate.py`, `tests/test_provider_onboarding_history_consistency_check.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm note-level signal continuity across history, summary, and premerge checks
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-113
+- title: Add note-signal coverage metrics to onboarding history summary
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-112
+- start_when: Note-level counters are persisted, but summary lacks explicit completeness metrics for historical rows missing signal payloads
+- done_when: Summary exposes note-signal coverage metrics, consistency check validates them, tests cover coverage behavior, and runbook documents metric interpretation
+- source: local hardening continuation to make note-signal completeness measurable while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_NOTE_SIGNAL_COVERAGE_METRICS_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_summary.py`, `scripts/provider_onboarding_history_consistency_check.py`, `tests/test_provider_onboarding_history_summary.py`, `tests/test_provider_onboarding_history_consistency_check.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm coverage metrics (`rows_with_note_class_counts`, `rows_missing_note_class_counts`, `note_signal_coverage_percent`) are generated and consistency-checked
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-114
+- title: Backfill legacy onboarding history rows with guarded note-level signals
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-113
+- start_when: Coverage metrics expose legacy rows missing `note_class_counts`, but no controlled recovery path exists to enrich historical records safely
+- done_when: A conservative backfill tool fills only decision-matching rows from assessment JSON, dry-run is available for safe checks, and repo history/summary are refreshed with measurable coverage uplift
+- source: local hardening continuation to improve historical signal completeness without semantic drift
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_NOTE_BACKFILL_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_backfill.py`, `tests/test_provider_onboarding_history_backfill.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm guarded backfill (`backfilled=1`, `skipped_guard_mismatch=1`) and note coverage uplift to `50.0%`
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-115
+- title: Add backfill-gap reason reporting for unresolved note-signal rows
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-114
+- start_when: Guarded backfill leaves unresolved rows but there is no structured report classifying why each row remains missing
+- done_when: A gap-report script outputs unresolved-row reasons, tests cover classification, premerge runs a no-write check, and repo artifact is refreshed for current state
+- source: local hardening continuation to keep residual note-signal gaps transparent and actionable
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_BACKFILL_GAP_REPORTING.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_backfill_gaps.py`, `tests/test_provider_onboarding_history_backfill_gaps.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_history_backfill_gaps.json` confirm deterministic unresolved-gap classification (`guard_mismatch_block_reason`) and merge-time checkability
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-116
+- title: Persist immutable assessment snapshots in onboarding history and align consumers
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-115
+- start_when: Current history rows reference mutable assessment paths that can be overwritten by repeated same-stamp runs, increasing drift risk for backfill and diagnostics
+- done_when: Gate writes immutable `assessment_snapshot_json` pointers for new history rows, validator enforces snapshot path scope, and backfill/gap tools prefer snapshot source when present
+- source: local hardening continuation to reduce pointer drift and preserve forensic stability
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_ASSESSMENT_SNAPSHOT_IMMUTABILITY_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_gate.py`, `scripts/provider_onboarding_history_validate.py`, `scripts/provider_onboarding_history_backfill.py`, `scripts/provider_onboarding_history_backfill_gaps.py`, `tests/test_provider_onboarding_gate.py`, `tests/test_provider_onboarding_history_validate.py`, `tests/test_provider_onboarding_history_backfill.py`, and `tests/test_provider_onboarding_history_backfill_gaps.py` confirm immutable snapshot support and snapshot-first consumer behavior
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-117
+- title: Backfill legacy assessment snapshots and enforce assess-row snapshot/file integrity
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-116
+- start_when: New runs now emit immutable snapshot pointers, but legacy assess rows still miss `assessment_snapshot_json` and validator does not yet enforce snapshot/file presence
+- done_when: A dedicated snapshot-backfill tool upgrades legacy assess rows, validator enforces `assessment_snapshot_json` + file existence for assess rows, and premerge runs the stricter checks
+- source: local hardening continuation to keep onboarding history evidence immutable and fail-closed while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_HISTORY_SNAPSHOT_BACKFILL_ENFORCEMENT_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_snapshot_backfill.py`, `scripts/provider_onboarding_history_validate.py`, `scripts/premerge_check.sh`, `tests/test_provider_onboarding_history_snapshot_backfill.py`, `tests/test_provider_onboarding_history_validate.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl` confirm legacy snapshot backfill and strict assess-row snapshot/file validation
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-118
+- title: Add snapshot coverage metrics to onboarding history summary and consistency gate
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-117
+- start_when: Snapshot backfill/validation is enforced, but summary lacks explicit assess-snapshot coverage metrics and latest snapshot pointer exposure
+- done_when: Summary exposes assess-snapshot coverage metrics and latest snapshot pointer, repo-only filtering drops assess rows without repo-scoped snapshot path, and consistency/test coverage includes new fields
+- source: local hardening continuation to keep snapshot integrity continuously observable while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_COVERAGE_SUMMARY_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_summary.py`, `scripts/provider_onboarding_history_consistency_check.py`, `tests/test_provider_onboarding_history_summary.py`, `tests/test_provider_onboarding_history_consistency_check.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm assess-snapshot coverage metrics and consistency-gated snapshot observability
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-119
+- title: Add snapshot-guard integrity metrics to onboarding summary and consistency checks
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-118
+- start_when: Snapshot coverage is measurable, but summary does not yet quantify whether snapshot payload decisions still match their linked history rows
+- done_when: Summary emits snapshot guard match/mismatch metrics, consistency checks include those metrics, and runbook explains interpretation under repo-only workflow
+- source: local hardening continuation to surface legacy snapshot drift while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_INTEGRITY_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_summary.py`, `scripts/provider_onboarding_history_consistency_check.py`, `tests/test_provider_onboarding_history_summary.py`, `tests/test_provider_onboarding_history_consistency_check.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm snapshot-guard integrity metrics are summary-visible and consistency-gated
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-120
+- title: Add snapshot guard mismatch reason distribution to onboarding summary
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-119
+- start_when: Snapshot guard mismatch count is visible, but operators cannot tell which decision field is drifting without manual row-level inspection
+- done_when: Summary emits mismatch reason counts, consistency checks include the new field, tests cover reason classification, and runbook documents interpretation
+- source: local hardening continuation to make legacy snapshot drift diagnosis actionable while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REASON_METRICS_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_history_summary.py`, `scripts/provider_onboarding_history_consistency_check.py`, `tests/test_provider_onboarding_history_summary.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json` confirm reason-level snapshot-guard mismatch metrics under consistency-gated summary output
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-121
+- title: Add row-level snapshot guard drift detail reporting and premerge coverage
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-120
+- start_when: Summary reason counts exist, but operators still need row-level drift details for deterministic triage
+- done_when: A dedicated snapshot guard report emits reason counts plus row-level non-match details, tests cover classification, premerge runs the report check, and runbook documents command usage
+- source: local hardening continuation to keep snapshot drift diagnosis actionable while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_DETAIL_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report.py`, `tests/test_provider_onboarding_snapshot_guard_report.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm deterministic row-level snapshot-guard reporting under premerge checks
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-122
+- title: Enforce snapshot guard summary/report consistency in premerge
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-121
+- start_when: Snapshot guard summary and detail report both exist, but no explicit cross-artifact consistency gate prevents silent drift
+- done_when: A dedicated consistency-check script validates summary metrics against guard-report metrics, unit tests cover pass/fail paths, premerge enforces the check, and runbook documents command usage
+- source: local hardening continuation to keep snapshot-guard evidence fail-closed while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_CONSISTENCY_CHECK_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm summary/report consistency is now merge-gated
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-123
+- title: Validate snapshot guard detail report schema/path integrity in premerge
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-122
+- start_when: Snapshot guard report generation is merge-gated, but malformed report shapes and out-of-repo paths are not fail-closed before merge
+- done_when: A dedicated report validator enforces numeric/count invariants and optional repo-path constraints, unit tests cover pass/fail paths, premerge executes schema/path validation, and runbook documents command usage
+- source: local hardening continuation to keep snapshot-guard report artifacts structurally trustworthy while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REPORT_VALIDATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `tests/test_provider_onboarding_snapshot_guard_report_validate.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm fail-closed schema/path validation for snapshot-guard report artifacts
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-124
+- title: Enforce persisted snapshot guard report freshness against history in premerge
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-123
+- start_when: Snapshot guard summary/report consistency is guarded, but persisted report JSON can still become stale versus current history rows
+- done_when: A dedicated persisted-report consistency checker recomputes expected report from history and fails on mismatches, tests cover stale-report detection, premerge enforces the check, and runbook documents command usage
+- source: local hardening continuation to prevent stale snapshot-guard report evidence drift while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_REPORT_CONSISTENCY_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm persisted report freshness is merge-gated against history
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-125
+- title: Enforce snapshot-guard report reason taxonomy and count partition integrity
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-124
+- start_when: Snapshot-guard report schema/path validation exists, but reason keys and reason/count partition can still drift semantically without explicit taxonomy enforcement
+- done_when: Validator enforces allowed reason keys, non-match row reason domain, and mismatch/unverified/match count partition checks; tests cover fail paths for taxonomy drift
+- source: local hardening continuation to keep snapshot-guard diagnostics semantically stable while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REASON_TAXONOMY_VALIDATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `tests/test_provider_onboarding_snapshot_guard_report_validate.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm fail-closed reason taxonomy and reason-count partition validation
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-126
+- title: Add persisted snapshot-guard report schema/path validation gate in premerge
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-125
+- start_when: Persisted report freshness check exists, but persisted report file itself is not explicitly schema/path-validated in merge gates
+- done_when: Premerge validates persisted report via report validator with repo-path enforcement, runbook documents command, and governance reports capture the added gate
+- source: local hardening continuation to prevent malformed persisted snapshot-guard artifacts from entering evidence chain while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_SCHEMA_GATE_REPORT.md
+- issue: -
+- evidence: `scripts/premerge_check.sh`, `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm persisted report schema/path validation is now merge-gated
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-127
+- title: Enforce persisted snapshot-guard summary/report consistency in premerge
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-126
+- start_when: Premerge validates generated guard report vs summary, but persisted runtime summary/report pair is not explicitly consistency-gated
+- done_when: Premerge runs snapshot-guard summary/report consistency check against persisted runtime summary and persisted runtime report and fails on divergence
+- source: local hardening continuation to prevent stale persisted cross-artifact drift while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_SUMMARY_REPORT_CONSISTENCY_GATE_REPORT.md
+- issue: -
+- evidence: `scripts/premerge_check.sh`, `scripts/provider_onboarding_snapshot_guard_consistency_check.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm persisted summary/report consistency is merge-gated
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-128
+- title: Harden snapshot-guard report consistency checker with schema/path and history-path validation
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-127
+- start_when: Persisted report freshness check compares recomputed and stored report fields, but checker does not fail early on malformed report schema/path or mismatched history source path
+- done_when: Consistency checker validates report schema/path before diff, supports repo-path enforcement flag, validates normalized `history_jsonl` source path parity, and tests cover schema/path and path-mismatch fail paths
+- source: local hardening continuation to keep persisted report freshness checks fail-closed and source-consistent while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REPORT_CONSISTENCY_SCHEMA_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`, `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm schema/path-first consistency checking with history-path parity validation
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-129
+- title: Enforce snapshot-guard reason-count reconciliation with row-level non-match reasons
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-128
+- start_when: Reason taxonomy checks exist, but validator does not yet verify each non-match reason count exactly reconciles with row-level non-match reason distribution
+- done_when: Validator enforces per-reason reconciliation between `reason_counts` and `non_match_rows` for all non-match reasons; tests cover reconciliation drift failures
+- source: local hardening continuation to keep aggregate drift counters and row-level diagnostics lossless while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_REASON_ROW_RECONCILIATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `tests/test_provider_onboarding_snapshot_guard_report_validate.py`, `scripts/premerge_check.sh`, and `runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json` confirm non-match reason-count reconciliation is fail-closed
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-130
+- title: Enforce non-match row ordering/uniqueness invariants in snapshot-guard report validation
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-129
+- start_when: Snapshot-guard row-level details exist, but validator does not enforce deterministic `history_line` ordering and uniqueness for `non_match_rows`
+- done_when: Validator rejects non-increasing or duplicate `history_line` values in `non_match_rows`, tests cover ordering/duplicate fail path, and premerge inherits stricter validation via existing gate
+- source: local hardening continuation to keep row-level drift evidence deterministic and dedupe-safe while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_NON_MATCH_ORDERING_GUARD_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `tests/test_provider_onboarding_snapshot_guard_report_validate.py`, and `scripts/premerge_check.sh` confirm non-match row ordering/uniqueness is now merge-gated
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-131
+- title: Enforce reason-specific non-match detail schema in snapshot-guard report validation
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-130
+- start_when: Non-match row and reason taxonomy checks exist, but validator does not enforce detail payload schema per reason type
+- done_when: Validator enforces reason-specific detail fields/types for mismatch and unverified reasons; tests cover detail-shape drift failures
+- source: local hardening continuation to keep row-level drift evidence semantically parseable while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_DETAIL_SCHEMA_VALIDATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_validate.py`, `tests/test_provider_onboarding_snapshot_guard_report_validate.py`, and `scripts/premerge_check.sh` confirm fail-closed reason-specific detail schema validation
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-132
+- title: Triangulate persisted snapshot-guard report consistency against history and summary
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-131
+- start_when: Persisted report freshness and persisted summary/report checks both exist, but are separate and can drift operationally
+- done_when: Report consistency checker optionally validates summary/report consistency in the same invocation, premerge uses unified persisted check path, tests cover summary-mismatch fail path, and runbook command reflects unified check
+- source: local hardening continuation to keep persisted artifact checks coherent and fail-closed while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_TRIANGULATION_GATE_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm persisted report is now validated against history and summary in one gate path
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-133
+- title: Harden summary/report snapshot-guard consistency checker with report schema/path validation
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-132
+- start_when: Summary/report consistency check compares metrics only, but does not fail early when guard report payload itself is malformed
+- done_when: Consistency checker validates guard report through report-validator before metric comparison, supports repo-root/path enforcement flags, and tests cover schema-invalid fail path
+- source: local hardening continuation to keep summary/report consistency checks fail-closed while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_CONSISTENCY_SCHEMA_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`, `scripts/provider_onboarding_snapshot_guard_report_validate.py`, and `scripts/premerge_check.sh` confirm summary/report consistency now includes schema/path-first validation
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-134
+- title: Enforce strict repo-path summary/report consistency checks in premerge and runbook
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-133
+- start_when: Consistency checker supports strict repo-path mode, but premerge and runbook commands can still invoke permissive defaults
+- done_when: Premerge calls summary/report consistency check with explicit repo-root/path enforcement and runbook command reflects the strict invocation
+- source: local hardening continuation to standardize strict snapshot-guard governance operation while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_STRICT_CONSISTENCY_GATE_REPORT.md
+- issue: -
+- evidence: `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `scripts/provider_onboarding_snapshot_guard_consistency_check.py` confirm strict repo-path summary/report consistency enforcement in both merge gates and operator workflow
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-135
+- title: Add snapshot-guard summary schema validator with premerge coverage
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-134
+- start_when: Summary/report consistency checks exist, but snapshot-guard summary fields themselves lack dedicated schema/invariant validation gate
+- done_when: Dedicated summary validator script and tests exist, premerge runs summary validator on persisted summary, and runbook includes validator command
+- source: local hardening continuation to prevent malformed snapshot-guard summary artifacts from entering governance chain while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_VALIDATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_summary_validate.py`, `tests/test_provider_onboarding_snapshot_guard_summary_validate.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm fail-closed snapshot-guard summary schema validation
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-136
+- title: Enforce summary schema prevalidation inside snapshot-guard summary/report consistency checker
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-135
+- start_when: Standalone summary validator exists, but summary/report consistency checker can still compare metrics without first validating summary schema
+- done_when: Consistency checker validates summary schema before report/schema and metric comparison, tests cover summary-schema-invalid fail path, and premerge uses stricter checker path
+- source: local hardening continuation to keep snapshot-guard consistency checks fail-closed on malformed summary inputs while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_CONSISTENCY_INPUT_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_consistency_check.py`, `scripts/provider_onboarding_snapshot_guard_summary_validate.py`, `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`, and `scripts/premerge_check.sh` confirm summary-schema-first consistency checking in merge flow
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-137
+- title: Enforce snapshot-guard summary history path validation and strict premerge invocation
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-136
+- start_when: Snapshot-guard summary schema validation exists, but history source path is not explicitly required/scoped and merge gate still allows non-strict invocation
+- done_when: Summary validator requires non-empty `history_jsonl`, supports strict repo-scope path checks, tests cover history-path pass/fail, premerge uses strict repo-root path mode, and runbook documents the strict command
+- source: local hardening continuation to keep summary source metadata fail-closed while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_SUMMARY_PATH_VALIDATION_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_summary_validate.py`, `tests/test_provider_onboarding_snapshot_guard_summary_validate.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm strict summary history-path validation is merge-gated
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-138
+- title: Enforce snapshot-guard summary/report history source parity in consistency checks
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-137
+- start_when: Summary/report consistency validates schema and metrics, but does not explicitly enforce same normalized history source path across artifacts
+- done_when: Consistency checker compares normalized summary/report `history_jsonl`, passes strict repo-path args into summary prevalidation, tests cover history source mismatch fail path, and governance report captures change
+- source: local hardening continuation to prevent cross-artifact source drift hidden by metric parity while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_HISTORY_SOURCE_PARITY_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_consistency_check.py`, `tests/test_provider_onboarding_snapshot_guard_consistency_check.py`, and `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py` confirm fail-closed history source parity enforcement in consistency paths
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-139
+- title: Harden persisted snapshot-guard report consistency check with summary schema prevalidation
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-138
+- start_when: Persisted report consistency check optionally compares summary/report metrics, but does not fail early on malformed summary payloads in that path
+- done_when: Persisted report consistency checker validates summary schema before summary/report comparison when `--summary-json` is present, tests cover summary-schema-invalid fail path, and governance report captures hardening
+- source: local hardening continuation to keep persisted cross-artifact consistency checks fail-closed while BL-099 remains blocked
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_SNAPSHOT_GUARD_PERSISTED_SUMMARY_SCHEMA_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_snapshot_guard_report_consistency_check.py` and `tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py` confirm summary schema prevalidation now runs in persisted consistency path
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-140
+- title: Expand approval execution transient retry classification for unstable provider/base signatures
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-139
+- start_when: Outer approval execution retries handle a narrow transient class set and can fail closed on common unstable provider signatures (52x/TLS/DNS) even when recovery is possible
+- done_when: `execute_approved_previews` transient class policy includes common unstable upstream/network signatures, missing `class=...` error strings can still classify transient failures, tests cover 520/TLS/DNS no-class retry recovery paths, and governance report records the change
+- source: minimal-change resilience hardening to improve local/onboarding execution pass rate under intermittent route instability
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_TRANSIENT_RETRY_RESILIENCE_REPORT.md
+- issue: -
+- evidence: `skills/execute_approved_previews.py` and `tests/test_execute_approved_previews.py` confirm expanded transient classification and retry recovery under 520/TLS/DNS text-only failure signatures
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-141
+- title: Add bounded auto-replay path for retryable rejected previews
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-140
+- start_when: Retryable transient failures may still become operationally sticky because rejected previews require manual `--allow-replay` even when automatic retry would be safe
+- done_when: Rejected previews with retryable transient signatures can auto-replay within bounded attempts, non-retryable rejections remain fail-closed, tests cover one-time auto-replay and budget exhaustion paths, and governance report documents behavior
+- source: minimal-change resilience hardening to reduce manual recovery overhead for intermittent route instability
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_REJECTED_AUTO_REPLAY_GUARD_REPORT.md
+- issue: -
+- evidence: `skills/execute_approved_previews.py` and `tests/test_execute_approved_previews.py` confirm bounded retryable-rejection auto-replay behavior without broadening non-retryable replay scope
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-142
+- title: Add auto-replay observability fields for retryable rejected preview recovery
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-141
+- start_when: Retryable rejected preview auto-replay exists, but execution results/sidecar do not explicitly expose whether auto-replay was used and why it was triggered
+- done_when: `execute_approved_previews` emits `auto_replay_retryable_rejection_used` and `auto_replay_retryable_rejection_reason` in result/sidecar, tests assert reasoned replay and budget-exhausted skip behavior, and governance report documents the observability contract
+- source: minimal-change resilience hardening to improve operability and auditability under unstable provider/base routes
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_AUTO_REPLAY_OBSERVABILITY_REPORT.md
+- issue: -
+- evidence: `skills/execute_approved_previews.py` and `tests/test_execute_approved_previews.py` now persist/verify auto-replay used+reason fields for retryable rejection recovery flows
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-143
+- title: Add top-level auto-replay observability summary in approval execution payload
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-142
+- start_when: Per-preview sidecar/result now contains auto-replay observability fields, but top-level `main` output lacks aggregated replay visibility for quick run-level triage
+- done_when: `execute_approved_previews.main` emits total `auto_replay_retryable_rejection_used` and `auto_replay_retryable_rejection_reason_counts`, tests cover the new top-level summary contract, and governance report records the change
+- source: minimal-change resilience hardening to improve run-level operability under intermittent provider/base instability
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_AUTO_REPLAY_SUMMARY_VISIBILITY_REPORT.md
+- issue: -
+- evidence: `skills/execute_approved_previews.py` and `tests/test_execute_approved_previews.py` confirm top-level summary payload now reports replay-use total and reason distribution
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-144
+- title: Add non-technical project delivery status board for blocked-provider completion tracking
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-143
+- start_when: Local hardening backlog has grown while BL-092~BL-099 remains blocked, and operators need a one-command summary that clearly states completion %, critical blockers, and immediate next actions
+- done_when: A repo script reads backlog + onboarding summary and emits deterministic JSON/Markdown delivery status (completion %, critical provider chain state, latest onboarding signal, next-step guidance), dedicated unit tests exist, premerge runs the tests, and runbook documents usage
+- source: minimal-change project completion hardening to keep operator status communication clear while external provider/base route remains unstable
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_STATUS_BOARD_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` provide deterministic one-command delivery status output and merge-gated coverage
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-145
+- title: Add fail-fast readiness gate mode for project delivery status board
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-144
+- start_when: Delivery status board exists, but automation cannot fail-fast on non-ready state when deciding whether replay/canary closure should proceed
+- done_when: `project_delivery_status.py` supports `--require-ready` (exit code `2` unless `delivery_state=ready_for_replay`), tests cover ready/non-ready exit behavior, premerge runs status-board smoke generation, and runbook documents fail-fast command
+- source: minimal-change completion hardening to keep closure decisions deterministic while external provider/base chain remains unstable
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_STATUS_REQUIRE_READY_GATE_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, `scripts/premerge_check.sh`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm fail-fast readiness gating and merge-gated smoke execution
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-146
+- title: Guard provider handshake success counting against non-API 2xx HTML false positives
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-145
+- start_when: Current provider landscape may return `200` with HTML gateway pages, and handshake readiness can be falsely classified as ready despite no usable API response
+- done_when: Probe output records structured `api_like` signal, success counting requires `2xx + api_like`, assess classifies non-API `2xx` as `non_api_success_payload`, tests cover false-positive suppression, and retest evidence confirms blocked status under HTML-only `200` responses
+- source: minimal-change environment adaptation to keep onboarding readiness fail-closed under unstable proxy/gateway topologies
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_NON_API_SUCCESS_GUARD_REPORT.md
+- issue: -
+- evidence: `scripts/provider_handshake_probe.py`, `scripts/provider_handshake_assess.py`, `tests/test_provider_handshake_probe.py`, and `tests/test_provider_handshake_assess.py` confirm `200` HTML payloads no longer count as handshake success
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-147
+- title: Add bounded retry for retryable provider handshake probe failures
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-146
+- start_when: Current provider/base market conditions include intermittent transport and gateway instability, and single-shot probe attempts can falsely classify usable routes as blocked
+- done_when: `provider_handshake_probe.py` supports bounded `--retry-attempts` (default `2`), retries only retryable transport/`5xx` failures, never retries auth-policy `4xx`, probe tests cover retry/non-retry boundaries, and runbook documents retry control semantics
+- source: minimal-change environment adaptation to reduce false blocked outcomes under unstable provider/base networks while preserving fail-closed readiness rules
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_RETRYABLE_RETRY_HARDENING_REPORT.md
+- issue: -
+- evidence: `scripts/provider_handshake_probe.py`, `tests/test_provider_handshake_probe.py`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` confirm bounded retry behavior with explicit non-retry auth handling
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-148
+- title: Add retry observability fields for provider handshake probe and assessment summaries
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-147
+- start_when: Bounded retry exists, but operators still need direct metrics to distinguish network jitter from auth/policy failures without manually reading verbose note text
+- done_when: Probe TSV includes structured `retry_count` and `retry_reasons` columns, assessment JSON includes `retry_attempt_total` + `rows_with_retry` + `retry_reason_counts`, tests cover retry observability contract, and runbook/report document usage
+- source: minimal-change environment adaptation to improve triage clarity under unstable provider/base conditions without changing readiness gating semantics
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_RETRY_OBSERVABILITY_REPORT.md
+- issue: -
+- evidence: `scripts/provider_handshake_probe.py`, `scripts/provider_handshake_assess.py`, `tests/test_provider_handshake_probe.py`, `tests/test_provider_handshake_assess.py`, and `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md` verify retry observability fields and summary counters
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260328-149
+- title: Adapt provider handshake probe for Gemini OpenAI-compat route and key format
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-148
+- start_when: Existing handshake probe only recognizes `sk-` keys and responses-style payload shape, so Gemini OpenAI-compat (`chat/completions` + `AIza...` key) cannot be validated by the same onboarding gate
+- done_when: Probe key extraction supports `AIza...` keys, payload generation auto-matches endpoint wire shape (`chat/completions` vs `responses`), tests cover Gemini key + payload selection, runbook includes Gemini command example, and live key4 probe+assess evidence confirms `ready`
+- source: minimal-change market adaptation to support prevalent Gemini provider path without relaxing fail-closed readiness semantics
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_HANDSHAKE_GEMINI_COMPAT_ADAPTER_REPORT.md
+- issue: -
+- evidence: `scripts/provider_handshake_probe.py`, `tests/test_provider_handshake_probe.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, `/tmp/provider_handshake_probe_gemini_key4_20260328.tsv`, and `/tmp/provider_handshake_assessment_gemini_key4_20260328.json` confirm Gemini-compatible handshake readiness detection
+- last_reviewed_at: 2026-03-28
+- opened_at: 2026-03-28
+
+### BL-20260329-150
+- title: Enforce provider onboarding gate stamp schema guard to prevent history drift
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260328-149
+- start_when: Onboarding history validation is fail-closed on `stamp` format, but gate CLI still accepts non-date custom stamp strings that can write invalid rows
+- done_when: `provider_onboarding_gate.py` rejects invalid `--stamp` inputs before probe/assess execution, tests cover format/date fail-fast behavior with zero downstream command calls, and runbook documents strict `YYYYMMDD` usage for same-day reruns
+- source: local hardening continuation to keep BL-099 blocked-phase evidence schema-safe without relying on manual history repair
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ONBOARDING_STAMP_SCHEMA_GUARD_REPORT.md
+- issue: -
+- evidence: `scripts/provider_onboarding_gate.py`, `tests/test_provider_onboarding_gate.py`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `PROVIDER_ONBOARDING_STAMP_SCHEMA_GUARD_REPORT.md` confirm fail-fast stamp validation and updated operator guidance
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-151
+- title: Add delivery-status blocking signal contract and premerge visibility output
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-150
+- start_when: Delivery status board exists, but blocked-provider triage still requires manual interpretation to identify handshake-stage vs post-handshake promotion-stage blockers
+- done_when: `project_delivery_status.py` emits deterministic `blocking_signal` (`stage` + `reason`), tests cover blocked/ready/unknown paths, premerge prints concise state/stage/reason visibility, and runbook documents interpretation
+- source: local hardening continuation to keep BL-099 blocked-phase operator triage deterministic without changing merge gates
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_STATUS_BLOCKING_SIGNAL_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_status.py`, `scripts/project_delivery_signal.py`, `tests/test_project_delivery_status.py`, `tests/test_project_delivery_signal.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `PROJECT_DELIVERY_STATUS_BLOCKING_SIGNAL_REPORT.md` confirm deterministic blocking-signal output and premerge/operator visibility
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-152
+- title: Enforce strict blocking-context guard for project delivery signal extraction
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-151
+- start_when: Delivery signal extraction exists, but blocked states can still surface without mandatory blocker stage/reason context under permissive invocation
+- done_when: `project_delivery_signal.py` supports strict `--require-blocking-context`, tests cover blocked-missing-context fail path and ready pass path, premerge uses strict flags, and runbook documents strict command semantics
+- source: local hardening continuation to keep blocked-provider triage fail-closed and machine-consumable without changing merge policy
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_SIGNAL_STRICT_CONTEXT_GUARD_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_signal.py`, `tests/test_project_delivery_signal.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `PROJECT_DELIVERY_SIGNAL_STRICT_CONTEXT_GUARD_REPORT.md` confirm strict blocked-context enforcement and premerge integration
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-153
+- title: Add delivery signal artifact consistency check between status JSON and extracted signal outputs
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-152
+- start_when: Strict signal extraction exists, but no explicit parity check ensures generated `signal.json/tsv` remain consistent with source status payload fields
+- done_when: A dedicated consistency checker validates status payload vs signal artifacts, tests cover json/tsv drift fail paths, premerge runs extraction for both formats plus consistency check, and runbook documents command usage
+- source: local hardening continuation to prevent silent signal artifact drift in blocked-provider observability flow
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_SIGNAL_CONSISTENCY_GUARD_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_signal_consistency_check.py`, `tests/test_project_delivery_signal_consistency_check.py`, `scripts/project_delivery_signal.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `PROJECT_DELIVERY_SIGNAL_CONSISTENCY_GUARD_REPORT.md` confirm deterministic status-vs-signal parity checks with premerge integration
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-154
+- title: Productize one-shot delivery signal bundle generation for premerge and operator workflows
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-153
+- start_when: Signal extraction + consistency checks exist, but still require multi-command orchestration that can drift across premerge/manual invocations
+- done_when: A one-shot bundle command emits signal json/tsv with embedded consistency checks, tests cover strict and skip-consistency modes, premerge adopts bundle entrypoint, and runbook documents recommended command
+- source: local hardening continuation to reduce observability command drift while BL-099 remains externally blocked
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_SIGNAL_BUNDLE_PRODUCTIZATION_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_signal_bundle.py`, `tests/test_project_delivery_signal_bundle.py`, `scripts/premerge_check.sh`, `PROVIDER_ONBOARDING_LOCAL_RUNBOOK.md`, and `PROJECT_DELIVERY_SIGNAL_BUNDLE_PRODUCTIZATION_REPORT.md` confirm one-shot bundle productization with premerge/operator adoption
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-155
+- title: Classify provider account Arrearage as non-retryable in runtime and approval replay paths
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-154
+- start_when: Controlled replay currently surfaces provider-side Arrearage (`http_400`) but runtime compatibility fallback/retry paths can still spend extra attempts before converging on the same blocked conclusion
+- done_when: `worker_runtime.py` classifies Arrearage/overdue-payment as explicit `provider_account_arrearage` (non-retryable), `call_llm` skips compatibility fallback/retry for that class, `execute_approved_previews.py` extracts the same class from automation errors, and tests cover both runtime and preview execution non-retry behavior
+- source: mainline continuation to reduce wasted replay attempts while keeping external provider block semantics explicit and fail-closed
+- link: /Users/lingguozhong/openclaw-team/PROVIDER_ARREARAGE_NON_RETRYABLE_RUNTIME_REPORT.md
+- issue: -
+- evidence: `dispatcher/worker_runtime.py`, `skills/execute_approved_previews.py`, `tests/test_argus_hardening.py`, and `tests/test_execute_approved_previews.py` confirm Arrearage classification and non-retry behavior across runtime + approval execution paths
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-156
+- title: Canonicalize delivery-status arrearage blocking reason naming to provider_account_arrearage
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-155
+- start_when: Runtime/assessment paths already emit `provider_account_arrearage`, but delivery-status post-handshake inference still used a divergent reason token (`provider_billing_arrearage`), which can fragment downstream signal consumers
+- done_when: `project_delivery_status.py` maps arrearage/overdue-payment aliases to canonical `provider_account_arrearage` for promotion-stage blockers, tests cover both `Arrearage` and `overdue-payment` source strings, and status/signal snapshots show unified reason token
+- source: mainline continuation to keep blocking signal taxonomy consistent across runtime, assessment, status, and signal extraction surfaces
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_BLOCK_REASON_CANONICALIZATION_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, `/tmp/project_delivery_status_after_bl155_canonical.json`, and `/tmp/project_delivery_signal_after_bl156.json` confirm canonical arrearage reason alignment
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-157
+- title: Add premerge actionable advisory for provider_account_arrearage blocking signal
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-156
+- start_when: Delivery signal output is already canonicalized, but premerge still emits only a generic blocked warning, leaving operators likely to keep replaying despite deterministic provider arrearage
+- done_when: `premerge_check.sh` emits a targeted warning when `signal_reason=provider_account_arrearage`, explicitly advising to pause replay retries and restore account standing, while preserving existing pass/fail gate semantics
+- source: mainline continuation to reduce blocked-phase retry churn through deterministic operator guidance at premerge triage point
+- link: /Users/lingguozhong/openclaw-team/PREMERGE_PROVIDER_ARREARAGE_ADVISORY_REPORT.md
+- issue: -
+- evidence: `scripts/premerge_check.sh` and `PREMERGE_PROVIDER_ARREARAGE_ADVISORY_REPORT.md` confirm targeted arrearage advisory behavior without gate policy changes
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-158
+- title: Clarify critic static-evidence policy for artifact-generation replay stage
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-157
+- start_when: DeepSeek route can reach automation+critic execution, but critic verdict may remain `needs_revision` solely due missing live runtime artifacts even when this stage contract is artifact-generation review
+- done_when: `execute_approved_previews.py` injects explicit static-evidence policy into critic task params/constraints, regression tests cover policy injection, and governed replay can pass critic without requiring out-of-band live execution proof
+- source: mainline continuation to align critic gate behavior with artifact-generation stage contract and reduce false-negative replay rejections
+- link: /Users/lingguozhong/openclaw-team/DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md
+- issue: -
+- evidence: `skills/execute_approved_previews.py`, `tests/test_execute_approved_previews.py`, `preview/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.json`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.result.json` confirm policy injection and replay promotion to `processed` with `critic_verdict=pass`
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-159
+- title: Recenter delivery critical provider chain on active BL-099 gate and close BL-099 via DeepSeek route
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-158
+- start_when: Historical route blockers remain in backlog for traceability, but delivery status gating should reflect the current active provider onboarding gate and latest governed replay outcome
+- done_when: `project_delivery_status.py` tracks the active chain with BL-099, BL-099 backlog entry is updated to done with DeepSeek onboarding+replay evidence, signal/status tests pass, and latest delivery status reports `ready_for_replay`
+- source: mainline continuation to align project delivery board with current gate truth after DeepSeek promotion
+- link: /Users/lingguozhong/openclaw-team/DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md
+- issue: -
+- evidence: `PROJECT_BACKLOG.md` (BL-20260326-099), `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, `runtime_archives/bl100/tmp/deepseek_desktop/provider_handshake_assessment_gate_20260329.json`, `runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json`, and `runtime_archives/bl100/tmp/project_delivery_status_after_bl099_done.json` confirm active-gate recenter and ready-for-replay status
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-160
+- title: Complete DeepSeek governed 4-sample controlled replay canary window after ready_for_replay
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-159
+- start_when: Delivery board is recentered and reports `ready_for_replay`, but canary closeout still needs governed multi-sample replay evidence rather than single-run promotion proof
+- done_when: A governed 4-sample DeepSeek controlled replay window completes with `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75`, and per-run state snapshots are archived under runtime artifacts
+- source: mainline continuation to complete replay-stage canary closeout with explicit threshold evidence after BL-099 promotion
+- link: /Users/lingguozhong/openclaw-team/DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md
+- issue: -
+- evidence: `runtime_archives/bl100/tmp/deepseek_canary_20260329/deepseek_canary_matrix.tsv`, `runtime_archives/bl100/tmp/deepseek_canary_20260329/deepseek_canary_metrics.json`, and `runtime_archives/bl100/tmp/deepseek_canary_20260329/state/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.result.s01.json` ... `.result.s04.json` confirm 4/4 `processed` and 4/4 `critic_verdict=pass`
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-161
+- title: Align delivery-status next step to finalization preflight after canary closeout
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-160
+- start_when: Delivery status keeps enum compatibility at `ready_for_replay`, but when canary closeout is already done it still instructs users to "enter replay/canary closeout", causing stale guidance for operators
+- done_when: `project_delivery_status.py` detects `BL-20260329-160=done` and emits finalization preflight-oriented next step while preserving `delivery_state=ready_for_replay`, with regression tests covering the post-canary guidance branch
+- source: mainline continuation to keep delivery-board action guidance consistent with canary-closeout reality without breaking existing ready-state consumers
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_STATUS_CANARY_CLOSEOUT_NEXT_STEP_ALIGNMENT_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, and `runtime_archives/bl100/tmp/project_delivery_status_after_bl160_done.json` confirm post-canary next-step alignment to finalization preflight with enum compatibility preserved
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-162
+- title: Complete formal processed finalization for DeepSeek-promoted preview and Trello Done writeback
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-161
+- start_when: Delivery chain, replay promotion, and canary closeout are complete, and premerge/preflight gates are green with explicit `GIT_PUSH_REMOTE`/`GIT_PUSH_BRANCH` plus Trello credentials available
+- done_when: `skills/finalize_processed_previews.py` completes for `preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a` with `git_push_and_trello_done_succeeded`, finalization sidecar records `git.push=success` and `trello.status=success`, and working tree returns to clean state
+- source: mainline continuation to close the governed `processed -> git push -> Trello Done` loop after DeepSeek route promotion and canary validation
+- link: /Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json
+- issue: -
+- evidence: `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` (status=`completed`, git push=`success`, trello=`success`), finalization commit `23325d76518f5dedf9526827f4f8e19e5de33e04`, and command result `decision_reason=git_push_and_trello_done_succeeded`
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-163
+- title: Close historical legacy-route blocker chain BL-092~BL-098 as superseded after DeepSeek closure
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-162
+- start_when: Mainline has already achieved route onboarding, governed canary pass, and formal finalization on DeepSeek, but backlog still shows legacy route blockers (`BL-092~098`) as open and inflates active blocked counts
+- done_when: `BL-092~098` are reclassified from `blocked` to `done` with explicit "superseded-by-mainline" rationale and shared closure evidence, while retaining historical traceability links/issues
+- source: mainline continuation to keep backlog open-work truth aligned with delivered path rather than legacy route diagnostics
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
+- issue: -
+- evidence: `PROJECT_BACKLOG.md` (`BL-20260326-092`~`BL-20260326-098` now `done`) and `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` tie closure to `BL-099/160/162` outcomes and finalization evidence
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-164
+- title: Produce merge-ready PR handoff brief for DeepSeek promotion to formal finalization closure
+- type: debt
+- status: done
+- phase: next
+- priority: p2
+- owner: Oscarling
+- depends_on: BL-20260329-163
+- start_when: Mainline code/evidence closure is complete, but reviewers still need a compact PR-ready brief with scope, verification, risk, and rollback notes
+- done_when: A repo-tracked PR handoff brief summarizes key commits, backlog closures, verification gates, known caveats, and rollback path in one document reviewers can use directly
+- source: mainline continuation to reduce merge friction after large evidence-heavy closure run
+- link: /Users/lingguozhong/openclaw-team/PR_MAINLINE_DEEPSEEK_CLOSEOUT_HANDOFF.md
+- issue: -
+- evidence: `PR_MAINLINE_DEEPSEEK_CLOSEOUT_HANDOFF.md` captures scope (`BL-099` through `BL-164`), finalization result, verification gates (`premerge/preflight`), and rollback guidance
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29

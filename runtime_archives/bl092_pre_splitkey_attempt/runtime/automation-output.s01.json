@@ -1,0 +1,12 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "failed",
+  "summary": "Execution failure: [Errno 2] No such file or directory: '/app/workspaces/automation/task.json'",
+  "artifacts": [],
+  "timestamp": "2026-03-26T05:10:06.712659Z",
+  "duration_ms": 3779,
+  "errors": [
+    "Worker reported failed without structured errors"
+  ]
+}

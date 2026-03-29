@@ -1,0 +1,3 @@
+endpoint	model	probe	http_code	note	api_like	retry_count	retry_reasons
+https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions	qwen-plus	ping	400	key=***f9890e; api_like=false; content_type=application/json; {"error":{"message":"Access denied, please make sure your account is in good standing. For details, see: https://help.aliyun.com/zh/model-studio/error-code#overdue-payment","type":	0	0	
+https://dashscope.aliyuncs.com/compatible-mode/v1/responses	qwen-plus	ping	400	key=***f9890e; api_like=false; content_type=application/json; {"code":"Arrearage","message":"Access denied, please make sure your account is in good standing. For details, see: https://help.aliyun.com/zh/model-studio/error-code#overdue-paymen	0	0	

@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "bl096_fallback_only_candidate": {
+      "api_base": "https://fast.vpsairobot.com/v1",
+      "model_name": "gpt-5-codex",
+      "wire_api": "responses",
+      "api_key_env": "OPENAI_API_KEY_BL096",
+      "fallback_response_urls": [
+        "https://fast.vpsairobot.com/responses"
+      ]
+    }
+  }
+}

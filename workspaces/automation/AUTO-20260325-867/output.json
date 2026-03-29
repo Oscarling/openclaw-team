@@ -1,0 +1,24 @@
+{
+  "task_id": "AUTO-20260325-867",
+  "worker": "automation",
+  "status": "success",
+  "summary": "Generated a runnable local helper script artifact for PDF extraction/conversion using the provided parameters, reusing the repository's existing inbox runner and reviewed PDF-to-Excel implementation. The script is deterministic, reviewable, and adheres to all specified constraints and acceptance criteria.",
+  "artifacts": [
+    {
+      "path": "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py",
+      "type": "script"
+    }
+  ],
+  "timestamp": "2026-03-29T08:49:59.021572Z",
+  "duration_ms": 65811,
+  "notes": [
+    "Script updated to enforce delegate evidence gates for success, handle partial outcomes with limitations and next-step guidance, use explicit timeout, and align PDF discovery semantics with the reviewed delegate."
+  ],
+  "metadata": {
+    "task_id": "AUTO-20260325-867",
+    "worker": "automation",
+    "task_type": "generate_script",
+    "origin_id": "trello:69c24cd3c1a2359ddd7a1bf8",
+    "regeneration_token": "regen-20260325-bl053-001"
+  }
+}

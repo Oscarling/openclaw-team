@@ -86,6 +86,7 @@ DEFAULT_LLM_TIMEOUT_RECOVERY_RETRIES = 1
 DEFAULT_LLM_JSON_REPAIR_ATTEMPTS = 1
 MAX_LLM_JSON_REPAIR_ATTEMPTS = 2
 TIMEOUT_RECOVERY_ERROR_CLASSES = {"timeout", "http_524"}
+MAX_AUTOMATION_PROMPT_FIELD_CHARS = 20000
 MAX_ARTIFACT_SIZE = 2 * 1024 * 1024  # 2MB
 NO_PROXY_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 HTTP_USER_AGENT = "Mozilla/5.0"
@@ -105,6 +106,11 @@ RETRYABLE_HTTP_STATUS_CODES = {
     523,
     524,
 }
+PROVIDER_ACCOUNT_ARREARAGE_SNIPPETS = (
+    "arrearage",
+    "overdue-payment",
+    "overdue payment",
+)
 ALLOWED_STATUSES = {"success", "failed", "partial"}
 ARTIFACT_TYPE_BY_PREFIX = {
     "artifacts/architecture/": "architecture",
@@ -220,6 +226,28 @@ def llm_json_repair_attempts():
         minimum=0,
     )
     return min(value, MAX_LLM_JSON_REPAIR_ATTEMPTS)
+
+
+def automation_prompt_field_max_chars():
+    raw = first_env("ARGUS_AUTOMATION_PROMPT_FIELD_MAX_CHARS")
+    if not raw:
+        return 0
+    try:
+        parsed = int(raw)
+    except Exception as exc:
+        raise RuntimeError("ARGUS_AUTOMATION_PROMPT_FIELD_MAX_CHARS must be an integer when set") from exc
+    if parsed < 0:
+        raise RuntimeError("ARGUS_AUTOMATION_PROMPT_FIELD_MAX_CHARS must be >= 0")
+    return min(parsed, MAX_AUTOMATION_PROMPT_FIELD_CHARS)
+
+
+def compact_prompt_text(text, max_chars):
+    content = str(text or "")
+    if max_chars <= 0 or len(content) <= max_chars:
+        return content, False
+    suffix = "\n...[truncated_for_prompt]"
+    kept = max(0, max_chars - len(suffix))
+    return content[:kept] + suffix, True
 
 
 def llm_fallback_chat_urls():
@@ -602,13 +630,31 @@ def classify_llm_call_error(error):
         error_text = f"{error_text} | reason={error.reason}"
     if isinstance(error, urllib.error.HTTPError):
         status_code = int(error.code)
+        try:
+            response_body = error.read()
+        except Exception:
+            response_body = b""
+        if isinstance(response_body, bytes):
+            decoded_body = response_body.decode("utf-8", errors="ignore")
+        else:
+            decoded_body = str(response_body or "")
+        decoded_body = decoded_body.strip()
+        if decoded_body:
+            if len(decoded_body) > 4000:
+                decoded_body = decoded_body[:4000]
+            error_text = f"{error_text} | body={decoded_body}"
 
     lowered = error_text.lower()
     if "unexpected_eof_while_reading" in lowered or "eof occurred in violation of protocol" in lowered:
         return "tls_eof", True
     if "timed out" in lowered:
         return "timeout", True
-    if "name or service not known" in lowered or "name resolution" in lowered or "temporary failure in name resolution" in lowered:
+    if (
+        "name or service not known" in lowered
+        or "name resolution" in lowered
+        or "temporary failure in name resolution" in lowered
+        or "nodename nor servname provided" in lowered
+    ):
         return "dns_resolution", True
     if "connection reset" in lowered:
         return "connection_reset", True
@@ -616,6 +662,8 @@ def classify_llm_call_error(error):
         return "connection_refused", True
     if "remote end closed connection" in lowered:
         return "remote_closed", True
+    if any(snippet in lowered for snippet in PROVIDER_ACCOUNT_ARREARAGE_SNIPPETS):
+        return "provider_account_arrearage", False
     if status_code is not None:
         return f"http_{status_code}", status_code in RETRYABLE_HTTP_STATUS_CODES
     if isinstance(error, TimeoutError):
@@ -1188,17 +1236,55 @@ def ensure_output_is_schema_valid(output_payload, schema, started_at):
 
 
 def build_user_prompt(task):
+    inputs_text = json.dumps(task.get("inputs", {}), ensure_ascii=False)
+    constraints_text = json.dumps(task.get("constraints", []), ensure_ascii=False)
+    expected_outputs_text = json.dumps(task.get("expected_outputs", []), ensure_ascii=False)
+    acceptance_text = json.dumps(task.get("acceptance_criteria", []), ensure_ascii=False)
+    source_text = json.dumps(task.get("source", {}), ensure_ascii=False)
+    metadata_text = json.dumps(task.get("metadata", {}), ensure_ascii=False)
+    compact_notes = []
+
+    if str(task.get("worker", "")).strip().lower() == "automation":
+        field_limit = automation_prompt_field_max_chars()
+        if field_limit > 0:
+            for field_name, field_value in (
+                ("inputs", inputs_text),
+                ("constraints", constraints_text),
+                ("acceptance_criteria", acceptance_text),
+                ("source", source_text),
+                ("metadata", metadata_text),
+            ):
+                compacted, truncated = compact_prompt_text(field_value, field_limit)
+                if field_name == "inputs":
+                    inputs_text = compacted
+                elif field_name == "constraints":
+                    constraints_text = compacted
+                elif field_name == "acceptance_criteria":
+                    acceptance_text = compacted
+                elif field_name == "source":
+                    source_text = compacted
+                elif field_name == "metadata":
+                    metadata_text = compacted
+                if truncated:
+                    compact_notes.append(
+                        f"{field_name}: truncated to {field_limit} chars (original={len(field_value)})"
+                    )
+
+    compact_notes_text = (
+        json.dumps(compact_notes, ensure_ascii=False) if compact_notes else "[]"
+    )
     return f"""
 Task ID: {task.get('task_id', '')}
 Worker: {task.get('worker', '')}
 Task Type: {task.get('task_type', '')}
 Objective: {task.get('objective', '')}
-Inputs: {json.dumps(task.get('inputs', {}), ensure_ascii=False)}
-Constraints: {json.dumps(task.get('constraints', []), ensure_ascii=False)}
-Expected Outputs: {json.dumps(task.get('expected_outputs', []), ensure_ascii=False)}
-Acceptance Criteria: {json.dumps(task.get('acceptance_criteria', []), ensure_ascii=False)}
-Source: {json.dumps(task.get('source', {}), ensure_ascii=False)}
-Metadata: {json.dumps(task.get('metadata', {}), ensure_ascii=False)}
+Inputs: {inputs_text}
+Constraints: {constraints_text}
+Expected Outputs: {expected_outputs_text}
+Acceptance Criteria: {acceptance_text}
+Source: {source_text}
+Metadata: {metadata_text}
+Prompt Compact Notes: {compact_notes_text}
 
 CRITICAL CONTRACT INSTRUCTION:
 Return a single valid JSON object.

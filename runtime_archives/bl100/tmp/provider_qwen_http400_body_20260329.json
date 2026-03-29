@@ -1,0 +1,16 @@
+{
+  "bl094_sample": {
+    "prompt_chars": 6505,
+    "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/responses",
+    "model": "qwen-plus",
+    "http_status": 400,
+    "body_head": "{\"code\":\"Arrearage\",\"message\":\"Access denied, please make sure your account is in good standing. For details, see: https://help.aliyun.com/zh/model-studio/error-code#overdue-payment\",\"request_id\":\"74b910dc-6740-4500-8973-af66aa597953\"}"
+  },
+  "preview_e84": {
+    "prompt_chars": 6505,
+    "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/responses",
+    "model": "qwen-plus",
+    "http_status": 400,
+    "body_head": "{\"code\":\"Arrearage\",\"message\":\"Access denied, please make sure your account is in good standing. For details, see: https://help.aliyun.com/zh/model-studio/error-code#overdue-payment\",\"request_id\":\"ab9bb518-db13-4231-99db-1080a18aa9ea\"}"
+  }
+}

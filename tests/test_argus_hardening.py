@@ -735,6 +735,49 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertEqual([timeout for _url, timeout in calls], [120, 120, 120])
         self.assertEqual(json.loads(content)["status"], "success")
 
+    def test_call_llm_does_not_auto_fallback_for_arrearage_http_400(self) -> None:
+        calls: list[tuple[str, int]] = []
+
+        class ArrearageOpener:
+            def open(self, req: Any, timeout: int | None = None) -> Any:
+                calls.append((req.full_url, timeout or 0))
+                body = io.BytesIO(
+                    b'{"error":{"code":"400","message":"Account Arrearage: overdue-payment required"}}'
+                )
+                raise urllib.error.HTTPError(req.full_url, 400, "Bad Request", None, body)
+
+        with mock.patch.object(worker_runtime, "NO_PROXY_OPENER", ArrearageOpener()):
+            with mock.patch.object(worker_runtime.time, "sleep", return_value=None):
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "ARGUS_LLM_MAX_RETRIES": "3",
+                        "ARGUS_LLM_FALLBACK_RESPONSE_URLS": "https://provider.invalid/responses",
+                    },
+                    clear=False,
+                ):
+                    with self.assertRaises(RuntimeError) as ctx:
+                        worker_runtime.call_llm(
+                            "system",
+                            "user",
+                            "automation",
+                            {
+                                "api_key": "key",
+                                "api_base": "https://provider.invalid/v1",
+                                "chat_url": "https://provider.invalid/v1/chat/completions",
+                                "model_name": "demo-model",
+                            },
+                        )
+
+        self.assertEqual(
+            [url for url, _timeout in calls],
+            ["https://provider.invalid/v1/chat/completions"],
+        )
+        self.assertEqual([timeout for _url, timeout in calls], [120])
+        message = str(ctx.exception)
+        self.assertIn("class=provider_account_arrearage", message)
+        self.assertIn("attempts=1/3", message)
+
     def test_get_llm_settings_supports_responses_wire_api(self) -> None:
         with mock.patch.object(worker_runtime, "read_secret", return_value=None):
             with mock.patch.dict(
@@ -753,6 +796,43 @@ class ArgusHardeningTests(unittest.TestCase):
         self.assertEqual(settings["endpoint_url"], "https://provider.invalid/v1/responses")
         self.assertEqual(settings["chat_url"], "https://provider.invalid/v1/chat/completions")
         self.assertEqual(settings["responses_url"], "https://provider.invalid/v1/responses")
+
+    def test_build_user_prompt_default_keeps_full_fields(self) -> None:
+        task = {
+            "task_id": "AUTO-TEST-001",
+            "worker": "automation",
+            "task_type": "generate_script",
+            "objective": "obj",
+            "inputs": {"x": "y" * 200},
+            "constraints": ["c" * 200],
+            "expected_outputs": [{"path": "artifacts/scripts/demo.py", "type": "script"}],
+            "acceptance_criteria": ["a" * 200],
+            "source": {"kind": "local_inbox"},
+            "metadata": {"k": "v" * 200},
+        }
+        with mock.patch.dict(os.environ, {"ARGUS_AUTOMATION_PROMPT_FIELD_MAX_CHARS": ""}, clear=False):
+            prompt = worker_runtime.build_user_prompt(task)
+        self.assertNotIn("truncated_for_prompt", prompt)
+        self.assertIn("Prompt Compact Notes: []", prompt)
+
+    def test_build_user_prompt_can_compact_automation_fields(self) -> None:
+        task = {
+            "task_id": "AUTO-TEST-002",
+            "worker": "automation",
+            "task_type": "generate_script",
+            "objective": "obj",
+            "inputs": {"x": "y" * 400},
+            "constraints": ["c" * 400],
+            "expected_outputs": [{"path": "artifacts/scripts/demo.py", "type": "script"}],
+            "acceptance_criteria": ["a" * 400],
+            "source": {"kind": "local_inbox", "blob": "s" * 400},
+            "metadata": {"k": "v" * 400},
+        }
+        with mock.patch.dict(os.environ, {"ARGUS_AUTOMATION_PROMPT_FIELD_MAX_CHARS": "120"}, clear=False):
+            prompt = worker_runtime.build_user_prompt(task)
+        self.assertIn("truncated_for_prompt", prompt)
+        self.assertIn("Prompt Compact Notes:", prompt)
+        self.assertIn("inputs: truncated to 120 chars", prompt)
 
     def test_call_llm_honors_env_timeout_and_retry_overrides(self) -> None:
         calls: list[int] = []
@@ -1374,6 +1454,24 @@ class ArgusHardeningTests(unittest.TestCase):
         err = urllib.error.HTTPError("https://primary.invalid/v1/chat/completions", 520, "Unknown Error", None, None)
         error_class, retryable = worker_runtime.classify_llm_call_error(err)
         self.assertEqual(error_class, "http_520")
+        self.assertTrue(retryable)
+
+    def test_classify_llm_call_error_marks_arrearage_as_non_retryable(self) -> None:
+        err = urllib.error.HTTPError(
+            "https://primary.invalid/v1/chat/completions",
+            400,
+            "Bad Request",
+            None,
+            io.BytesIO(b'{"error":{"message":"Account Arrearage: overdue-payment required"}}'),
+        )
+        error_class, retryable = worker_runtime.classify_llm_call_error(err)
+        self.assertEqual(error_class, "provider_account_arrearage")
+        self.assertFalse(retryable)
+
+    def test_classify_llm_call_error_marks_macos_dns_error(self) -> None:
+        err = urllib.error.URLError("[Errno 8] nodename nor servname provided, or not known")
+        error_class, retryable = worker_runtime.classify_llm_call_error(err)
+        self.assertEqual(error_class, "dns_resolution")
         self.assertTrue(retryable)
 
     def test_call_llm_raises_classified_tls_error_after_exhaustion(self) -> None:

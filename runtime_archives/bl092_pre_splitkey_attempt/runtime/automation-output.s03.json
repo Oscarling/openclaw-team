@@ -1,0 +1,12 @@
+{
+  "task_id": "AUTO-20260325-874",
+  "worker": "automation",
+  "status": "failed",
+  "summary": "Task AUTO-20260325-874 finished without a usable summary.",
+  "artifacts": [],
+  "timestamp": "2026-03-26T05:19:24.566026Z",
+  "duration_ms": 5609,
+  "errors": [
+    "Unable to inspect or modify repository files because execution tools are unavailable in this environment."
+  ]
+}

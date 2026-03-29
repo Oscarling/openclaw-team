@@ -1,0 +1,24 @@
+{
+  "history_jsonl": "runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl",
+  "entry_count": 2,
+  "missing_note_count_rows": 1,
+  "reason_counts": {
+    "guard_mismatch_block_reason": 1
+  },
+  "missing_rows": [
+    {
+      "history_line": 1,
+      "timestamp": "2026-03-28T12:07:46",
+      "stamp": "20260328",
+      "status": "blocked",
+      "block_reason": "auth_or_access_policy_block",
+      "assessment_json": "/Users/lingguozhong/openclaw-team/runtime_archives/bl100/tmp/provider_handshake_assessment_gate_20260328.json",
+      "reason": "guard_mismatch_block_reason",
+      "detail": {
+        "entry_block_reason": "auth_or_access_policy_block",
+        "assessment_block_reason": "mixed_with_tls_transport_failures",
+        "source_field": "assessment_snapshot_json"
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+task_id: CRITIC-20260325-284
+worker: critic
+attempt: 1
+container_name: argus-critic-critic-20260325-284
+worker_image: argus-worker:latest
+started_at: 2026-03-29T08:49:59.203817Z
+finished_at: 2026-03-29T08:50:47.789551Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-29T08:49:59.395847Z] [critic] [INFO] Worker started using endpoint https://api.deepseek.com/chat/completions (wire_api=chat_completions, timeout=120s, attempts=3, timeout_recovery_retries=1, json_repair_attempts=1)
+[2026-03-29T08:50:47.613847Z] [critic] [INFO] Artifact written: artifacts/reviews/pdf_to_excel_ocr_inbox_review.md
+[2026-03-29T08:50:47.614791Z] [critic] [INFO] Task completed CRITIC-20260325-284 with status success
+[2026-03-29T08:50:47.616275Z] [critic] [INFO] Worker exiting from /app/workspaces/critic/CRITIC-20260325-284
+
+=== stderr ===
+

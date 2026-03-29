@@ -1,0 +1,5 @@
+seq	endpoint	field_limit	prompt_chars	exit_code	elapsed_sec	output_chars	detail
+1	https://fast.vpsairobot.com/v1/responses	1200	6505	1	45.927	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): The read operation timed out
+2	https://fast.vpsairobot.com/v1/responses	1200	6505	1	45.975	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): The read operation timed out
+3	https://fast.vpsairobot.com/v1/responses	1200	6505	1	45.963	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): The read operation timed out
+4	https://fast.vpsairobot.com/v1/responses	1200	6505	1	45.633	0	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): The read operation timed out

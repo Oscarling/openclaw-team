@@ -165,6 +165,250 @@ else
   fail "tests/test_execute_approved_previews.py failed."
 fi
 
+if python3 -m unittest -v tests/test_provider_handshake_probe.py; then
+  pass "tests/test_provider_handshake_probe.py passed."
+else
+  fail "tests/test_provider_handshake_probe.py failed."
+fi
+
+if python3 -m unittest -v tests/test_provider_handshake_assess.py; then
+  pass "tests/test_provider_handshake_assess.py passed."
+else
+  fail "tests/test_provider_handshake_assess.py failed."
+fi
+
+if python3 -m unittest -v tests/test_provider_onboarding_gate.py; then
+  pass "tests/test_provider_onboarding_gate.py passed."
+else
+  fail "tests/test_provider_onboarding_gate.py failed."
+fi
+
+if python3 -m unittest -v tests/test_provider_onboarding_history_summary.py; then
+  pass "tests/test_provider_onboarding_history_summary.py passed."
+else
+  fail "tests/test_provider_onboarding_history_summary.py failed."
+fi
+
+if python3 -m unittest -v tests/test_provider_onboarding_history_validate.py; then
+  pass "tests/test_provider_onboarding_history_validate.py passed."
+else
+  fail "tests/test_provider_onboarding_history_validate.py failed."
+fi
+
+if python3 -m unittest -v tests/test_provider_onboarding_history_consistency_check.py; then
+  pass "tests/test_provider_onboarding_history_consistency_check.py passed."
+else
+  fail "tests/test_provider_onboarding_history_consistency_check.py failed."
+fi
+
+if python3 -m unittest -v tests/test_provider_onboarding_history_backfill.py; then
+  pass "tests/test_provider_onboarding_history_backfill.py passed."
+else
+  fail "tests/test_provider_onboarding_history_backfill.py failed."
+fi
+
+if python3 -m unittest -v tests/test_provider_onboarding_history_snapshot_backfill.py; then
+  pass "tests/test_provider_onboarding_history_snapshot_backfill.py passed."
+else
+  fail "tests/test_provider_onboarding_history_snapshot_backfill.py failed."
+fi
+
+if python3 -m unittest -v tests/test_provider_onboarding_history_backfill_gaps.py; then
+  pass "tests/test_provider_onboarding_history_backfill_gaps.py passed."
+else
+  fail "tests/test_provider_onboarding_history_backfill_gaps.py failed."
+fi
+
+if python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report.py; then
+  pass "tests/test_provider_onboarding_snapshot_guard_report.py passed."
+else
+  fail "tests/test_provider_onboarding_snapshot_guard_report.py failed."
+fi
+
+if python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_consistency_check.py; then
+  pass "tests/test_provider_onboarding_snapshot_guard_consistency_check.py passed."
+else
+  fail "tests/test_provider_onboarding_snapshot_guard_consistency_check.py failed."
+fi
+
+if python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_summary_validate.py; then
+  pass "tests/test_provider_onboarding_snapshot_guard_summary_validate.py passed."
+else
+  fail "tests/test_provider_onboarding_snapshot_guard_summary_validate.py failed."
+fi
+
+if python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_validate.py; then
+  pass "tests/test_provider_onboarding_snapshot_guard_report_validate.py passed."
+else
+  fail "tests/test_provider_onboarding_snapshot_guard_report_validate.py failed."
+fi
+
+if python3 -m unittest -v tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py; then
+  pass "tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py passed."
+else
+  fail "tests/test_provider_onboarding_snapshot_guard_report_consistency_check.py failed."
+fi
+
+if python3 -m unittest -v tests/test_project_delivery_status.py; then
+  pass "tests/test_project_delivery_status.py passed."
+else
+  fail "tests/test_project_delivery_status.py failed."
+fi
+
+if python3 -m unittest -v tests/test_project_delivery_signal.py; then
+  pass "tests/test_project_delivery_signal.py passed."
+else
+  fail "tests/test_project_delivery_signal.py failed."
+fi
+
+if python3 -m unittest -v tests/test_project_delivery_signal_consistency_check.py; then
+  pass "tests/test_project_delivery_signal_consistency_check.py passed."
+else
+  fail "tests/test_project_delivery_signal_consistency_check.py failed."
+fi
+
+if python3 -m unittest -v tests/test_project_delivery_signal_bundle.py; then
+  pass "tests/test_project_delivery_signal_bundle.py passed."
+else
+  fail "tests/test_project_delivery_signal_bundle.py failed."
+fi
+
+if python3 scripts/project_delivery_status.py \
+  --repo-root "$repo_root" \
+  --output-json /tmp/project_delivery_status_premerge.json \
+  --output-md /tmp/project_delivery_status_premerge.md >/tmp/project_delivery_status_premerge.stdout.json; then
+  pass "project delivery status board smoke check passed."
+else
+  fail "project delivery status board smoke check failed."
+fi
+
+if python3 scripts/project_delivery_signal_bundle.py \
+  --status-json /tmp/project_delivery_status_premerge.json \
+  --output-prefix /tmp/project_delivery_status_premerge.signal \
+  --require-delivery-state \
+  --require-blocking-context \
+  --output-summary-json /tmp/project_delivery_status_premerge.signal.bundle.summary.json >/tmp/project_delivery_status_premerge.signal.bundle.stdout.json
+then
+  read -r delivery_state signal_stage signal_reason signal_action onboarding_block_reason onboarding_timestamp < /tmp/project_delivery_status_premerge.signal.tsv
+  if [[ "$delivery_state" == "ready_for_replay" ]]; then
+    pass "project delivery signal: ready_for_replay."
+  else
+    warn "project delivery signal: state=${delivery_state:-unknown}, stage=${signal_stage:-unknown}, reason=${signal_reason:-unknown}"
+    if [[ -n "${signal_action:-}" ]]; then
+      warn "project delivery recommended action: ${signal_action}"
+    elif [[ "${signal_reason:-}" == "provider_account_arrearage" ]]; then
+      warn "provider account arrearage detected; pause replay retries and restore provider account standing before rerun."
+    fi
+  fi
+  pass "project delivery signal bundle generated json/tsv artifacts with embedded consistency check."
+else
+  fail "project delivery signal bundle generation failed."
+fi
+
+if python3 scripts/provider_onboarding_history_backfill.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --dry-run; then
+  pass "provider onboarding history backfill dry-run check passed."
+else
+  fail "provider onboarding history backfill dry-run check failed."
+fi
+
+if python3 scripts/provider_onboarding_history_snapshot_backfill.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --dry-run; then
+  pass "provider onboarding history snapshot backfill dry-run check passed."
+else
+  fail "provider onboarding history snapshot backfill dry-run check failed."
+fi
+
+if python3 scripts/provider_onboarding_history_backfill_gaps.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --output-json /tmp/provider_onboarding_history_backfill_gaps_premerge.json; then
+  pass "provider onboarding history backfill gaps report check passed."
+else
+  fail "provider onboarding history backfill gaps report check failed."
+fi
+
+if python3 scripts/provider_onboarding_snapshot_guard_report.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --output-json /tmp/provider_onboarding_snapshot_guard_report_premerge.json \
+  --repo-root "$repo_root" \
+  --repo-only; then
+  pass "provider onboarding snapshot guard report check passed."
+else
+  fail "provider onboarding snapshot guard report check failed."
+fi
+
+if python3 scripts/provider_onboarding_snapshot_guard_report_validate.py \
+  --report-json /tmp/provider_onboarding_snapshot_guard_report_premerge.json \
+  --repo-root "$repo_root" \
+  --require-repo-paths; then
+  pass "provider onboarding snapshot guard report schema/path validation passed."
+else
+  fail "provider onboarding snapshot guard report schema/path validation failed."
+fi
+
+if python3 scripts/provider_onboarding_snapshot_guard_report_consistency_check.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json \
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
+  --repo-root "$repo_root" \
+  --repo-only \
+  --require-repo-paths; then
+  pass "provider onboarding snapshot guard persisted report is consistent with history and summary."
+else
+  fail "provider onboarding snapshot guard persisted report consistency check failed."
+fi
+
+if python3 scripts/provider_onboarding_snapshot_guard_report_validate.py \
+  --report-json runtime_archives/bl100/tmp/provider_onboarding_snapshot_guard_report.json \
+  --repo-root "$repo_root" \
+  --require-repo-paths; then
+  pass "provider onboarding snapshot guard persisted report schema/path validation passed."
+else
+  fail "provider onboarding snapshot guard persisted report schema/path validation failed."
+fi
+
+if python3 scripts/provider_onboarding_snapshot_guard_summary_validate.py \
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
+  --repo-root "$repo_root" \
+  --require-repo-paths; then
+  pass "provider onboarding snapshot guard summary schema validation passed."
+else
+  fail "provider onboarding snapshot guard summary schema validation failed."
+fi
+
+if python3 scripts/provider_onboarding_snapshot_guard_consistency_check.py \
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
+  --guard-report-json /tmp/provider_onboarding_snapshot_guard_report_premerge.json \
+  --repo-root "$repo_root" \
+  --require-repo-paths; then
+  pass "provider onboarding snapshot guard summary/report consistency check passed."
+else
+  fail "provider onboarding snapshot guard summary/report consistency check failed."
+fi
+
+if python3 scripts/provider_onboarding_history_validate.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --repo-root "$repo_root" \
+  --require-repo-paths \
+  --require-snapshot-for-assess \
+  --require-existing-files; then
+  pass "provider onboarding gate history jsonl passes schema/path validation."
+else
+  fail "provider onboarding gate history jsonl validation failed."
+fi
+
+if python3 scripts/provider_onboarding_history_consistency_check.py \
+  --history-jsonl runtime_archives/bl100/tmp/provider_onboarding_gate_history.jsonl \
+  --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json \
+  --repo-root "$repo_root" \
+  --repo-only; then
+  pass "provider onboarding history summary is consistent with history jsonl."
+else
+  fail "provider onboarding history summary consistency check failed."
+fi
+
 echo
 echo "Warnings: $warnings"
 echo "Failures: $failures"

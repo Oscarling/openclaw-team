@@ -1,0 +1,13 @@
+{
+  "sample_size": 4,
+  "processed": 4,
+  "rejected": 0,
+  "processed_rate": 1.0,
+  "pass_verdict_rate": 1.0,
+  "observed_automation_error_classes": [],
+  "promotion_threshold": {
+    "processed_rate_min": 0.75,
+    "pass_verdict_rate_min": 0.75
+  },
+  "threshold_passed": true
+}

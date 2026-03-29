@@ -1,0 +1,5 @@
+endpoint	model	probe	http_code	note
+https://aixj.vip/v1/responses	gpt-5-codex	ping	401	{"code":"INVALID_API_KEY","message":"API Key 无效，请检查是否正确"}
+https://aixj.vip/responses	gpt-5-codex	ping	401	{"code":"INVALID_API_KEY","message":"API Key 无效，请检查是否正确"}
+https://fast.vpsairobot.com/v1/responses	gpt-5-codex	ping	401	{"code":"INVALID_API_KEY","message":"Invalid API key"}
+https://fast.vpsairobot.com/responses	gpt-5-codex	ping	401	{"code":"INVALID_API_KEY","message":"Invalid API key"}

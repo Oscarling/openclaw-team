@@ -1,0 +1,5 @@
+endpoint	model	field_limit	timeout_sec	prompt_chars	exit_code	elapsed_sec	output_chars	error_class	detail
+https://fast.vpsairobot.com/v1/responses	gpt-5-codex	1200	120	6505	1	121.702	0	timeout	LLM call exhausted (attempts=1/1, class=timeout, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): The read operation timed out
+https://fast.vpsairobot.com/v1/responses	gpt-5-codex	1200	180	6505	1	125.866	0	other	LLM call exhausted (attempts=1/1, class=http_524, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): HTTP Error 524: <none>
+https://fast.vpsairobot.com/v1/responses	gpt-5-codex	1200	240	6505	1	125.902	0	other	LLM call exhausted (attempts=1/1, class=http_524, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): HTTP Error 524: <none>
+https://fast.vpsairobot.com/v1/responses	gpt-5-codex	1200	300	6505	1	125.882	0	other	LLM call exhausted (attempts=1/1, class=http_524, endpoint=https://fast.vpsairobot.com/v1/responses, retryable=True): HTTP Error 524: <none>

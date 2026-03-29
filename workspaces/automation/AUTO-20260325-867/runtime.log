@@ -1,0 +1,19 @@
+task_id: AUTO-20260325-867
+worker: automation
+attempt: 1
+container_name: argus-automation-auto-20260325-867
+worker_image: argus-worker:latest
+started_at: 2026-03-29T08:48:53.009768Z
+finished_at: 2026-03-29T08:49:59.166099Z
+exit_code: 0
+timed_out: False
+wait_error: 
+
+=== stdout ===
+[2026-03-29T08:48:53.210203Z] [automation] [INFO] Worker started using endpoint https://api.deepseek.com/chat/completions (wire_api=chat_completions, timeout=120s, attempts=3, timeout_recovery_retries=1, json_repair_attempts=1)
+[2026-03-29T08:49:59.020639Z] [automation] [INFO] Artifact written: artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py
+[2026-03-29T08:49:59.022264Z] [automation] [INFO] Task completed AUTO-20260325-867 with status success
+[2026-03-29T08:49:59.023329Z] [automation] [INFO] Worker exiting from /app/workspaces/automation/AUTO-20260325-867
+
+=== stderr ===
+
