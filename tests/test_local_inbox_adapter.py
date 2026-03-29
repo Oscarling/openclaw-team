@@ -38,6 +38,44 @@ class LocalInboxAdapterTests(unittest.TestCase):
             payload["regeneration_token"] = regeneration_token
         return payload
 
+    def _sample_opportunity_payload(self, *, origin_id: str | None) -> dict:
+        payload = {
+            "title": "商机扫描：低成本可执行副业机会评估",
+            "description": (
+                "请评估以下候选项目，判断是否适合普通人低成本启动，并给出明确的 "
+                "go/watch/no-go 建议。"
+            ),
+            "labels": ["manual", "analysis", "reviewable"],
+            "request_type": "opportunity_scan",
+            "input": {
+                "goal": "筛选低成本、个人可执行、7天内可验证的赚钱机会",
+                "constraints": [
+                    "启动成本低",
+                    "普通人可执行",
+                    "不依赖团队",
+                    "7天内可以做初步验证",
+                ],
+                "items": [
+                    {
+                        "name": "AI简历优化服务",
+                        "category": "AI服务",
+                        "target_user": "求职者",
+                        "competition_level": "medium",
+                    },
+                    {
+                        "name": "短视频爆款标题优化服务",
+                        "category": "内容服务",
+                        "target_user": "短视频创作者",
+                        "competition_level": "high",
+                    },
+                ],
+            },
+            "metadata": {"source_system": "manual_test", "priority": "normal"},
+        }
+        if origin_id is not None:
+            payload["origin_id"] = origin_id
+        return payload
+
     def test_condense_automation_description_preserves_meaningful_context(self) -> None:
         description = """
 Purpose:
@@ -307,6 +345,84 @@ Execution contract: treat this as a best-effort, evidence-backed PDF extraction/
             task.critic_task["metadata"]["regeneration_token"],
             "regen-20260324-a",
         )
+
+    def test_validate_external_payload_accepts_opportunity_scan(self) -> None:
+        raw_payload = self._sample_opportunity_payload(origin_id="manual:opportunity-001")
+
+        validated = local_inbox_adapter.validate_external_payload(
+            raw_payload,
+            inbox_filename="opportunity_scan_001.json",
+        )
+
+        self.assertEqual(validated["request_type"], "opportunity_scan")
+        self.assertEqual(validated["origin_id"], "manual:opportunity-001")
+        self.assertEqual(validated["inputs"]["goal"], "筛选低成本、个人可执行、7天内可验证的赚钱机会")
+        self.assertEqual(len(validated["inputs"]["items"]), 2)
+
+    def test_validate_external_payload_rejects_opportunity_scan_without_items(self) -> None:
+        raw_payload = self._sample_opportunity_payload(origin_id="manual:opportunity-001")
+        raw_payload["input"]["items"] = []
+
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "input.items must be a non-empty array for opportunity_scan",
+        ):
+            local_inbox_adapter.validate_external_payload(
+                raw_payload,
+                inbox_filename="opportunity_scan_001.json",
+            )
+
+    def test_normalize_local_inbox_payload_builds_opportunity_scan_tasks(self) -> None:
+        raw_payload = self._sample_opportunity_payload(origin_id="manual:opportunity-001")
+
+        with tempfile.TemporaryDirectory(prefix="local-inbox-opportunity-adapter-") as tmp:
+            base_dir = Path(tmp)
+            task = local_inbox_adapter.normalize_local_inbox_payload(
+                raw_payload,
+                inbox_filename="opportunity_scan_001.json",
+                base_dir=base_dir,
+            )
+
+        auto_task = task.automation_task
+        critic_task = task.critic_task
+
+        self.assertEqual(auto_task["worker"], "automation")
+        self.assertEqual(auto_task["task_type"], "generate_script")
+        self.assertEqual(auto_task["metadata"]["request_type"], "opportunity_scan")
+        self.assertEqual(
+            auto_task["metadata"]["automation_contract_profile"],
+            "structured_opportunity_scan_report_with_decision_verdicts",
+        )
+        self.assertEqual(auto_task["expected_outputs"][0]["type"], "doc")
+        self.assertTrue(
+            auto_task["expected_outputs"][0]["path"].startswith("artifacts/analysis/opportunity_scan_")
+        )
+        self.assertIn(
+            "GO, WATCH, NO-GO",
+            auto_task["inputs"]["params"]["contract_hints"]["decision_labels"],
+        )
+        self.assertIn(
+            "ranked recommendation",
+            auto_task["inputs"]["params"]["contract_hints"]["actionability"],
+        )
+        self.assertIn(
+            "Analyze every opportunity item",
+            "\n".join(auto_task["constraints"]),
+        )
+        self.assertEqual(validate_task(auto_task), [])
+
+        self.assertEqual(critic_task["worker"], "critic")
+        self.assertEqual(critic_task["task_type"], "review_artifact")
+        self.assertEqual(critic_task["metadata"]["request_type"], "opportunity_scan")
+        self.assertEqual(critic_task["inputs"]["artifacts"][0]["type"], "doc")
+        self.assertEqual(
+            critic_task["inputs"]["artifacts"][0]["path"],
+            auto_task["expected_outputs"][0]["path"],
+        )
+        self.assertTrue(
+            critic_task["expected_outputs"][0]["path"].startswith("artifacts/reviews/opportunity_scan_")
+        )
+        self.assertEqual(validate_task(critic_task), [])
 
     def test_validate_external_payload_rejects_regeneration_without_explicit_origin(self) -> None:
         raw_payload = self._sample_payload(origin_id=None, regeneration_token="regen-20260324-a")
