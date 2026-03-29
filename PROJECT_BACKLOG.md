@@ -2794,3 +2794,20 @@ Allowed enum values:
 - evidence: `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, and `runtime_archives/bl100/tmp/project_delivery_status_after_bl160_done.json` confirm post-canary next-step alignment to finalization preflight with enum compatibility preserved
 - last_reviewed_at: 2026-03-29
 - opened_at: 2026-03-29
+
+### BL-20260329-162
+- title: Complete formal processed finalization for DeepSeek-promoted preview and Trello Done writeback
+- type: mainline
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-161
+- start_when: Delivery chain, replay promotion, and canary closeout are complete, and premerge/preflight gates are green with explicit `GIT_PUSH_REMOTE`/`GIT_PUSH_BRANCH` plus Trello credentials available
+- done_when: `skills/finalize_processed_previews.py` completes for `preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a` with `git_push_and_trello_done_succeeded`, finalization sidecar records `git.push=success` and `trello.status=success`, and working tree returns to clean state
+- source: mainline continuation to close the governed `processed -> git push -> Trello Done` loop after DeepSeek route promotion and canary validation
+- link: /Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json
+- issue: -
+- evidence: `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` (status=`completed`, git push=`success`, trello=`success`), finalization commit `23325d76518f5dedf9526827f4f8e19e5de33e04`, and command result `decision_reason=git_push_and_trello_done_succeeded`
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29

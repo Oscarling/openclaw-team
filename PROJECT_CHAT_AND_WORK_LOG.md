@@ -8376,3 +8376,45 @@ Verification snapshot on 2026-03-29:
 - `python3 scripts/project_delivery_status.py --backlog PROJECT_BACKLOG.md --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --output-json runtime_archives/bl100/tmp/project_delivery_status_after_bl160_done.json --output-md runtime_archives/bl100/tmp/project_delivery_status_after_bl160_done.md` (passed)
 - `bash scripts/premerge_check.sh` (passed, `Failures: 0`)
 - `bash scripts/preflight_finalization_check.sh preview/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.json` (failed as expected on missing `GIT_PUSH_REMOTE` / `GIT_PUSH_BRANCH` / `TRELLO_*` and non-candidate dirty worktree)
+
+### 178. BL-20260329-162 Formal Finalization Completion (Done)
+
+User objective:
+
+- continue the mainline until the processed preview is formally finalized
+  (git push + Trello Done), without introducing extra workflow overhead.
+
+Main work areas:
+
+- workspace and preflight convergence:
+  - consolidated validated mainline changes into commit
+    `9d2d911` to clear non-candidate dirty-tree preflight failures.
+  - loaded runtime Trello env (`/tmp/trello_env.sh`) and set explicit
+    `GIT_PUSH_REMOTE=origin`, `GIT_PUSH_BRANCH=<current_branch>`.
+  - preflight gate then passed (`Failures: 0`).
+- formal processed finalization:
+  - executed:
+    `python3 skills/finalize_processed_previews.py --once --preview-id preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a`
+  - first sandbox run failed on `index.lock` permission path inside script.
+  - reran with escalated execution (same command/env), resulting in:
+    - `status=completed`
+    - `decision_reason=git_push_and_trello_done_succeeded`
+    - finalization commit:
+      `23325d76518f5dedf9526827f4f8e19e5de33e04`
+    - Trello Done list id:
+      `69be462743bfa0038ca10f91`
+- governance tracking:
+  - added `BL-20260329-162` (done) in `PROJECT_BACKLOG.md`.
+
+Key result:
+
+- governed end-to-end closure is complete for this preview:
+  `processed -> git add/commit/push -> Trello Done` succeeded with sidecar
+  evidence, and repository returned to clean working-tree state.
+
+Verification snapshot on 2026-03-29:
+
+- `bash scripts/preflight_finalization_check.sh preview/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.json` (passed with env set)
+- `python3 skills/finalize_processed_previews.py --once --preview-id preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a` (completed after escalated rerun)
+- `git log --oneline -n 1` confirms finalization commit `23325d7...`
+- `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` records `git.push=success`, `trello.status=success`
