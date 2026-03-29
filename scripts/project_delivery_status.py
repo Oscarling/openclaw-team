@@ -12,6 +12,7 @@ from typing import Any
 CRITICAL_PROVIDER_CHAIN_IDS = [
     "BL-20260326-099",
 ]
+DEFAULT_ONBOARDING_SUMMARY_JSON = "runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json"
 REPLAY_CANARY_CLOSEOUT_ID = "BL-20260329-160"
 FINALIZATION_CLOSEOUT_ID = "BL-20260329-162"
 BLOCKING_ACTIONS_BY_REASON = {
@@ -34,6 +35,12 @@ def _load_json(path: Path) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise RuntimeError(f"{path} must contain a JSON object")
     return payload
+
+
+def _repo_scoped_path(path: Path, repo_root: Path) -> Path:
+    if path.is_absolute():
+        return path
+    return repo_root / path
 
 
 def _parse_backlog(backlog_path: Path) -> list[dict[str, str]]:
@@ -242,8 +249,19 @@ def build_status_payload(
 
     onboarding_summary: dict[str, Any] | None = None
     onboarding_latest: dict[str, Any] | None = None
-    if summary_json_path.exists():
-        onboarding_summary = _load_json(summary_json_path)
+    summary_json_path_display = summary_json_path
+    summary_json_path_fs = _repo_scoped_path(summary_json_path, repo_root)
+    default_summary_path_display = Path(DEFAULT_ONBOARDING_SUMMARY_JSON)
+    default_summary_path_fs = _repo_scoped_path(default_summary_path_display, repo_root)
+    if (
+        not summary_json_path_fs.exists()
+        and summary_json_path_display != default_summary_path_display
+        and default_summary_path_fs.exists()
+    ):
+        summary_json_path_display = default_summary_path_display
+        summary_json_path_fs = default_summary_path_fs
+    if summary_json_path_fs.exists():
+        onboarding_summary = _load_json(summary_json_path_fs)
         latest = onboarding_summary.get("latest")
         if isinstance(latest, dict):
             onboarding_latest = latest
@@ -272,7 +290,7 @@ def build_status_payload(
         },
         "critical_provider_chain": chain_summary,
         "onboarding_latest": onboarding_latest or {},
-        "onboarding_summary_path": str(summary_json_path),
+        "onboarding_summary_path": str(summary_json_path_display),
         "blocking_signal": blocking_signal,
         "blocking_action": blocking_action,
         "next_steps": next_steps,
@@ -324,7 +342,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--backlog", default="PROJECT_BACKLOG.md", help="Path to backlog markdown file.")
     parser.add_argument(
         "--summary-json",
-        default="runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json",
+        default=DEFAULT_ONBOARDING_SUMMARY_JSON,
         help="Path to provider onboarding summary json.",
     )
     parser.add_argument("--repo-root", default=".", help="Repository root used for branch detection.")

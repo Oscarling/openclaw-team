@@ -8490,3 +8490,40 @@ Verification snapshot on 2026-03-29:
 
 - `python3 -m unittest -v tests/test_project_delivery_status.py` (passed)
 - `python3 scripts/project_delivery_status.py --backlog PROJECT_BACKLOG.md --summary-json runtime_archives/bl100/tmp/provider_onboarding_gate_history_summary.json --repo-root /Users/lingguozhong/openclaw-team --output-json runtime_archives/bl100/tmp/project_delivery_status_post_finalization_alignment.json --output-md runtime_archives/bl100/tmp/project_delivery_status_post_finalization_alignment.md` (passed)
+
+### 181. BL-20260329-166 Delivery Summary-Path Fallback Alignment (Done)
+
+User objective:
+
+- prioritize run-through continuity on the mainline and avoid false
+  `unknown_waiting_signal` regressions caused by stale manual summary-path
+  inputs.
+
+Main work areas:
+
+- delivery summary fallback hardening:
+  - `scripts/project_delivery_status.py`
+  - introduces canonical summary constant
+    `DEFAULT_ONBOARDING_SUMMARY_JSON`.
+  - when requested `--summary-json` path is missing, automatically falls back
+    to canonical default summary under repo root.
+  - records the effective path in `onboarding_summary_path`.
+- regression coverage:
+  - `tests/test_project_delivery_status.py`
+  - adds
+    `test_build_status_payload_falls_back_to_default_summary_when_requested_path_missing`.
+- governance evidence:
+  - adds
+    `PROJECT_DELIVERY_STATUS_SUMMARY_FALLBACK_ALIGNMENT_REPORT.md`.
+  - adds backlog item `BL-20260329-166` (done).
+
+Key result:
+
+- delivery status now remains `ready_for_replay` in post-finalization
+  maintenance even when operators pass a missing legacy summary path, as long as
+  canonical onboarding summary exists.
+
+Verification snapshot on 2026-03-29:
+
+- `python3 -m unittest -v tests/test_project_delivery_status.py` (passed, 10 tests)
+- `python3 scripts/project_delivery_status.py --summary-json runtime_archives/bl100/provider_onboarding_summary.json --output-json runtime_archives/bl100/tmp/project_delivery_status_summary_fallback_alignment.json --output-md runtime_archives/bl100/tmp/project_delivery_status_summary_fallback_alignment.md` (passed: auto-fallback to canonical summary path and `delivery_state=ready_for_replay`)

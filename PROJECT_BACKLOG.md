@@ -2862,3 +2862,20 @@ Allowed enum values:
 - evidence: `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, and `runtime_archives/bl100/tmp/project_delivery_status_post_finalization_alignment.json` confirm post-finalization next-step alignment
 - last_reviewed_at: 2026-03-29
 - opened_at: 2026-03-29
+
+### BL-20260329-166
+- title: Add onboarding summary default-path fallback in delivery status to avoid false unknown state
+- type: debt
+- status: done
+- phase: next
+- priority: p2
+- owner: Oscarling
+- depends_on: BL-20260329-165
+- start_when: Delivery status is already in stable-maintenance stage after formal finalization, but stale/manual `--summary-json` inputs can still point to missing legacy paths and falsely downgrade status to `unknown_waiting_signal`
+- done_when: `project_delivery_status.py` falls back to canonical default onboarding summary when requested path is missing, regression tests cover the fallback branch, and command output remains `ready_for_replay` under missing legacy-path input
+- source: mainline continuation to prioritize run-through reliability and reduce operator footguns during post-finalization maintenance
+- link: /Users/lingguozhong/openclaw-team/PROJECT_DELIVERY_STATUS_SUMMARY_FALLBACK_ALIGNMENT_REPORT.md
+- issue: -
+- evidence: `scripts/project_delivery_status.py`, `tests/test_project_delivery_status.py`, `PROJECT_DELIVERY_STATUS_SUMMARY_FALLBACK_ALIGNMENT_REPORT.md`, and `runtime_archives/bl100/tmp/project_delivery_status_summary_fallback_alignment.json` confirm default-path fallback behavior and preserved ready-state guidance
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29

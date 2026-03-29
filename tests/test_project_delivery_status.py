@@ -284,6 +284,40 @@ class ProjectDeliveryStatusTests(unittest.TestCase):
             self.assertIn("no latest onboarding summary found", md)
             self.assertIn("blocking_stage", md)
 
+    def test_build_status_payload_falls_back_to_default_summary_when_requested_path_missing(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="project-delivery-status-") as tmp:
+            root = Path(tmp)
+            backlog_path = root / "PROJECT_BACKLOG.md"
+            requested_missing_path = Path("runtime_archives/bl100/provider_onboarding_summary.json")
+            default_summary_path = root / status.DEFAULT_ONBOARDING_SUMMARY_JSON
+            default_summary_path.parent.mkdir(parents=True, exist_ok=True)
+
+            chain_status = {item_id: "done" for item_id in status.CRITICAL_PROVIDER_CHAIN_IDS}
+            backlog_path.write_text(_backlog_markdown(chain_status=chain_status), encoding="utf-8")
+            default_summary_path.write_text(
+                json.dumps(
+                    {
+                        "latest": {
+                            "status": "ready",
+                            "block_reason": "none",
+                            "timestamp": "2026-03-29T16:05:39",
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            payload = status.build_status_payload(
+                backlog_path=backlog_path,
+                summary_json_path=requested_missing_path,
+                repo_root=root,
+                current_branch="main",
+            )
+
+            self.assertEqual(payload["delivery_state"], "ready_for_replay")
+            self.assertEqual(payload["onboarding_summary_path"], status.DEFAULT_ONBOARDING_SUMMARY_JSON)
+            self.assertEqual(payload["onboarding_latest"]["status"], "ready")
+
     def test_main_require_ready_returns_2_when_not_ready(self) -> None:
         args = SimpleNamespace(
             backlog="PROJECT_BACKLOG.md",
