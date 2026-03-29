@@ -165,12 +165,43 @@ def validate_external_payload(raw_payload: dict[str, Any], inbox_filename: str) 
         raise RuntimeError("regeneration_token requires an explicit origin_id")
 
     request_type = str(raw_payload.get("request_type", "pdf_to_excel_ocr")).strip().lower()
-    if request_type != "pdf_to_excel_ocr":
+    supported_request_types = {"pdf_to_excel_ocr", "opportunity_scan"}
+    if request_type not in supported_request_types:
         raise RuntimeError(f"Unsupported request_type: {request_type}")
 
     inputs = raw_payload.get("input", {})
     if not isinstance(inputs, dict):
         raise RuntimeError("input must be a JSON object")
+
+    if request_type == "opportunity_scan":
+        goal = inputs.get("goal")
+        if not isinstance(goal, str) or len(goal.strip()) < 6:
+            raise RuntimeError(
+                "input.goal is required for opportunity_scan and must be a non-empty string"
+            )
+
+        constraints = inputs.get("constraints", [])
+        if constraints is None:
+            constraints = []
+        if not isinstance(constraints, list):
+            raise RuntimeError("input.constraints must be an array when provided")
+        for index, item in enumerate(constraints):
+            if not isinstance(item, str) or not item.strip():
+                raise RuntimeError(
+                    f"input.constraints[{index}] must be a non-empty string for opportunity_scan"
+                )
+
+        items = inputs.get("items")
+        if not isinstance(items, list) or not items:
+            raise RuntimeError("input.items must be a non-empty array for opportunity_scan")
+        for index, item in enumerate(items):
+            if not isinstance(item, dict):
+                raise RuntimeError(f"input.items[{index}] must be an object for opportunity_scan")
+            name = item.get("name")
+            if not isinstance(name, str) or len(name.strip()) < 2:
+                raise RuntimeError(
+                    f"input.items[{index}].name must be a non-empty string for opportunity_scan"
+                )
 
     payload_hash = _payload_hash(raw_payload)
     dedupe_keys = [f"hash:{payload_hash}"]
@@ -215,6 +246,13 @@ def _next_task_id(base_dir: Path, prefix: str, origin_id: str) -> str:
     raise RuntimeError(f"Unable to allocate task id for prefix {prefix}")
 
 
+def _slugify_identifier(value: str, *, fallback: str = "inbox", max_len: int = 48) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", str(value or "").strip().lower()).strip("-")
+    if not slug:
+        slug = fallback
+    return slug[:max_len]
+
+
 def normalize_local_inbox_payload(
     raw_payload: dict[str, Any],
     *,
@@ -236,16 +274,6 @@ def normalize_local_inbox_payload(
     source_input = validated["source_input"]
     automation_description = _condense_automation_description(description)
 
-    input_dir = str(inputs.get("input_dir", "~/Desktop/pdf样本")).strip()
-    output_xlsx = str(
-        inputs.get("output_xlsx", "artifacts/outputs/phase8a/pdf_to_excel_from_inbox.xlsx")
-    ).strip()
-    ocr_mode = str(inputs.get("ocr", "auto")).strip().lower()
-    dry_run = bool(inputs.get("dry_run", False))
-
-    automation_artifact = "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py"
-    review_artifact = "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md"
-
     source = {
         "kind": "local_inbox",
         "origin_id": origin_id,
@@ -257,7 +285,174 @@ def normalize_local_inbox_payload(
     source.update({k: v for k, v in source_input.items() if k not in {"kind"}})
     if regeneration_token:
         source["regeneration_token"] = regeneration_token
-    priority = _normalize_priority(raw_payload.get("priority"))
+    priority = _normalize_priority(raw_payload.get("priority", metadata.get("priority")))
+
+    if request_type == "opportunity_scan":
+        goal = str(
+            inputs.get(
+                "goal",
+                "Evaluate listed opportunities and provide decision-ready GO/WATCH/NO-GO guidance.",
+            )
+        ).strip()
+        constraints: list[str] = []
+        for item in inputs.get("constraints", []) or []:
+            if isinstance(item, str):
+                normalized = item.strip()
+                if normalized:
+                    constraints.append(normalized)
+        opportunity_items = [
+            item for item in inputs.get("items", []) if isinstance(item, dict)
+        ]
+
+        slug = _slugify_identifier(origin_id, fallback="opportunity")
+        suffix = payload_hash[:8]
+        analysis_artifact = f"artifacts/analysis/opportunity_scan_{slug}_{suffix}.md"
+        review_artifact = f"artifacts/reviews/opportunity_scan_{slug}_{suffix}_review.md"
+
+        auto_task = {
+            "task_id": _next_task_id(base_dir, "AUTO", origin_id),
+            "worker": "automation",
+            "task_type": "generate_script",
+            "objective": (
+                f"{title}. Generate exactly one structured opportunity analysis report "
+                "artifact based on the provided goal, constraints, and items. "
+                "The report must support practical go/watch/no-go decisions."
+            ),
+            "inputs": {
+                "params": {
+                    "origin_id": origin_id,
+                    "title": title,
+                    "description": automation_description,
+                    "labels": labels,
+                    "goal": goal,
+                    "constraints": constraints,
+                    "items": opportunity_items,
+                    "contract_hints": {
+                        "analysis_completeness": (
+                            "Analyze every listed opportunity item individually before writing "
+                            "a combined recommendation."
+                        ),
+                        "decision_labels": (
+                            "Each item needs exactly one decision label from GO, WATCH, NO-GO."
+                        ),
+                        "actionability": (
+                            "Provide a ranked recommendation and concrete next steps that can "
+                            "be executed within a short validation window."
+                        ),
+                        "evidence_grounding": (
+                            "Use only provided evidence/risks and explicit reasoning; avoid "
+                            "invented market facts."
+                        ),
+                    },
+                }
+            },
+            "expected_outputs": [
+                {"path": analysis_artifact, "type": "doc"},
+            ],
+            "constraints": [
+                "Follow the local inbox normalized request",
+                "Produce only the expected analysis artifact",
+                "Analyze every opportunity item and assign exactly one verdict from GO/WATCH/NO-GO",
+                "Report concrete risks and practical rationale for each verdict",
+                "Include ranked priorities and actionable next steps",
+                "No external writeback or side effects are required for this analysis task",
+            ],
+            "priority": priority,
+            "source": source,
+            "acceptance_criteria": [
+                "Produce the expected analysis artifact at expected_outputs[0].path",
+                "Every input item is analyzed with explicit strengths, risks, and one decision label (GO/WATCH/NO-GO)",
+                "Output includes a clear ranking and practical next-step actions",
+                "Reasoning remains grounded in provided input evidence and constraints",
+            ],
+            "metadata": {
+                "integration_phase": "8B",
+                "pipeline": "inbox->adapter->manager->automation->critic",
+                "request_type": request_type,
+                "payload_hash": payload_hash,
+                "regeneration_token": regeneration_token,
+                "labels": labels,
+                "external_metadata": metadata,
+                "automation_contract_profile": "structured_opportunity_scan_report_with_decision_verdicts",
+            },
+        }
+
+        critic_task = {
+            "task_id": _next_task_id(base_dir, "CRITIC", origin_id),
+            "worker": "critic",
+            "task_type": "review_artifact",
+            "objective": (
+                "Review the generated opportunity analysis report and determine whether it is "
+                "decision-ready. Provide verdict pass/fail/needs_revision with concrete issues."
+            ),
+            "inputs": {
+                "artifacts": [
+                    {"path": analysis_artifact, "type": "doc"},
+                ],
+                "params": {
+                    "origin_id": origin_id,
+                    "title": title,
+                    "description": description,
+                    "labels": labels,
+                    "review_scope": {
+                        "primary_artifact": analysis_artifact,
+                        "required_item_verdicts": ["GO", "WATCH", "NO-GO"],
+                        "goal": (
+                            "Ensure the report can guide real-world prioritization decisions "
+                            "instead of generic brainstorming output."
+                        ),
+                    },
+                },
+            },
+            "expected_outputs": [
+                {"path": review_artifact, "type": "review"},
+            ],
+            "constraints": [
+                "Review must be grounded in the produced analysis artifact",
+                "Check item-by-item completeness, verdict clarity, ranking quality, and actionability",
+                "Return a clear verdict: pass, fail, or needs_revision",
+                "Include metadata.verdict in output",
+                "Generate review artifact markdown for expected_outputs[0].path",
+            ],
+            "priority": priority,
+            "source": source,
+            "acceptance_criteria": [
+                "Produce a review artifact with explicit verdict (pass/fail/needs_revision)",
+            ],
+            "metadata": {
+                "integration_phase": "8B",
+                "pipeline": "inbox->adapter->manager->automation->critic",
+                "request_type": request_type,
+                "payload_hash": payload_hash,
+                "regeneration_token": regeneration_token,
+                "labels": labels,
+                "external_metadata": metadata,
+            },
+        }
+
+        return StandardizedInboxTask(
+            origin_id=origin_id,
+            payload_hash=payload_hash,
+            dedupe_keys=dedupe_keys,
+            regeneration_token=regeneration_token,
+            source=source,
+            title=title,
+            description=description,
+            labels=labels,
+            metadata=metadata,
+            automation_task=auto_task,
+            critic_task=critic_task,
+        )
+
+    input_dir = str(inputs.get("input_dir", "~/Desktop/pdf样本")).strip()
+    output_xlsx = str(
+        inputs.get("output_xlsx", "artifacts/outputs/phase8a/pdf_to_excel_from_inbox.xlsx")
+    ).strip()
+    ocr_mode = str(inputs.get("ocr", "auto")).strip().lower()
+    dry_run = bool(inputs.get("dry_run", False))
+
+    automation_artifact = "artifacts/scripts/pdf_to_excel_ocr_inbox_runner.py"
+    review_artifact = "artifacts/reviews/pdf_to_excel_ocr_inbox_review.md"
 
     auto_task = {
         "task_id": _next_task_id(base_dir, "AUTO", origin_id),
