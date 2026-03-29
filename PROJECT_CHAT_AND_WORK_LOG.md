@@ -8418,3 +8418,38 @@ Verification snapshot on 2026-03-29:
 - `python3 skills/finalize_processed_previews.py --once --preview-id preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a` (completed after escalated rerun)
 - `git log --oneline -n 1` confirms finalization commit `23325d7...`
 - `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` records `git.push=success`, `trello.status=success`
+
+### 179. BL-20260329-163/164 Historical Blocker Chain Closeout + PR Handoff Packaging (Done)
+
+User objective:
+
+- continue the mainline after formal finalization and reduce project-board
+  noise by closing legacy blockers, then prepare merge-ready handoff material.
+
+Main work areas:
+
+- historical blocker chain closure:
+  - `PROJECT_BACKLOG.md`
+  - reclassifies `BL-20260326-092` ~ `BL-20260326-098` from `blocked` to
+    `done` as superseded-by-mainline closures.
+  - preserves historical traceability while removing them from active blocker
+    counts.
+  - adds governance item `BL-20260329-163` (done).
+- closure evidence report:
+  - adds
+    `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`
+  - ties closure rationale to `BL-099`, `BL-160`, and `BL-162` outcomes.
+- PR-ready handoff package:
+  - adds `PR_MAINLINE_DEEPSEEK_CLOSEOUT_HANDOFF.md`
+  - captures scope, key commits, verification, risks, and rollback guidance.
+  - adds governance item `BL-20260329-164` (done).
+
+Key result:
+
+- backlog now reflects live delivery truth (legacy route blockers closed as
+  historical), and reviewers have a compact PR handoff brief for merge.
+
+Verification snapshot on 2026-03-29:
+
+- `python3 scripts/backlog_lint.py` (passed)
+- `bash scripts/premerge_check.sh` (passed, `Failures: 0`)

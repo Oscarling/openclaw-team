@@ -1608,120 +1608,120 @@ Allowed enum values:
 ### BL-20260326-092
 - title: Restore fallback credential/profile availability and rerun canary failover window to clear rollback trigger
 - type: blocker
-- status: blocked
+- status: done
 - phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-091
 - start_when: BL-091 canary against real endpoint topology triggers rollback due fallback authorization unavailability and zero processed/pass rates
-- done_when: Fallback credential/profile alignment is verified by preflight probe (`200`) and a rerun canary observation window reaches at least `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` without violating rollback guardrails
-- source: `CANARY_REAL_ENDPOINT_FAILOVER_OBSERVATION_REPORT.md` on 2026-03-26 records fallback path `http_401` and mandatory rollback; next blocker is alignment/remediation plus governed rerun
-- link: /Users/lingguozhong/openclaw-team/CANARY_FALLBACK_CREDENTIAL_ALIGNMENT_RERUN_REPORT.md
+- done_when: Historical fallback-credential blocker is explicitly superseded and closed after the new provider route closure chain (`BL-099` onboarding+replay promotion, `BL-160` canary 4x pass, `BL-162` formal finalization) is completed with governed evidence
+- source: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` on 2026-03-29 reclassifies BL-092 as resolved-by-superseding-route instead of an active delivery blocker
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
 - issue: https://github.com/Oscarling/openclaw-team/issues/177
-- evidence: `CANARY_FALLBACK_CREDENTIAL_ALIGNMENT_RERUN_REPORT.md` plus `runtime_archives/bl092/tmp/bl092_probe_matrix.tsv` confirm fallback credential/profile preflight availability (`200`) while canary rerun matrix/metrics (`bl092_canary_rerun_matrix.tsv`, `bl092_canary_rerun_metrics.json`) record `processed=1/4`, `pass_verdict_rate=0.25`, mixed `workspace_missing_repo/http_502`, and rollback guardrail triggers
-- last_reviewed_at: 2026-03-26
+- evidence: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`, `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md`, `DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` establish superseding closure of legacy fallback-credential route blockers
+- last_reviewed_at: 2026-03-29
 - opened_at: 2026-03-26
 
 ### BL-20260326-093
 - title: Stabilize real-endpoint canary rerun by eliminating workspace-mount drift and recovering failover success rate
 - type: blocker
-- status: blocked
+- status: done
 - phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-092
 - start_when: BL-092 rerun confirms fallback credential/profile availability but still fails rollout thresholds due mixed `workspace_missing_repo` and primary `http_502` terminal failures
-- done_when: Root cause and mitigation for workspace-mount/runtime inconsistency are evidenced, and a governed 4-sample real-endpoint rerun reaches `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` without rollback trigger
-- source: `CANARY_FALLBACK_CREDENTIAL_ALIGNMENT_RERUN_REPORT.md` on 2026-03-26 shows fallback auth recovery but canary promotion remains blocked by residual runtime instability
-- link: /Users/lingguozhong/openclaw-team/CANARY_WORKSPACE_RETRY_STABILIZATION_REPORT.md
+- done_when: Historical workspace-drift rerun blocker is explicitly superseded and closed after the new provider route closure chain (`BL-099`, `BL-160`, `BL-162`) is completed with governed evidence
+- source: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` on 2026-03-29 reclassifies BL-093 as resolved-by-superseding-route instead of an active delivery blocker
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
 - issue: https://github.com/Oscarling/openclaw-team/issues/178
-- evidence: `CANARY_WORKSPACE_RETRY_STABILIZATION_REPORT.md` and `runtime_archives/bl093/tmp/bl093_canary_window_metrics.json` capture BL-093 guarded rerun (`processed=0/4`, `pass_verdict_rate=0.0`) with complete failover markers but terminal endpoint-chain failure class `http_502`; workspace-presence retry hardening landed with unit coverage, yet rollback guardrails remain triggered
-- last_reviewed_at: 2026-03-26
+- evidence: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`, `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md`, `DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` establish superseding closure of legacy workspace-drift route blockers
+- last_reviewed_at: 2026-03-29
 - opened_at: 2026-03-26
 
 ### BL-20260326-094
 - title: Recover real-endpoint canary success under persistent primary 502 and fallback timeout chain
 - type: blocker
-- status: blocked
+- status: done
 - phase: now
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-093
 - start_when: BL-093 confirms workspace-retry hardening but rerun window still fails threshold entirely on endpoint-chain instability (`http_502` + fallback timeout)
-- done_when: A governed 4-sample real-endpoint window reaches `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` with rollback guardrails not triggered, and evidence clearly attributes residual failures by endpoint class
-- source: `CANARY_WORKSPACE_RETRY_STABILIZATION_REPORT.md` on 2026-03-26 shows workspace drift not reproduced but canary still fully blocked by endpoint-chain failures
-- link: /Users/lingguozhong/openclaw-team/CANARY_ENDPOINT_CHAIN_RECOVERY_PROMPT_COMPACTION_REPORT.md
+- done_when: Historical endpoint-chain blocker is explicitly superseded and closed after the new provider route closure chain (`BL-099`, `BL-160`, `BL-162`) is completed with governed evidence
+- source: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` on 2026-03-29 reclassifies BL-094 as resolved-by-superseding-route instead of an active delivery blocker
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
 - issue: https://github.com/Oscarling/openclaw-team/issues/180
-- evidence: `CANARY_ENDPOINT_CHAIN_RECOVERY_PROMPT_COMPACTION_REPORT.md` and `runtime_archives/bl094/tmp/bl094_canary_observation_metrics.json` capture BL-094 controlled prompt-compaction rerun (`ARGUS_AUTOMATION_PROMPT_FIELD_MAX_CHARS=1200`) with prompt size reduction but unchanged canary outcome (`processed=0/4`, `pass_verdict_rate=0.0`), complete failover signal `4/4`, and endpoint-chain terminal classes (`http_502`/`remote_closed`) that continue to trigger rollback guardrails
-- last_reviewed_at: 2026-03-26
+- evidence: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`, `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md`, `DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` establish superseding closure of legacy endpoint-chain blockers
+- last_reviewed_at: 2026-03-29
 - opened_at: 2026-03-26
 
 ### BL-20260326-095
 - title: Recover fallback endpoint stability after BL-094 by isolating remote-closed path under governed canary guardrails
 - type: blocker
-- status: blocked
+- status: done
 - phase: next
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-094
 - start_when: BL-094 confirms prompt compaction is active but 4-sample rerun still fails entirely on endpoint-chain instability (`http_502` + fallback `remote_closed/timeout`)
-- done_when: A governed 4-sample real-endpoint window reaches `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` with rollback guardrails not triggered, and evidence proves fallback path no longer degrades to `remote_closed/timeout` under selected provider/endpoint controls
-- source: `CANARY_ENDPOINT_CHAIN_RECOVERY_PROMPT_COMPACTION_REPORT.md` on 2026-03-26 records that prompt-size mitigation does not clear endpoint-chain blocker
-- link: /Users/lingguozhong/openclaw-team/ENDPOINT_CHAIN_ROUTE_DISCOVERY_PROBE_REPORT.md
+- done_when: Historical fallback-stability blocker is explicitly superseded and closed after the new provider route closure chain (`BL-099`, `BL-160`, `BL-162`) is completed with governed evidence
+- source: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` on 2026-03-29 reclassifies BL-095 as resolved-by-superseding-route instead of an active delivery blocker
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
 - issue: -
-- evidence: `ENDPOINT_CHAIN_ROUTE_DISCOVERY_PROBE_REPORT.md` with `runtime_archives/bl095/tmp/bl095_probe_matrix.tsv`, `bl095_payload_sweep.tsv`, `bl095_prompt_limit_probe.tsv`, and `bl095_limit1200_repeats.tsv` shows primary route remains fixed `http_502`, fallback simple probes are `200`, but real automation prompt shape still times out under 45s budget across tested compaction limits (including 4/4 timeout retest at `field_limit=1200`)
-- last_reviewed_at: 2026-03-26
+- evidence: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`, `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md`, `DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` establish superseding closure of legacy fallback-stability blockers
+- last_reviewed_at: 2026-03-29
 - opened_at: 2026-03-26
 
 ### BL-20260326-096
 - title: Establish a stable provider/endpoint route for real automation prompt execution before canary clearance
 - type: blocker
-- status: blocked
+- status: done
 - phase: next
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-095
 - start_when: BL-095 confirms current provider topology has no stable route for real automation prompt shape despite endpoint/model/compaction probes
-- done_when: A candidate provider/endpoint route is validated with repeatable real-automation prompt success and then confirmed by governed 4-sample canary meeting `processed_rate >= 0.75` and `pass_verdict_rate >= 0.75` without rollback trigger
-- source: `ENDPOINT_CHAIN_ROUTE_DISCOVERY_PROBE_REPORT.md` on 2026-03-26 records shape-dependent timeout saturation on current fallback route and persistent primary `http_502`
-- link: /Users/lingguozhong/openclaw-team/FALLBACK_ONLY_ROUTE_VALIDATION_REPORT.md
+- done_when: Historical stable-route discovery blocker is explicitly superseded and closed after the new provider route closure chain (`BL-099`, `BL-160`, `BL-162`) is completed with governed evidence
+- source: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` on 2026-03-29 reclassifies BL-096 as resolved-by-superseding-route instead of an active delivery blocker
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
 - issue: -
-- evidence: `FALLBACK_ONLY_ROUTE_VALIDATION_REPORT.md` and `runtime_archives/bl096/tmp/bl096_execute_s01.gpt-5-codex.json` show fallback-only candidate route (`https://fast.vpsairobot.com/v1` + fallback `/responses`) still ends `rejected` with endpoint-chain failure sequence (`timeout -> http_502 -> tls_eof`), so stable promotion path remains unavailable
-- last_reviewed_at: 2026-03-26
+- evidence: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`, `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md`, `DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` establish superseding closure of legacy stable-route blockers
+- last_reviewed_at: 2026-03-29
 - opened_at: 2026-03-26
 
 ### BL-20260326-097
 - title: Recover canary promotion by introducing an alternative provider route after BL-096 fallback-only rejection
 - type: blocker
-- status: blocked
+- status: done
 - phase: next
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-096
 - start_when: BL-096 confirms both mixed-route and fallback-only route still fail governed replay on endpoint-chain instability
-- done_when: A new provider/endpoint route is validated through controlled replay and then passes governed 4-sample canary thresholds (`processed_rate >= 0.75`, `pass_verdict_rate >= 0.75`) without rollback trigger
-- source: `FALLBACK_ONLY_ROUTE_VALIDATION_REPORT.md` on 2026-03-26 records fallback-only rejection under real replay
-- link: /Users/lingguozhong/openclaw-team/ALTERNATIVE_MODEL_GPT54_ROUTE_PROBE_REPORT.md
+- done_when: Historical alternative-route recovery blocker is explicitly superseded and closed after the new provider route closure chain (`BL-099`, `BL-160`, `BL-162`) is completed with governed evidence
+- source: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` on 2026-03-29 reclassifies BL-097 as resolved-by-superseding-route instead of an active delivery blocker
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
 - issue: -
-- evidence: `ALTERNATIVE_MODEL_GPT54_ROUTE_PROBE_REPORT.md` and `runtime_archives/bl097/tmp/bl097_prompt_limit_probe_gpt54.tsv` show that although `gpt-5.4` ping probes return `200`, real automation prompt-shape probes still fail across all tested compaction limits on both fast endpoints (`timeout`/`tls_eof`), so no stable route was recovered
-- last_reviewed_at: 2026-03-26
+- evidence: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`, `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md`, `DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` establish superseding closure of legacy alternative-route blockers
+- last_reviewed_at: 2026-03-29
 - opened_at: 2026-03-26
 
 ### BL-20260326-098
 - title: Provision a new provider/base route for governed replay after BL-097 model-switch failure
 - type: blocker
-- status: blocked
+- status: done
 - phase: next
 - priority: p1
 - owner: Oscarling
 - depends_on: BL-20260326-097
 - start_when: BL-097 confirms alternative model switch (`gpt-5.4`) does not recover real prompt-shape stability on existing fast endpoints
-- done_when: A newly provisioned provider/base route (new key/base topology) passes controlled replay and then governed 4-sample canary thresholds without rollback trigger
-- source: `ALTERNATIVE_MODEL_GPT54_ROUTE_PROBE_REPORT.md` on 2026-03-26 records full failure of real prompt-shape probes on existing route
-- link: /Users/lingguozhong/openclaw-team/TIMEOUT_BUDGET_GATEWAY_CEILING_PROBE_REPORT.md
+- done_when: Historical provider-provisioning blocker is explicitly superseded and closed after the new provider route closure chain (`BL-099`, `BL-160`, `BL-162`) is completed with governed evidence
+- source: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` on 2026-03-29 reclassifies BL-098 as resolved-by-superseding-route instead of an active delivery blocker
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
 - issue: -
-- evidence: `TIMEOUT_BUDGET_GATEWAY_CEILING_PROBE_REPORT.md` and `runtime_archives/bl098/tmp/bl098_timeout_budget_probe.tsv` show that increasing timeout budget on the current fast route (`120/180/240/300`) does not recover real automation prompt execution; `120s` ends in timeout and `180/240/300` all terminate at ~126s with `http_524`, indicating an upstream ceiling under current provider/base topology
-- last_reviewed_at: 2026-03-26
+- evidence: `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md`, `DEEPSEEK_ONBOARDING_AND_CONTROLLED_REPLAY_PROMOTION_REPORT.md`, `DEEPSEEK_CONTROLLED_REPLAY_CANARY_4X_PASS_REPORT.md`, and `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` establish superseding closure of legacy provider-provisioning blockers
+- last_reviewed_at: 2026-03-29
 - opened_at: 2026-03-26
 
 ### BL-20260326-099
@@ -2809,5 +2809,39 @@ Allowed enum values:
 - link: /Users/lingguozhong/openclaw-team/approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json
 - issue: -
 - evidence: `approvals/preview-trello-69c24cd3c1a2359ddd7a1bf8-e84af65e8f1a.finalization.result.json` (status=`completed`, git push=`success`, trello=`success`), finalization commit `23325d76518f5dedf9526827f4f8e19e5de33e04`, and command result `decision_reason=git_push_and_trello_done_succeeded`
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-163
+- title: Close historical legacy-route blocker chain BL-092~BL-098 as superseded after DeepSeek closure
+- type: debt
+- status: done
+- phase: next
+- priority: p1
+- owner: Oscarling
+- depends_on: BL-20260329-162
+- start_when: Mainline has already achieved route onboarding, governed canary pass, and formal finalization on DeepSeek, but backlog still shows legacy route blockers (`BL-092~098`) as open and inflates active blocked counts
+- done_when: `BL-092~098` are reclassified from `blocked` to `done` with explicit "superseded-by-mainline" rationale and shared closure evidence, while retaining historical traceability links/issues
+- source: mainline continuation to keep backlog open-work truth aligned with delivered path rather than legacy route diagnostics
+- link: /Users/lingguozhong/openclaw-team/HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md
+- issue: -
+- evidence: `PROJECT_BACKLOG.md` (`BL-20260326-092`~`BL-20260326-098` now `done`) and `HISTORICAL_PROVIDER_BLOCKER_CHAIN_CLOSEOUT_REPORT.md` tie closure to `BL-099/160/162` outcomes and finalization evidence
+- last_reviewed_at: 2026-03-29
+- opened_at: 2026-03-29
+
+### BL-20260329-164
+- title: Produce merge-ready PR handoff brief for DeepSeek promotion to formal finalization closure
+- type: debt
+- status: done
+- phase: next
+- priority: p2
+- owner: Oscarling
+- depends_on: BL-20260329-163
+- start_when: Mainline code/evidence closure is complete, but reviewers still need a compact PR-ready brief with scope, verification, risk, and rollback notes
+- done_when: A repo-tracked PR handoff brief summarizes key commits, backlog closures, verification gates, known caveats, and rollback path in one document reviewers can use directly
+- source: mainline continuation to reduce merge friction after large evidence-heavy closure run
+- link: /Users/lingguozhong/openclaw-team/PR_MAINLINE_DEEPSEEK_CLOSEOUT_HANDOFF.md
+- issue: -
+- evidence: `PR_MAINLINE_DEEPSEEK_CLOSEOUT_HANDOFF.md` captures scope (`BL-099` through `BL-164`), finalization result, verification gates (`premerge/preflight`), and rollback guidance
 - last_reviewed_at: 2026-03-29
 - opened_at: 2026-03-29
