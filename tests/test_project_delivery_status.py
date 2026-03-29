@@ -152,6 +152,46 @@ class ProjectDeliveryStatusTests(unittest.TestCase):
             self.assertIn("finalization preflight", joined)
             self.assertNotIn("进入 controlled replay 与 canary 收尾流程。", joined)
 
+    def test_build_status_payload_points_to_stable_stage_after_finalization_closeout(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="project-delivery-status-") as tmp:
+            root = Path(tmp)
+            backlog_path = root / "PROJECT_BACKLOG.md"
+            summary_path = root / "summary.json"
+
+            chain_status = {item_id: "done" for item_id in status.CRITICAL_PROVIDER_CHAIN_IDS}
+            backlog_text = _backlog_markdown(chain_status=chain_status)
+            backlog_text += (
+                "\n### BL-20260329-160\n"
+                "- title: DeepSeek canary closeout\n"
+                "- status: done\n"
+                "- phase: next\n"
+                "- priority: p1\n"
+                "- depends_on: BL-20260329-159\n"
+                "\n### BL-20260329-162\n"
+                "- title: Formal finalization completion\n"
+                "- status: done\n"
+                "- phase: next\n"
+                "- priority: p1\n"
+                "- depends_on: BL-20260329-161\n"
+            )
+            backlog_path.write_text(backlog_text, encoding="utf-8")
+            summary_path.write_text(
+                json.dumps({"latest": {"status": "ready", "block_reason": "", "timestamp": "2026-03-29T17:20:00"}}),
+                encoding="utf-8",
+            )
+
+            payload = status.build_status_payload(
+                backlog_path=backlog_path,
+                summary_json_path=summary_path,
+                repo_root=root,
+                current_branch="main",
+            )
+
+            self.assertEqual(payload["delivery_state"], "ready_for_replay")
+            joined = " ".join(payload["next_steps"])
+            self.assertIn("formal finalization 已完成", joined)
+            self.assertNotIn("finalization preflight", joined)
+
     def test_build_status_payload_mentions_arrearage_when_handshake_ready_but_bl099_blocked(self) -> None:
         with tempfile.TemporaryDirectory(prefix="project-delivery-status-") as tmp:
             root = Path(tmp)
